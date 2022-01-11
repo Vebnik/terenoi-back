@@ -1,0 +1,26 @@
+stages:
+#    - linting
+    - deploy
+# TODO: run unit tests, linters
+Deploy to prod:
+    stage: deploy
+    script:
+        - cp $ENV_PROD .env
+        - bash deployment_script.sh
+#        - ln -s /home/gitlab-runner/fs/media /home/gitlab-runner/builds/QzntZfHK/0/oscarbot/fan_service/
+    only:
+        - main
+    tags:
+        - prod
+
+# TODO: run unit tests, linters
+Deploy to stage:
+    stage: deploy
+    script:
+        - cp $ENV_STAGE .env
+        - bash deployment_script.sh
+#        - ln -s /home/gitlab-runner/fs/media /home/gitlab-runner/builds/zHdyiqwn/0/oscarbot/fan_service/
+    only:
+        - develop
+    tags:
+        - stage

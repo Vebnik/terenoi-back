@@ -11,3 +11,4 @@ env
 *.log
 /staticfiles/
 .vscode/
+flake8_results.txt
