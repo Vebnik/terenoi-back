@@ -5,7 +5,7 @@ stages:
 Deploy to prod:
     stage: deploy
     script:
-        - cp $ENV_PROD .env
+        - cp $ENV_PROD terenoi/.env
         - bash deployment_script.sh
 #        - ln -s /home/gitlab-runner/fs/media /home/gitlab-runner/builds/QzntZfHK/0/oscarbot/fan_service/
     only:
@@ -17,7 +17,7 @@ Deploy to prod:
 Deploy to stage:
     stage: deploy
     script:
-        - cp $ENV_STAGE .env
+        - cp $ENV_STAGE terenoi/.env
         - bash deployment_script.sh
 #        - ln -s /home/gitlab-runner/fs/media /home/gitlab-runner/builds/zHdyiqwn/0/oscarbot/fan_service/
     only:
