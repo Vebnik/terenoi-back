@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-*!2!ek8i@$gdwf0!v9&euj75)%axren*g@+^o+4gw^6k0!!^f_
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = (os.getenv('DEBUG', 'False') == 'True')
-
+ENV_TYPE = os.getenv('ENV_TYPE', 'local')
 ALLOWED_HOSTS = [os.getenv('ALLOWED_HOSTS', '*')]
 
 # Application definition
@@ -178,3 +178,11 @@ EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL')
 BASE_URL = os.getenv('BASE_URL')
 BACK_URL = os.getenv('BACK_URL')
 FRONT_URL = os.getenv('FRONT_URL')
+
+
+if ENV_TYPE == 'local':
+    STATICFILES_DIRS = (
+        BASE_DIR / 'static',
+    )
+else:
+    STATIC_ROOT = BASE_DIR / 'static'
