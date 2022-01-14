@@ -6,7 +6,7 @@ from drf_yasg import openapi
 
 schema_view = get_schema_view(
    openapi.Info(
-      title="Terenoi ARI",
+      title="Terenoi API",
       default_version='v1',
       description="On the diagram you can see how the api works",
       license=openapi.License(name="BSD License"),
