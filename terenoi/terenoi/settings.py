@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'authapp',
+    'corsheaders',
     'drf_yasg',
     'profileapp'
 
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -182,10 +184,26 @@ BASE_URL = os.getenv('BASE_URL')
 BACK_URL = os.getenv('BACK_URL')
 FRONT_URL = os.getenv('FRONT_URL')
 
-
 if ENV_TYPE == 'local':
     STATICFILES_DIRS = (
         BASE_DIR / 'static',
     )
 else:
     STATIC_ROOT = BASE_DIR / 'static'
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost',
+    'http://localhost:8000',
+    'http://slot2b.oscarbot.ru',
+    'http://slot2f.oscarbot.ru',
+    'http://slot2t.oscarbot.ru'
+]
+
+CORS_ALLOW_HEADERS = (
+    '*',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Headers',
+    'Access-Control-Allow-Credentials',
+)

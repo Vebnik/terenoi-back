@@ -1,4 +1,6 @@
 from django.conf import settings
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, status, permissions
 import jwt
 from rest_framework.response import Response
@@ -28,9 +30,13 @@ class UserRegister(generics.CreateAPIView):
 
 class VerifyEmail(generics.GenericAPIView):
     serializer_class = VerifyEmailSerializer
+    token_param_config = openapi.Parameter(
+        'token', in_=openapi.IN_QUERY, description='token', type=openapi.TYPE_STRING
+    )
 
+    @swagger_auto_schema(manual_parameters=[token_param_config])
     def get(self, request):
-        token = request.data.get('token')
+        token = request.GET.get('token')
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             user = User.objects.get(id=payload['user_id'])
