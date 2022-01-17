@@ -191,14 +191,14 @@ if ENV_TYPE == 'local':
 else:
     STATIC_ROOT = BASE_DIR / 'static'
 
-
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = [
     'http://localhost',
     'http://localhost:8000',
-    'http://slot1f.oscarbot.ru',
-    'http://slot1b.oscarbot.ru'
+    'http://slot2b.oscarbot.ru',
+    'http://slot2f.oscarbot.ru',
+    'http://slot2t.oscarbot.ru'
 ]
 
 CORS_ALLOW_HEADERS = (
@@ -207,4 +207,3 @@ CORS_ALLOW_HEADERS = (
     'Access-Control-Allow-Headers',
     'Access-Control-Allow-Credentials',
 )
-
