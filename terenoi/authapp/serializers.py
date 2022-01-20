@@ -33,3 +33,9 @@ class VerifyEmailSerializer(serializers.ModelSerializer):
         fields = ('token',)
 
 
+class UserNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name')
+
+

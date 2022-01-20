@@ -14,7 +14,7 @@ class Subject(models.Model):
         (GERMAN, 'Немецкий'),
         (HISTORY, 'История'),
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', limit_choices_to={'role': User.TEACHER})
     subject = models.CharField(verbose_name='Предмет', max_length=3, choices=SUBJECT_CHOICES)
 
     class Meta:
@@ -30,4 +30,3 @@ class Subject(models.Model):
                 if sub['subject'] == self.subject:
                     Subject.objects.get(subject=self.subject).delete()
             super(Subject, self).save(*args, **kwargs)
-

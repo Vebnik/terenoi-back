@@ -10,6 +10,7 @@ from authapp.services import send_verify_email
 
 
 class UserRegister(generics.CreateAPIView):
+    """"Регистрация пользователя"""
     queryset = User.objects.all()
     serializer_class = UserRegisterSerializer
     permission_classes = [permissions.AllowAny]
@@ -29,6 +30,7 @@ class UserRegister(generics.CreateAPIView):
 
 
 class VerifyEmail(generics.GenericAPIView):
+    """Верификация пользователя по эмейлу"""
     serializer_class = VerifyEmailSerializer
     token_param_config = openapi.Parameter(
         'token', in_=openapi.IN_QUERY, description='token', type=openapi.TYPE_STRING
