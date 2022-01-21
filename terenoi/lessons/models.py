@@ -1,7 +1,7 @@
 from django.db import models
 
 from authapp.models import User, VoxiAccount
-from authapp.services import create_voxi_account
+from authapp.services import add_voxiaccount
 
 
 class Lesson(models.Model):
@@ -34,10 +34,5 @@ class Lesson(models.Model):
     def save(self, *args, **kwargs):
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
-            password = f'{self.student.username}{self.student.username}'
-            VoxiAccount.objects.create(user=self.student, voxi_username=self.student.username,
-                                       voxi_display_name=self.student.first_name,
-                                       voxi_password=password)
-            create_voxi_account(username=self.student.username, display_name=self.student.first_name, password=password)
-
+            add_voxiaccount(self, self.student.username, self.student.first_name)
         super(Lesson, self).save()

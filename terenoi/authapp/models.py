@@ -1,7 +1,9 @@
+import hashlib
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from authapp.services import create_voxi_account
+from authapp.services import add_voxiaccount
 
 NULLABLE = {'blank': True, 'null': True}
 
@@ -34,10 +36,7 @@ class User(AbstractUser):
         if self.role == User.TEACHER:
             voxi_user = VoxiAccount.objects.filter(user=self).first()
             if voxi_user is None:
-                password = f'{self.username}{self.username}'
-                VoxiAccount.objects.create(user=self, voxi_username=self.username, voxi_display_name=self.first_name,
-                                           voxi_password=password)
-                create_voxi_account(username=self.username, display_name=self.first_name, password=password)
+                add_voxiaccount(self, self.username, self.first_name)
         super(User, self).save(*args, **kwargs)
 
 

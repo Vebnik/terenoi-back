@@ -1,3 +1,5 @@
+import hashlib
+
 import requests
 from django.conf import settings
 from django.core.mail import send_mail
@@ -21,16 +23,6 @@ def send_verify_email(user):
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
-# def get_voxiplant_data():
-#     url = 'https://api.voximplant.com/platform_api/CreateKey/'
-#     params = {
-#         'account_id': settings.VOXI_ACCOUNT_ID,
-#         'api_key': settings.VOXI_API_KEY
-#     }
-#     response = requests.get(url, params=params)
-#     with open('terenoi/authapp/json/credentials.json', 'w', encoding='utf8') as f:
-#         f.write(response.json())
-
 def create_voxi_account(username, display_name, password):
     api = VoximplantAPI("authapp/json/credentials.json")
     USER_NAME = username
@@ -47,3 +39,11 @@ def create_voxi_account(username, display_name, password):
         user_voxi.save()
     except VoximplantException as e:
         print("Error: {}".format(e.message))
+
+
+def add_voxiaccount(user, username, display_name):
+    password = f'{username}{username}'
+    password_encode = hashlib.sha1(password.encode('utf-8')).hexdigest()[:9]
+    authapp.models.VoxiAccount.objects.create(user=user, voxi_username=username, voxi_display_name=display_name,
+                                              voxi_password=password_encode)
+    create_voxi_account(username=username, display_name=display_name, password=password)
