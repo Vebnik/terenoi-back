@@ -24,6 +24,12 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
+class UserLessonsCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ('pk', 'teacher', 'student', 'date', 'lesson_status')
+
+
 class VoxiTeacherInfoSerializer(serializers.ModelSerializer):
     voxi_account = serializers.SerializerMethodField()
 
