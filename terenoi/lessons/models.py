@@ -34,5 +34,5 @@ class Lesson(models.Model):
     def save(self, *args, **kwargs):
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
-            add_voxiaccount(self, self.student.username, self.student.first_name)
+            add_voxiaccount(self.student, self.student.username, self.student.first_name)
         super(Lesson, self).save()

@@ -3,7 +3,8 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from authapp.models import User, VoxiAccount
 from lessons.models import Lesson
-from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer
+from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
+    UserLessonsCreateSerializer
 
 
 class AllUserLessonsListView(generics.ListAPIView):
@@ -23,6 +24,11 @@ class UserLessonRetrieveView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
+
+
+class UserLessonCreateView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserLessonsCreateSerializer
 
 
 class VoxiTeacherInfoRetrieveView(generics.RetrieveAPIView):
