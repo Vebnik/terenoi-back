@@ -1,11 +1,10 @@
 import hashlib
-
-import requests
 from django.conf import settings
 from django.core.mail import send_mail
 from rest_framework_simplejwt.tokens import RefreshToken
 from voximplant.apiclient import VoximplantAPI, VoximplantException
 import authapp.models
+from authapp.decorators import create_voxi_file
 
 
 def send_verify_email(user):
@@ -23,6 +22,7 @@ def send_verify_email(user):
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
+@create_voxi_file
 def create_voxi_account(username, display_name, password):
     api = VoximplantAPI("authapp/json/credentials.json")
     USER_NAME = username

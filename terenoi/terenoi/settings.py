@@ -215,6 +215,8 @@ CORS_ALLOW_HEADERS = (
     'Access-Control-Allow-Credentials',
 )
 
+VOXI_ACCOUNT_EMAIL = os.getenv('VOXI_ACCOUNT_EMAIL')
 VOXI_ACCOUNT_ID = os.getenv('VOXI_ACCOUNT_ID')
 VOXI_API_KEY = os.getenv('VOXI_API_KEY')
 VOXI_APPLICATION_ID = os.getenv('VOXI_APPLICATION_ID')
+VOXI_PRIVATE_KEY = os.getenv('VOXI_PRIVATE_KEY')
