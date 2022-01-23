@@ -22,7 +22,8 @@ from .yasg import urlpatterns as doc_urls
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('authapp.urls', namespace='authapp')),
-    path('api/user/', include('profileapp.urls', namespace='profile'))
+    path('api/user/', include('profileapp.urls', namespace='profile')),
+    path('api/lessons/', include('lessons.urls', namespace='lessons'))
 
 ]
 

@@ -7,6 +7,7 @@ from profileapp.serializers import UpdateUserSerializer, UpdateStudentSerializer
 
 
 class ProfileUpdateView(generics.UpdateAPIView):
+    """Редактирование пользователя"""
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_object(self):
@@ -14,9 +15,9 @@ class ProfileUpdateView(generics.UpdateAPIView):
 
     def get_serializer_class(self):
         print()
-        if self.request.user.role == 'ST':
+        if self.request.user.role == User.STUDENT:
             return UpdateStudentSerializer
-        elif self.request.user.role == 'TH':
+        elif self.request.user.role == User.TEACHER:
             return UpdateTeacherSerializer
 
     def update(self, request, *args, **kwargs):

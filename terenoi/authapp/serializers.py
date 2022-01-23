@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from authapp.models import User
+from authapp.models import User, VoxiAccount
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -33,3 +33,13 @@ class VerifyEmailSerializer(serializers.ModelSerializer):
         fields = ('token',)
 
 
+class UserNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name')
+
+
+class VoxiAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VoxiAccount
+        fields = ('voxi_username', 'voxi_password')

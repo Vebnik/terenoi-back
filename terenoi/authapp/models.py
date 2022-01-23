@@ -1,5 +1,9 @@
+import hashlib
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+from authapp.services import add_voxiaccount
 
 NULLABLE = {'blank': True, 'null': True}
 
@@ -27,3 +31,22 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+    def save(self, *args, **kwargs):
+        if self.role == User.TEACHER:
+            voxi_user = VoxiAccount.objects.filter(user=self).first()
+            if voxi_user is None:
+                add_voxiaccount(self, self.username, self.first_name)
+        super(User, self).save(*args, **kwargs)
+
+
+class VoxiAccount(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    voxi_user_id = models.CharField(max_length=15, **NULLABLE, verbose_name='id пользователя Voxiplant')
+    voxi_username = models.CharField(max_length=150, unique=True, verbose_name='Логин Voxiplant')
+    voxi_display_name = models.CharField(max_length=150, verbose_name='Имя Voxiplant')
+    voxi_password = models.CharField(max_length=50, verbose_name='Пароль Voxiplant')
+
+    class Meta:
+        verbose_name = 'Voxiplant Аккаунт'
+        verbose_name_plural = 'Voxiplant Аккаунты'

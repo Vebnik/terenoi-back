@@ -45,8 +45,8 @@ INSTALLED_APPS = [
     'authapp',
     'corsheaders',
     'drf_yasg',
+    'lessons',
     'profileapp'
-
 ]
 
 MIDDLEWARE = [
@@ -135,6 +135,13 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+if ENV_TYPE == 'local':
+    STATICFILES_DIRS = (
+        BASE_DIR / 'static',
+    )
+else:
+    STATIC_ROOT = BASE_DIR / 'static'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -207,3 +214,9 @@ CORS_ALLOW_HEADERS = (
     'Access-Control-Allow-Headers',
     'Access-Control-Allow-Credentials',
 )
+
+VOXI_ACCOUNT_EMAIL = os.getenv('VOXI_ACCOUNT_EMAIL')
+VOXI_ACCOUNT_ID = os.getenv('VOXI_ACCOUNT_ID')
+VOXI_API_KEY = os.getenv('VOXI_API_KEY')
+VOXI_APPLICATION_ID = os.getenv('VOXI_APPLICATION_ID')
+VOXI_PRIVATE_KEY = os.getenv('VOXI_PRIVATE_KEY')
