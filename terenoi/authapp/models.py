@@ -37,6 +37,8 @@ class User(AbstractUser):
             voxi_user = VoxiAccount.objects.filter(user=self).first()
             if voxi_user is None:
                 add_voxiaccount(self, self.username, self.first_name)
+        if self.role == User.MANAGER:
+            self.is_staff = True
         super(User, self).save(*args, **kwargs)
 
 

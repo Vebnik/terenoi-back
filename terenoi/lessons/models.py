@@ -35,4 +35,8 @@ class Lesson(models.Model):
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
             add_voxiaccount(self.student, self.student.username, self.student.first_name)
+
+        if self.student_status and self.teacher_status:
+            self.lesson_status = Lesson.PROGRESS
+            print(self.lesson_status)
         super(Lesson, self).save()
