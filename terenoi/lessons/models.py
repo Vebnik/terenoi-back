@@ -17,9 +17,9 @@ class Lesson(models.Model):
         (CANCEL, 'Урок отменен')
     )
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='lesson_teacher',
-                                limit_choices_to={'role': User.TEACHER})
+                                limit_choices_to={'is_teacher': True})
     student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='lesson_student',
-                                limit_choices_to={'role': User.STUDENT})
+                                limit_choices_to={'is_student': True})
     date = models.DateTimeField(verbose_name='Дата урока')
     teacher_status = models.BooleanField(verbose_name='Статус учителя', default=False)
     student_status = models.BooleanField(verbose_name='Статус ученика', default=False)
@@ -34,7 +34,8 @@ class Lesson(models.Model):
     def save(self, *args, **kwargs):
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
-            add_voxiaccount(self.student, self.student.username, self.student.first_name)
+            username = f'student{self.student.pk}'
+            add_voxiaccount(self.student, username, self.student.first_name)
 
         if self.student_status and self.teacher_status:
             self.lesson_status = Lesson.PROGRESS

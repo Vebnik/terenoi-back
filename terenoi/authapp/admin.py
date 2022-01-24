@@ -4,7 +4,7 @@ from authapp.models import User, VoxiAccount
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'is_staff', 'is_active', 'last_login', 'role')
+    list_display = ('username', 'email', 'is_staff', 'is_active', 'last_login' )
     list_filter = ('is_staff', 'is_active')
 
 

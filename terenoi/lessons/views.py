@@ -13,7 +13,7 @@ class AllUserLessonsListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == User.STUDENT:
+        if user.is_student:
             queryset = Lesson.objects.filter(student=self.request.user)
         else:
             queryset = Lesson.objects.filter(teacher=self.request.user)
@@ -48,9 +48,9 @@ class LessonUserStatusUpdateView(generics.UpdateAPIView):
     queryset = Lesson.objects.all()
 
     def get_serializer_class(self):
-        if self.request.user.role == User.TEACHER:
+        if self.request.user.is_teacher:
             return TeacherStatusUpdate
-        elif self.request.user.role == User.STUDENT:
+        elif self.request.user.is_student:
             return StudentStatusUpdate
 
 
