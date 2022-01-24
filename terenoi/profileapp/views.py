@@ -14,7 +14,6 @@ class ProfileUpdateView(generics.UpdateAPIView):
         return User.objects.get(username=self.request.user)
 
     def get_serializer_class(self):
-        print()
         if self.request.user.role == User.STUDENT:
             return UpdateStudentSerializer
         elif self.request.user.role == User.TEACHER:

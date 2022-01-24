@@ -54,3 +54,15 @@ class VoxiStudentInfoSerializer(serializers.ModelSerializer):
         voxi_acc = VoxiAccount.objects.get(user=instance.student)
         serializer = VoxiAccountSerializer(voxi_acc)
         return serializer.data
+
+
+class TeacherStatusUpdate(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ('teacher_status',)
+
+
+class StudentStatusUpdate(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ('student_status',)
