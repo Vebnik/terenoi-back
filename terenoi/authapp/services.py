@@ -34,7 +34,8 @@ def create_voxi_account(username, display_name, password):
                            USER_DISPLAY_NAME,
                            USER_PASSWORD,
                            application_id=APPLICATION_ID)
-        user_voxi = authapp.models.VoxiAccount.objects.get(user__username=username)
+
+        user_voxi = authapp.models.VoxiAccount.objects.get(voxi_username=username)
         user_voxi.voxi_user_id = res.get('user_id')
         user_voxi.save()
     except VoximplantException as e:

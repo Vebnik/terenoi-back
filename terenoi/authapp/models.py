@@ -24,6 +24,7 @@ class User(AbstractUser):
         verbose_name_plural = 'Пользователи'
 
     def save(self, *args, **kwargs):
+        print(self.is_teacher)
         if self.is_teacher:
             self.is_staff = True
             voxi_user = VoxiAccount.objects.filter(user=self).first()
