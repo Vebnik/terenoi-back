@@ -38,5 +38,4 @@ class Lesson(models.Model):
 
         if self.student_status and self.teacher_status:
             self.lesson_status = Lesson.PROGRESS
-            print(self.lesson_status)
         super(Lesson, self).save()
