@@ -14,7 +14,7 @@ class Subject(models.Model):
         (GERMAN, 'Немецкий'),
         (HISTORY, 'История'),
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', limit_choices_to={'role': User.TEACHER})
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', limit_choices_to={'is_teacher': True})
     subject = models.CharField(verbose_name='Предмет', max_length=3, choices=SUBJECT_CHOICES)
 
     class Meta:

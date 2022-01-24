@@ -14,12 +14,23 @@ class ProfileUpdateView(generics.UpdateAPIView):
         return User.objects.get(username=self.request.user)
 
     def get_serializer_class(self):
-        if self.request.user.role == User.STUDENT:
+        if self.request.user.is_student:
             return UpdateStudentSerializer
-        elif self.request.user.role == User.TEACHER:
+        elif self.request.user.is_teacher:
             return UpdateTeacherSerializer
 
     def update(self, request, *args, **kwargs):
         if request.data.get('subjects'):
             Subject.objects.create(user=self.request.user, subject=request.data.get('subjects'))
         return super(ProfileUpdateView, self).update(request, *args, **kwargs)
+
+
+class ProfileRetrieveView(generics.RetrieveAPIView):
+    permissions = (permissions.IsAuthenticated,)
+    queryset = User.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.user.is_student:
+            return UpdateStudentSerializer
+        else:
+            return UpdateTeacherSerializer

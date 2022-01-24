@@ -9,21 +9,12 @@ NULLABLE = {'blank': True, 'null': True}
 
 
 class User(AbstractUser):
-    STUDENT = 'ST'
-    TEACHER = 'TH'
-    MANAGER = 'MN'
-
-    ROLE_CHOICES = (
-        (STUDENT, 'Студент'),
-        (TEACHER, 'Учитель'),
-        (MANAGER, 'Менеджер'),
-    )
-
     avatar = models.TextField(verbose_name='Аватар', **NULLABLE)
     birth_date = models.DateField(verbose_name='День Рождения', **NULLABLE)
     phone = models.CharField(max_length=25, verbose_name='Телефон', **NULLABLE)
     bio = models.TextField(verbose_name='О себе', **NULLABLE)
-    role = models.CharField(verbose_name='Роль', max_length=2, choices=ROLE_CHOICES, default=STUDENT)
+    is_student = models.BooleanField(default=False, verbose_name='Ученик')
+    is_teacher = models.BooleanField(default=False, verbose_name='Учитель')
     education = models.CharField(max_length=255, verbose_name='Образование', **NULLABLE)
     experience = models.TextField(verbose_name='Опыт работы', **NULLABLE)
     is_verified = models.BooleanField(default=False, verbose_name='Верефицирован')
@@ -33,12 +24,12 @@ class User(AbstractUser):
         verbose_name_plural = 'Пользователи'
 
     def save(self, *args, **kwargs):
-        if self.role == User.TEACHER:
+        if self.is_teacher:
+            self.is_staff = True
             voxi_user = VoxiAccount.objects.filter(user=self).first()
             if voxi_user is None:
-                add_voxiaccount(self, self.username, self.first_name)
-        if self.role == User.MANAGER:
-            self.is_staff = True
+                username = f'teacher{self.pk}'
+                add_voxiaccount(self, username, self.first_name)
         super(User, self).save(*args, **kwargs)
 
 
