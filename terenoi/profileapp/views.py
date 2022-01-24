@@ -1,5 +1,8 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from authapp.models import User
 from profileapp.models import Subject
 from profileapp.permissions import IsStudent, IsTeacher
@@ -25,12 +28,17 @@ class ProfileUpdateView(generics.UpdateAPIView):
         return super(ProfileUpdateView, self).update(request, *args, **kwargs)
 
 
-class ProfileRetrieveView(generics.RetrieveAPIView):
+class ProfileView(APIView):
     permissions = (permissions.IsAuthenticated,)
-    queryset = User.objects.all()
 
-    def get_serializer_class(self):
-        if self.request.user.is_student:
-            return UpdateStudentSerializer
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request):
+        user = self.get_object()
+        if user.is_student:
+            serializer = UpdateStudentSerializer(user)
+            return Response(serializer.data)
         else:
-            return UpdateTeacherSerializer
+            serializer = UpdateTeacherSerializer(user)
+            return Response(serializer.data)
