@@ -14,9 +14,9 @@ class AllUserLessonsListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.is_student:
-            queryset = Lesson.objects.filter(student=self.request.user)
+            queryset = Lesson.objects.filter(student=self.request.user).order_by('date').select_related()
         else:
-            queryset = Lesson.objects.filter(teacher=self.request.user)
+            queryset = Lesson.objects.filter(teacher=self.request.user).order_by('date').select_related()
         return queryset
 
 

@@ -19,7 +19,7 @@ def create_voxi_file(func):
 
         pr = Private(**page)
         with open('authapp/json/credentials.json', 'w', encoding='utf-8') as f:
-            pr.private_key = pr.private_key.replace('\\n', '\n')
+            # pr.private_key = pr.private_key.replace('\\n', '\n')
             f.write(pr.json())
 
         func(*args, **kwargs)

@@ -13,7 +13,7 @@ class User(AbstractUser):
     birth_date = models.DateField(verbose_name='День Рождения', **NULLABLE)
     phone = models.CharField(max_length=25, verbose_name='Телефон', **NULLABLE)
     bio = models.TextField(verbose_name='О себе', **NULLABLE)
-    is_student = models.BooleanField(default=False, verbose_name='Ученик')
+    is_student = models.BooleanField(default=True, verbose_name='Ученик')
     is_teacher = models.BooleanField(default=False, verbose_name='Учитель')
     education = models.CharField(max_length=255, verbose_name='Образование', **NULLABLE)
     experience = models.TextField(verbose_name='Опыт работы', **NULLABLE)
@@ -29,7 +29,7 @@ class User(AbstractUser):
             self.is_staff = True
             voxi_user = VoxiAccount.objects.filter(user=self).first()
             if voxi_user is None:
-                username = f'teacher{self.pk}'
+                username = f'Teacher-{self.pk}'
                 add_voxiaccount(self, username, self.first_name)
         super(User, self).save(*args, **kwargs)
 
