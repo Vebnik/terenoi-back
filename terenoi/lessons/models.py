@@ -35,7 +35,7 @@ class Lesson(models.Model):
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
             username = f'Student-{self.student.pk}'
-            add_voxiaccount(self.student, username, self.student.first_name)
+            add_voxiaccount(self.student, username, self.student.username)
 
         if self.student_status and self.teacher_status:
             self.lesson_status = Lesson.PROGRESS

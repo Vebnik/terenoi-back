@@ -8,6 +8,7 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
 
 
 class AllUserLessonsListView(generics.ListAPIView):
+    """Список всех уроков пользователя"""
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
 
@@ -21,29 +22,34 @@ class AllUserLessonsListView(generics.ListAPIView):
 
 
 class UserLessonRetrieveView(generics.RetrieveAPIView):
+    """Просмотр одного урока пользователя"""
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
 
 
 class UserLessonCreateView(generics.CreateAPIView):
+    """Создание урока"""
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsCreateSerializer
 
 
 class VoxiTeacherInfoRetrieveView(generics.RetrieveAPIView):
+    """Информация об аккаунте учителя в voxiplant и статусе его готовности"""
     permission_classes = [IsAuthenticated]
     queryset = Lesson.objects.all()
     serializer_class = VoxiTeacherInfoSerializer
 
 
 class VoxiStudentInfoRetrieveView(generics.RetrieveAPIView):
+    """Информация об аккаунте студента в voxiplant и статусе его готовности"""
     permission_classes = [IsAuthenticated]
     queryset = Lesson.objects.all()
     serializer_class = VoxiStudentInfoSerializer
 
 
 class LessonUserStatusUpdateView(generics.UpdateAPIView):
+    """Обновление статуса пользователя в уроке"""
     permission_classes = [IsAuthenticated]
     queryset = Lesson.objects.all()
 
