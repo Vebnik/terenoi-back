@@ -6,7 +6,7 @@ from profileapp.models import Subject
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        exclude = ('password',)
 
 
 class SubjectSerializer(serializers.ModelSerializer):
@@ -27,7 +27,8 @@ class UpdateStudentSerializer(serializers.ModelSerializer):
             'email',
             'birth_date',
             'phone',
-            'bio'
+            'bio',
+            'is_student'
         )
 
 
@@ -48,6 +49,7 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
             'bio',
             'education',
             'experience',
+            'is_teacher',
             'subjects',
         )
 

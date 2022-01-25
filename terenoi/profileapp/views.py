@@ -12,15 +12,11 @@ from profileapp.serializers import UpdateUserSerializer, UpdateStudentSerializer
 class ProfileUpdateView(generics.UpdateAPIView):
     """Редактирование пользователя"""
     permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = UpdateUserSerializer
 
     def get_object(self):
         return User.objects.get(username=self.request.user)
 
-    def get_serializer_class(self):
-        if self.request.user.is_student:
-            return UpdateStudentSerializer
-        elif self.request.user.is_teacher:
-            return UpdateTeacherSerializer
 
     def update(self, request, *args, **kwargs):
         if request.data.get('subjects'):
