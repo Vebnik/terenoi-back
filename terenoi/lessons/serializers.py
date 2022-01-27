@@ -3,15 +3,23 @@ from rest_framework import serializers
 from authapp.models import User, VoxiAccount
 from authapp.serializers import UserNameSerializer, VoxiAccountSerializer
 from lessons.models import Lesson
+from lessons.services import current_date
 
 
 class UserLessonsSerializer(serializers.ModelSerializer):
     teacher = serializers.SerializerMethodField()
     student = serializers.SerializerMethodField()
+    current_date = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
-        fields = ('pk', 'teacher', 'student', 'date', 'lesson_status', 'record')
+        fields = ('pk', 'teacher', 'student', 'current_date', 'lesson_status', 'record')
+
+    def _user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return None
 
     def get_teacher(self, instance):
         user = User.objects.get(pk=instance.teacher.pk)
@@ -22,6 +30,11 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         user = User.objects.get(pk=instance.student.pk)
         serializer = UserNameSerializer(user)
         return serializer.data
+
+    def get_current_date(self, instance):
+        user = self._user()
+        date = current_date(user, instance.date)
+        return date
 
 
 class UserLessonsCreateSerializer(serializers.ModelSerializer):

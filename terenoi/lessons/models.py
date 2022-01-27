@@ -1,4 +1,7 @@
+import pytz
+from django.conf import settings
 from django.db import models
+from django.utils.timezone import now
 
 from authapp.models import User, VoxiAccount
 from authapp.services import add_voxiaccount
@@ -39,4 +42,6 @@ class Lesson(models.Model):
 
         if self.student_status and self.teacher_status:
             self.lesson_status = Lesson.PROGRESS
+
+
         super(Lesson, self).save()

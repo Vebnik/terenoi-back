@@ -1,18 +1,21 @@
 import hashlib
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+import pytz
 from authapp.services import add_voxiaccount
 
 NULLABLE = {'blank': True, 'null': True}
 
 
 class User(AbstractUser):
+
+    TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
+
     avatar = models.TextField(verbose_name='Аватар', **NULLABLE)
-    birth_date = models.DateField(verbose_name='День Рождения', **NULLABLE)
+    birth_date = models.DateField(verbose_name='Дата Рождения', **NULLABLE)
     phone = models.CharField(max_length=25, verbose_name='Телефон', **NULLABLE)
     bio = models.TextField(verbose_name='О себе', **NULLABLE)
+    time_zone = models.CharField(max_length=32, choices=TIMEZONES, default='Asia/Almaty', verbose_name='Часовой пояс')
     is_student = models.BooleanField(default=True, verbose_name='Ученик')
     is_teacher = models.BooleanField(default=False, verbose_name='Учитель')
     education = models.CharField(max_length=255, verbose_name='Образование', **NULLABLE)
