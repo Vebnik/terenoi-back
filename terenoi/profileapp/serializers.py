@@ -26,6 +26,7 @@ class UpdateStudentSerializer(serializers.ModelSerializer):
             'last_name',
             'email',
             'birth_date',
+            'time_zone',
             'phone',
             'bio',
             'is_student'
@@ -45,6 +46,7 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
             'last_name',
             'email',
             'birth_date',
+            'time_zone',
             'phone',
             'bio',
             'education',
