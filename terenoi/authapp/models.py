@@ -24,13 +24,13 @@ class User(AbstractUser):
         verbose_name_plural = 'Пользователи'
 
     def save(self, *args, **kwargs):
-        print(self.is_teacher)
+        super(User, self).save(*args, **kwargs)
         if self.is_teacher:
             self.is_staff = True
             voxi_user = VoxiAccount.objects.filter(user=self).first()
             if voxi_user is None:
                 username = f'Teacher-{self.pk}'
-                add_voxiaccount(self, username, self.first_name)
+                add_voxiaccount(self, username, self.username)
         super(User, self).save(*args, **kwargs)
 
 
