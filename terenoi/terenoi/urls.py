@@ -23,7 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('authapp.urls', namespace='authapp')),
     path('api/user/', include('profileapp.urls', namespace='profile')),
-    path('api/lessons/', include('lessons.urls', namespace='lessons'))
+    path('api/lessons/', include('lessons.urls', namespace='lessons')),
+    path('api/notifications/', include('notifications.urls', namespace='notifications'))
 
 ]
 
