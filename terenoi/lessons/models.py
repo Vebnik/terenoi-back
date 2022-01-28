@@ -5,6 +5,8 @@ from django.utils.timezone import now
 
 from authapp.models import User, VoxiAccount
 from authapp.services import add_voxiaccount
+from lessons.services import current_date
+from notifications.models import Notification
 
 
 class Lesson(models.Model):
@@ -35,6 +37,12 @@ class Lesson(models.Model):
         verbose_name_plural = 'Уроки'
 
     def save(self, *args, **kwargs):
+        current_date_student = current_date(self.student, self.date)
+        current_date_teacher = current_date(self.teacher, self.date)
+        Notification.objects.create(to_user=self.student,
+                                    message=f'Урок назначен на {current_date_student.date()} в {current_date_student.time()}')
+        Notification.objects.create(to_user=self.teacher,
+                                    message=f'Урок назначен на {current_date_teacher.date()} в {current_date_teacher.time()}')
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
             username = f'Student-{self.student.pk}'
@@ -42,6 +50,5 @@ class Lesson(models.Model):
 
         if self.student_status and self.teacher_status:
             self.lesson_status = Lesson.PROGRESS
-
 
         super(Lesson, self).save()

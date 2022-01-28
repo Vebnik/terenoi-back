@@ -44,8 +44,10 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'authapp',
     'corsheaders',
+    'django_crontab',
     'drf_yasg',
     'lessons',
+    'notifications',
     'profileapp'
 ]
 
@@ -130,7 +132,6 @@ TIME_ZONE = 'Asia/Almaty'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
@@ -222,3 +223,7 @@ VOXI_ACCOUNT_ID = os.getenv('VOXI_ACCOUNT_ID')
 VOXI_API_KEY = os.getenv('VOXI_API_KEY')
 VOXI_APPLICATION_ID = os.getenv('VOXI_APPLICATION_ID')
 VOXI_PRIVATE_KEY = os.getenv('VOXI_PRIVATE_KEY')
+
+CRONJOBS = [
+    ('* * * * *', 'notifications.cron.add_note_cron')
+]
