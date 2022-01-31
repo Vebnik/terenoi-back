@@ -21,6 +21,7 @@ class User(AbstractUser):
     education = models.CharField(max_length=255, verbose_name='Образование', **NULLABLE)
     experience = models.TextField(verbose_name='Опыт работы', **NULLABLE)
     is_verified = models.BooleanField(default=False, verbose_name='Верефицирован')
+    is_online = models.BooleanField(default=False, verbose_name='Онлайн')
 
     class Meta:
         verbose_name = 'Пользователь'

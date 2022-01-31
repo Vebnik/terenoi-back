@@ -39,10 +39,8 @@ class Lesson(models.Model):
     def save(self, *args, **kwargs):
         current_date_student = current_date(self.student, self.date)
         current_date_teacher = current_date(self.teacher, self.date)
-        Notification.objects.create(to_user=self.student,
-                                    message=f'Урок назначен на {current_date_student.date()} в {current_date_student.time()}')
-        Notification.objects.create(to_user=self.teacher,
-                                    message=f'Урок назначен на {current_date_teacher.date()} в {current_date_teacher.time()}')
+        Notification.objects.create(to_user=self.student, lesson_date=self.date, type=Notification.LESSON_SCHEDULED)
+        Notification.objects.create(to_user=self.teacher, lesson_date=self.date, type=Notification.LESSON_SCHEDULED)
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
             username = f'Student-{self.student.pk}'
