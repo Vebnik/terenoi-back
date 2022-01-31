@@ -1,4 +1,6 @@
+from django.db.models import Q
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from authapp.models import User, VoxiAccount
 
@@ -23,6 +25,32 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(username=self.validated_data['username'], email=self.validated_data['email'],
                                         password=self.validated_data['password'])
         return user
+
+
+class UserLoginSerializer(TokenObtainPairSerializer):
+    """
+    remember = serializers.BooleanField(default=False)
+
+    def get_token(self, user):
+        token = super(UserLoginSerializer, self).get_token(user)
+        access_token = token.access_token
+        flag = self._kwargs['data'].get('remember', False)
+        if flag:
+            access_token.set_exp(lifetime=datetime.timedelta(days=7))
+        else:
+            access_token.set_exp(lifetime=datetime.timedelta(hours=1))
+        return token
+    """
+
+    def validate(self, attrs):
+        credentials = {
+            'username': '',
+            'password': attrs.get("password")
+        }
+        user_obj = User.objects.filter(Q(email=attrs.get("username")) & Q(is_verified=True)).first()
+        if user_obj:
+            credentials['username'] = user_obj.username
+        return super().validate(credentials)
 
 
 class VerifyEmailSerializer(serializers.ModelSerializer):

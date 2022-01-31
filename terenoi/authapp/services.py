@@ -22,6 +22,10 @@ def send_verify_email(user):
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
+def send_notifications(user, subject, body):
+    send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
+
+
 @create_voxi_file
 def create_voxi_account(username, display_name, password):
     api = VoximplantAPI("authapp/json/credentials.json")

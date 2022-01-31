@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'authapp',
     'corsheaders',
+    'channels',
     'django_crontab',
     'drf_yasg',
     'lessons',
@@ -227,3 +228,16 @@ VOXI_PRIVATE_KEY = os.getenv('VOXI_PRIVATE_KEY')
 CRONJOBS = [
     ('* * * * *', 'notifications.cron.add_note_cron')
 ]
+
+ASGI_APPLICATION = 'terenoi.asgi.application'
+
+REDIS_HOST = os.getenv('REDIS_HOST')
+REDIS_PORT = os.getenv('REDIS_PORT')
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(REDIS_HOST, REDIS_PORT)],
+        },
+    },
+}

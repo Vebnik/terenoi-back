@@ -16,17 +16,13 @@ def add_note_cron():
         teacher_timedelta = day_teacher - day_teacher_now
         student_timedelta_str = str(student_timedelta)[2:4]
         if student_timedelta_str == '15':
-            current_date_student = current_date(i.student, i.date)
-            message = f'Урок состоится сегодня в {current_date_student.time()}'
-            if Notification.objects.filter((Q(to_user=i.student) & Q(message=message))).first():
+            if Notification.objects.filter((Q(to_user=i.student) & Q(lesson_date=i.date) & Q(type=Notification.LESSON_COMING_SOON))).first():
                 pass
             else:
-                Notification.objects.create(to_user=i.student, message=message)
+                Notification.objects.create(to_user=i.student, lesson_date=i.date, type=Notification.LESSON_COMING_SOON)
         teacher_timedelta_str = str(teacher_timedelta)[2:4]
         if teacher_timedelta_str == '15':
-            current_date_teacher = current_date(i.teacher, i.date)
-            message = f'Урок состоится сегодня в {current_date_teacher.time()}'
-            if Notification.objects.filter((Q(to_user=i.teacher) & Q(message=message))).first():
+            if Notification.objects.filter((Q(to_user=i.teacher) & Q(lesson_date=i.date) & Q(type=Notification.LESSON_COMING_SOON))).first():
                 pass
             else:
-                Notification.objects.create(to_user=i.teacher, message=message)
+                Notification.objects.create(to_user=i.teacher, lesson_date=i.date, type=Notification.LESSON_COMING_SOON)
