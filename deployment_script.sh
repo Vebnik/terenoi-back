@@ -8,4 +8,5 @@ python3 manage.py migrate
 python3 manage.py collectstatic --noinput
 deactivate
 sudo systemctl restart terenoi
+sudo systemctl restart terenoi-daphne
 sudo systemctl restart nginx
