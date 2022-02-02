@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from authapp.models import User
-from profileapp.models import Subject
+from profileapp.models import TeacherSubject, Subject
 
 
 class UpdateUserSerializer(serializers.ModelSerializer):
@@ -10,9 +10,15 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
 
 class SubjectSerializer(serializers.ModelSerializer):
+    subject_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Subject
-        fields = ('subject',)
+        fields = ('subject_name',)
+
+    def get_subject_name(self, instance):
+        subject = Subject.objects.get(name=instance)
+        return subject.name
 
 
 class UpdateStudentSerializer(serializers.ModelSerializer):
@@ -56,6 +62,6 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
         )
 
     def get_subjects(self, instance):
-        subjects = Subject.objects.filter(user__pk=instance.pk)
+        subjects = TeacherSubject.objects.filter(user__pk=instance.pk)
         serializer = SubjectSerializer(subjects, many=True)
         return serializer.data

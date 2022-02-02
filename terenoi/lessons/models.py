@@ -1,12 +1,16 @@
 import pytz
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from django.utils.timezone import now
 
 from authapp.models import User, VoxiAccount
 from authapp.services import add_voxiaccount
 from lessons.services import current_date
 from notifications.models import Notification
+from profileapp.models import TeacherSubject, Subject
+
+NULLABLE = {'blank': True, 'null': True}
 
 
 class Lesson(models.Model):
@@ -25,6 +29,10 @@ class Lesson(models.Model):
                                 limit_choices_to={'is_teacher': True})
     student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='lesson_student',
                                 limit_choices_to={'is_student': True})
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет',**NULLABLE)
+    lesson_materials = models.FileField(upload_to='materials-for-lesson/', verbose_name='Материалы к уроку', **NULLABLE)
+    lesson_homework = models.FileField(upload_to='homework-for-lesson/', verbose_name='Домашнее задание к уроку',
+                                       **NULLABLE)
     date = models.DateTimeField(verbose_name='Дата урока')
     teacher_status = models.BooleanField(verbose_name='Статус учителя', default=False)
     student_status = models.BooleanField(verbose_name='Статус ученика', default=False)
