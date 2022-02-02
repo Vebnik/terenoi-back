@@ -42,8 +42,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         return date
 
     def get_subject(self, instance):
-        subjects = TeacherSubject.objects.filter(user__pk=instance.pk)
-        serializer = SubjectSerializer(subjects, many=True)
+        serializer = SubjectSerializer(instance.subject)
         return serializer.data
 
 
