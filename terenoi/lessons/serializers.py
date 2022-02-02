@@ -13,7 +13,8 @@ class UserLessonsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ('pk', 'teacher', 'student', 'current_date', 'lesson_status', 'record')
+        fields = (
+        'pk', 'teacher', 'student', 'current_date', 'teacher_status', 'student_status', 'lesson_status', 'record')
 
     def _user(self):
         request = self.context.get('request', None)
