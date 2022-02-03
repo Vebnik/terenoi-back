@@ -34,14 +34,20 @@ class AllUserClassesListView(generics.ListAPIView):
                 (Q(student=self.request.user) & Q(lesson_status=Lesson.DONE))).select_related()
             queryset_2 = Lesson.objects.filter(
                 Q(student=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
-            queryset = queryset_1.union(queryset_2).order_by('-date')
+            queryset_3 = Lesson.objects.filter(
+                (Q(student=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
+            print(queryset_3)
+            queryset = queryset_1.union(queryset_2, queryset_3).order_by('-date')
 
         else:
             queryset_1 = Lesson.objects.filter(
-                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.DONE))).select_related()
+                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.DONE) & Q(
+                    lesson_status=Lesson.PROGRESS))).select_related()
             queryset_2 = Lesson.objects.filter(
                 Q(teacher=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
-            queryset = queryset_1.union(queryset_2).order_by('-date')
+            queryset_3 = Lesson.objects.filter(
+                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
+            queryset = queryset_1.union(queryset_2, queryset_3).order_by('-date')
         return queryset
 
 
@@ -89,4 +95,3 @@ class LessonUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
-
