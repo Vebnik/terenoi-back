@@ -2,6 +2,8 @@ import pytz
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils.timezone import now
 
 from authapp.models import User, VoxiAccount
@@ -45,16 +47,15 @@ class Lesson(models.Model):
         verbose_name_plural = 'Уроки'
 
     def save(self, *args, **kwargs):
-        current_date_student = current_date(self.student, self.date)
-        current_date_teacher = current_date(self.teacher, self.date)
         Notification.objects.create(to_user=self.student, lesson_date=self.date, type=Notification.LESSON_SCHEDULED)
         Notification.objects.create(to_user=self.teacher, lesson_date=self.date, type=Notification.LESSON_SCHEDULED)
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
             username = f'Student-{self.student.pk}'
             add_voxiaccount(self.student, username, self.student.username)
-
-        if self.student_status and self.teacher_status:
+        if self.student_status and self.teacher_status and self.lesson_status == Lesson.SCHEDULED:
             self.lesson_status = Lesson.PROGRESS
 
         super(Lesson, self).save()
+
+

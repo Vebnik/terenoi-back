@@ -88,3 +88,4 @@ class StudentStatusUpdate(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ('student_status',)
+
