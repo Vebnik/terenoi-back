@@ -1,9 +1,9 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from authapp.models import User
-from profileapp.models import TeacherSubject
+from profileapp.models import TeacherSubject, Subject
 from profileapp.permissions import IsStudent, IsTeacher
 from profileapp.serializers import UpdateUserSerializer, UpdateStudentSerializer, UpdateTeacherSerializer
 
@@ -23,9 +23,17 @@ class ProfileUpdateView(generics.UpdateAPIView):
             return UpdateStudentSerializer
 
     def update(self, request, *args, **kwargs):
-        if request.data.get('subjects'):
-            TeacherSubject.objects.create(user=self.request.user, subject=request.data.get('subjects'))
-        return super(ProfileUpdateView, self).update(request, *args, **kwargs)
+        try:
+            if request.data.get('subject').get('subject_name'):
+                subjects = Subject.objects.filter(name=request.data.get('subject').get('subject_name')).select_related()
+                if subjects:
+                    for sub in subjects:
+                        TeacherSubject.objects.create(user=self.request.user, subject=sub)
+                        return super(ProfileUpdateView, self).update(request, *args, **kwargs)
+                else:
+                    return Response({"message": "Такого предмета не существует."}, status=status.HTTP_201_CREATED)
+        except AttributeError:
+            return super(ProfileUpdateView, self).update(request, *args, **kwargs)
 
 
 class ProfileView(APIView):
