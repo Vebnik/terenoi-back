@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from authapp.models import User
@@ -10,7 +11,7 @@ from profileapp.serializers import UpdateUserSerializer, UpdateStudentSerializer
 
 class ProfileUpdateView(generics.UpdateAPIView):
     """Редактирование пользователя"""
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return User.objects.get(username=self.request.user)
@@ -38,7 +39,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
 
 class ProfileView(APIView):
     """Просмотр профиля пользователя"""
-    permissions = (permissions.IsAuthenticated,)
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return User.objects.get(username=self.request.user)
