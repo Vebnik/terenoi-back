@@ -31,10 +31,7 @@ class Lesson(models.Model):
                                 limit_choices_to={'is_teacher': True})
     student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='lesson_student',
                                 limit_choices_to={'is_student': True})
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет',**NULLABLE)
-    lesson_materials = models.FileField(upload_to='materials-for-lesson/', verbose_name='Материалы к уроку', **NULLABLE)
-    lesson_homework = models.FileField(upload_to='homework-for-lesson/', verbose_name='Домашнее задание к уроку',
-                                       **NULLABLE)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     date = models.DateTimeField(verbose_name='Дата урока')
     teacher_status = models.BooleanField(verbose_name='Статус учителя', default=False)
     student_status = models.BooleanField(verbose_name='Статус ученика', default=False)
@@ -45,6 +42,9 @@ class Lesson(models.Model):
     class Meta:
         verbose_name = 'Урок'
         verbose_name_plural = 'Уроки'
+
+    def __str__(self):
+        return f'{self.teacher}-{self.student}-{self.subject}'
 
     def save(self, *args, **kwargs):
         Notification.objects.create(to_user=self.student, lesson_date=self.date, type=Notification.LESSON_SCHEDULED)
@@ -59,3 +59,24 @@ class Lesson(models.Model):
         super(Lesson, self).save()
 
 
+class LessonMaterials(models.Model):
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
+    material = models.FileField(upload_to='materials-for-lesson/', verbose_name='Материалы к уроку', **NULLABLE)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
+
+    class Meta:
+        verbose_name = 'Материал к уроку'
+        verbose_name_plural = 'Материалы к уроку'
+
+
+class LessonHomework(models.Model):
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
+    homework = models.FileField(upload_to='homework-for-lesson/', verbose_name='Домашнее задание к уроку',
+                                **NULLABLE)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
+
+    class Meta:
+        verbose_name = 'Домашнее задание к уроку'
+        verbose_name_plural = 'Домашнее задание к уроку'

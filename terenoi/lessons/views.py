@@ -1,11 +1,14 @@
 from django.db.models import Q
 from django.shortcuts import render
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
+from rest_framework.response import Response
+
 from authapp.models import User, VoxiAccount
 from lessons.models import Lesson
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate
+from profileapp.models import Subject
 
 
 class AllUserLessonsListView(generics.ListAPIView):
@@ -36,13 +39,11 @@ class AllUserClassesListView(generics.ListAPIView):
                 Q(student=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
             queryset_3 = Lesson.objects.filter(
                 (Q(student=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
-            print(queryset_3)
             queryset = queryset_1.union(queryset_2, queryset_3).order_by('-date')
 
         else:
             queryset_1 = Lesson.objects.filter(
-                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.DONE) & Q(
-                    lesson_status=Lesson.PROGRESS))).select_related()
+                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.DONE))).select_related()
             queryset_2 = Lesson.objects.filter(
                 Q(teacher=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
             queryset_3 = Lesson.objects.filter(
@@ -62,6 +63,24 @@ class UserLessonCreateView(generics.CreateAPIView):
     """Создание урока"""
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsCreateSerializer
+    queryset = Lesson.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        file_fields = list(request.FILES.keys())
+        serializer = self.get_serializer(data=request.data, file_fields=file_fields)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def post(self, request, *args, **kwargs):
+        if self.request.data.get('subject'):
+            subject = Subject.objects.filter(name=self.request.data.get('subject')).first()
+            if subject is None:
+                return Response({"message": "Такого предмета не существует."}, status=status.HTTP_404_NOT_FOUND)
+
+        return super(UserLessonCreateView, self).post(request, *args, **kwargs)
+
 
 
 class VoxiTeacherInfoRetrieveView(generics.RetrieveAPIView):

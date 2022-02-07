@@ -32,7 +32,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                         TeacherSubject.objects.create(user=self.request.user, subject=sub)
                         return super(ProfileUpdateView, self).update(request, *args, **kwargs)
                 else:
-                    return Response({"message": "Такого предмета не существует."}, status=status.HTTP_201_CREATED)
+                    return Response({"message": "Такого предмета не существует."}, status=status.HTTP_404_NOT_FOUND)
         except AttributeError:
             return super(ProfileUpdateView, self).update(request, *args, **kwargs)
 
