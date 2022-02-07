@@ -5,9 +5,10 @@ from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.response import Response
 
 from authapp.models import User, VoxiAccount
-from lessons.models import Lesson
+from lessons.models import Lesson, LessonMaterials, LessonHomework
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
-    UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate
+    UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
+    LessonMaterialsDetail, LessonHomeworksDetail
 from profileapp.models import Subject
 
 
@@ -65,14 +66,6 @@ class UserLessonCreateView(generics.CreateAPIView):
     serializer_class = UserLessonsCreateSerializer
     queryset = Lesson.objects.all()
 
-    def create(self, request, *args, **kwargs):
-        file_fields = list(request.FILES.keys())
-        serializer = self.get_serializer(data=request.data, file_fields=file_fields)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
     def post(self, request, *args, **kwargs):
         if self.request.data.get('subject'):
             subject = Subject.objects.filter(name=self.request.data.get('subject')).first()
@@ -81,6 +74,53 @@ class UserLessonCreateView(generics.CreateAPIView):
 
         return super(UserLessonCreateView, self).post(request, *args, **kwargs)
 
+
+class LessonMaterialsAdd(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserLessonsSerializer
+    queryset = Lesson.objects.all()
+
+    def put(self, request, *args, **kwargs):
+        if self.request.FILES.getlist('material'):
+            for material in self.request.FILES.getlist('material'):
+                LessonMaterials.objects.create(lesson=self.get_object(), material=material)
+        return super(LessonMaterialsAdd, self).put(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        if self.request.FILES.getlist('material'):
+            for material in self.request.FILES.getlist('material'):
+                LessonMaterials.objects.create(lesson=self.get_object(), material=material)
+        return super(LessonMaterialsAdd, self).patch(request, *args, **kwargs)
+
+
+class LessonHomeworksAdd(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserLessonsSerializer
+    queryset = Lesson.objects.all()
+
+    def put(self, request, *args, **kwargs):
+        if self.request.FILES.getlist('homework'):
+            for material in self.request.FILES.getlist('homework'):
+                LessonHomework.objects.create(lesson=self.get_object(), homework=material)
+        return super(LessonHomeworksAdd, self).put(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        if self.request.FILES.getlist('homework'):
+            for material in self.request.FILES.getlist('homework'):
+                LessonHomework.objects.create(lesson=self.get_object(), homework=material)
+        return super(LessonHomeworksAdd, self).patch(request, *args, **kwargs)
+
+
+class LessonMaterialsRetrieveView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = LessonMaterialsDetail
+    queryset = Lesson.objects.all()
+
+
+class LessonHomeworksRetrieveView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = LessonHomeworksDetail
+    queryset = Lesson.objects.all()
 
 
 class VoxiTeacherInfoRetrieveView(generics.RetrieveAPIView):

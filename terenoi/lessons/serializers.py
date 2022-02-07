@@ -14,11 +14,13 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     student = serializers.SerializerMethodField()
     current_date = serializers.SerializerMethodField()
     subject = serializers.SerializerMethodField()
+    materials = serializers.SerializerMethodField()
+    homeworks = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
         fields = (
-            'pk', 'teacher', 'student', 'subject', 'current_date',
+            'pk', 'teacher', 'student', 'subject', 'materials', 'homeworks', 'current_date',
             'teacher_status', 'student_status', 'lesson_status', 'record')
 
     def _user(self):
@@ -46,34 +48,44 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         serializer = SubjectSerializer(instance.subject)
         return serializer.data
 
+    def get_materials(self, instance):
+        materials = LessonMaterials.objects.filter(lesson=instance).select_related()
+        serializer = LessonMaterialsSerializer(materials, many=True)
+        return serializer.data
+
+    def get_homeworks(self, instance):
+        homework = LessonHomework.objects.filter(lesson=instance).select_related()
+        serializer = LessonHomeworkSerializer(homework, many=True)
+        return serializer.data
+
+
+class LessonMaterialsDetail(serializers.ModelSerializer):
+    materials = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lesson
+        fields = ('materials',)
+
+    def get_materials(self, instance):
+        materials = LessonMaterials.objects.filter(lesson=instance).select_related()
+        serializer = LessonMaterialsSerializer(materials, many=True)
+        return serializer.data
+
+
+class LessonHomeworksDetail(serializers.ModelSerializer):
+    homeworks = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lesson
+        fields = ('homeworks',)
+
+    def get_homeworks(self, instance):
+        homework = LessonHomework.objects.filter(lesson=instance).select_related()
+        serializer = LessonHomeworkSerializer(homework, many=True)
+        return serializer.data
+
 
 class UserLessonsCreateSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        file_fields = kwargs.pop('file_fields', None)
-        super().__init__(*args, **kwargs)
-        if file_fields:
-            field_update_dict = {field: serializers.FileField(required=False, write_only=True) for field in file_fields}
-            self.fields.update(**field_update_dict)
-
-    def create(self, validated_data):
-        validated_data_copy = validated_data.copy()
-        validated_files_materials = []
-        validated_files_homework = []
-        for key, value in validated_data_copy.items():
-            if isinstance(value, InMemoryUploadedFile):
-                if 'material' in key:
-                    validated_files_materials.append(value)
-                    validated_data.pop(key)
-                if 'homework' in key:
-                    validated_files_homework.append(value)
-                    validated_data.pop(key)
-        submission_instance = super().create(validated_data)
-        for file in validated_files_materials:
-            LessonMaterials.objects.create(lesson=submission_instance, material=file)
-        for file in validated_files_homework:
-            LessonHomework.objects.create(lesson=submission_instance, homework=file)
-        return submission_instance
-
     subject = serializers.SerializerMethodField()
     materials = serializers.SerializerMethodField()
     homework = serializers.SerializerMethodField()
@@ -104,11 +116,19 @@ class UserLessonsCreateSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_materials(self, instance):
+        request = self.context.get('request', None)
+        if request.FILES.getlist('material'):
+            for material in request.FILES.getlist('material'):
+                LessonMaterials.objects.create(lesson=instance, material=material)
         materials = LessonMaterials.objects.filter(lesson=instance).select_related()
         serializer = LessonMaterialsSerializer(materials, many=True)
         return serializer.data
 
     def get_homework(self, instance):
+        request = self.context.get('request', None)
+        if request.FILES.getlist('homework'):
+            for homework in request.FILES.getlist('homework'):
+                LessonHomework.objects.create(lesson=instance, homework=homework)
         homework = LessonHomework.objects.filter(lesson=instance).select_related()
         serializer = LessonHomeworkSerializer(homework, many=True)
         return serializer.data
