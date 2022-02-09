@@ -77,6 +77,9 @@ class UserLessonCreateView(generics.CreateAPIView):
 
 
 class LessonMaterialsAdd(generics.UpdateAPIView):
+    """
+    Добавление материалов урока
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
@@ -95,6 +98,9 @@ class LessonMaterialsAdd(generics.UpdateAPIView):
 
 
 class LessonHomeworksAdd(generics.UpdateAPIView):
+    """
+    Добавление домашних заданий урока
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
@@ -113,24 +119,36 @@ class LessonHomeworksAdd(generics.UpdateAPIView):
 
 
 class LessonMaterialsRetrieveView(generics.RetrieveAPIView):
+    """
+    Получение материалов урока
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = LessonMaterialsDetail
     queryset = Lesson.objects.all()
 
 
 class LessonHomeworksRetrieveView(generics.RetrieveAPIView):
+    """
+    Получение домашних заданий урока
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = LessonHomeworksDetail
     queryset = Lesson.objects.all()
 
 
 class LessonEvaluationRetrieveView(generics.RetrieveAPIView):
+    """
+    Просмотр оценки урока
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = LessonEvaluationSerializer
     queryset = Lesson.objects.all()
 
 
 class LessonEvaluationUpdateView(generics.UpdateAPIView):
+    """
+    Добавление оценки урока
+    """
     permission_classes = [IsAuthenticated]
     queryset = Lesson.objects.all()
 
