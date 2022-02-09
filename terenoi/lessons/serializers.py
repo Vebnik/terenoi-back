@@ -146,6 +146,24 @@ class LessonHomeworkSerializer(serializers.ModelSerializer):
         fields = ('homework',)
 
 
+class LessonEvaluationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ('student_evaluation', 'student_rate_comment', 'teacher_evaluation', 'teacher_rate_comment')
+
+
+class LessonStudentEvaluationAddSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ('student_evaluation', 'student_rate_comment')
+
+
+class LessonTeacherEvaluationAddSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ('teacher_evaluation', 'teacher_rate_comment')
+
+
 class VoxiTeacherInfoSerializer(serializers.ModelSerializer):
     voxi_account = serializers.SerializerMethodField()
 

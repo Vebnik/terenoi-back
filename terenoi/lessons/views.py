@@ -8,7 +8,8 @@ from authapp.models import User, VoxiAccount
 from lessons.models import Lesson, LessonMaterials, LessonHomework
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
-    LessonMaterialsDetail, LessonHomeworksDetail
+    LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
+    LessonTeacherEvaluationAddSerializer
 from profileapp.models import Subject
 
 
@@ -121,6 +122,23 @@ class LessonHomeworksRetrieveView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = LessonHomeworksDetail
     queryset = Lesson.objects.all()
+
+
+class LessonEvaluationRetrieveView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = LessonEvaluationSerializer
+    queryset = Lesson.objects.all()
+
+
+class LessonEvaluationUpdateView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Lesson.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.user.is_student:
+            return LessonStudentEvaluationAddSerializer
+        else:
+            return LessonTeacherEvaluationAddSerializer
 
 
 class VoxiTeacherInfoRetrieveView(generics.RetrieveAPIView):
