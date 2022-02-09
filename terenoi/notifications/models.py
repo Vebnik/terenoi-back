@@ -7,8 +7,6 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils import timezone
-
 from authapp.models import User
 from authapp.services import send_notifications
 from lessons.services import current_date
@@ -66,4 +64,12 @@ def notifications_handler(sender, instance, **kwargs):
             elif instance.type == Notification.LESSON_COMING_SOON:
                 subject = 'Урок скоро состоится'
                 body = f'Урок состоится в  {lesson_date}'
+                send_notifications(instance.to_user, subject, body)
+            elif instance.type == Notification.LESSON_PROGRESS:
+                subject = 'Урок начинается'
+                body = f'Урок начнется  в {lesson_date}'
+                send_notifications(instance.to_user, subject, body)
+            elif instance.type == Notification.LESSON_CANCEL:
+                subject = 'Урок отменен'
+                body = f'Урок отменен'
                 send_notifications(instance.to_user, subject, body)

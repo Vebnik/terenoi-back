@@ -1,15 +1,10 @@
 import pytz
 from django.conf import settings
 from django.db import models
-from django.db.models import Q
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.utils.timezone import now
-
 from authapp.models import User, VoxiAccount
 from authapp.services import add_voxiaccount
-from lessons.services import current_date
 from notifications.models import Notification
+from notifications.services import create_lesson_notifications
 from profileapp.models import TeacherSubject, Subject
 
 NULLABLE = {'blank': True, 'null': True}
@@ -44,18 +39,17 @@ class Lesson(models.Model):
         verbose_name_plural = 'Уроки'
 
     def __str__(self):
-        return f'{self.teacher}-{self.student}-{self.subject}'
+        return f'{self.pk}-{self.teacher}-{self.student}-{self.subject}'
 
     def save(self, *args, **kwargs):
-        Notification.objects.create(to_user=self.student, lesson_date=self.date, type=Notification.LESSON_SCHEDULED)
-        Notification.objects.create(to_user=self.teacher, lesson_date=self.date, type=Notification.LESSON_SCHEDULED)
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
             username = f'Student-{self.student.pk}'
             add_voxiaccount(self.student, username, self.student.username)
         if self.student_status and self.teacher_status and self.lesson_status == Lesson.SCHEDULED:
             self.lesson_status = Lesson.PROGRESS
-
+        create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+                                    teacher_status=self.teacher_status, date=self.date)
         super(Lesson, self).save()
 
 
