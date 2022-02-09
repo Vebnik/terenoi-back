@@ -10,7 +10,7 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        fields = ('pk', 'to_user', 'current_lesson_date', 'type', 'is_read', 'current_created_at')
+        fields = ('pk', 'to_user', 'message', 'current_lesson_date', 'type', 'is_read', 'current_created_at')
 
     def _user(self):
         request = self.context.get('request', None)
@@ -31,7 +31,13 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
         return None
 
 
-class UserNotificationsUpdate(serializers.ModelSerializer):
+class UserNotificationsAllUpdate(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ('is_read',)
+
+
+class UserNotificationsUpdate(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ('message', 'is_read',)

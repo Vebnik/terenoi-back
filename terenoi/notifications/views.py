@@ -1,16 +1,24 @@
 from django.db.models import Q
 from django.shortcuts import render
 from rest_framework import generics, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from notifications.models import Notification
-from notifications.serializers import UserNotificationsSerializer, UserNotificationsUpdate
+from notifications.serializers import UserNotificationsSerializer, UserNotificationsUpdate, UserNotificationsAllUpdate
+
+
+class PublicationPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
 
 
 class UserNotificationListView(generics.ListAPIView):
     """Просмотр всех непрочитаных уведомлений пользователя"""
     permission_classes = [IsAuthenticated]
     serializer_class = UserNotificationsSerializer
+    pagination_class = PublicationPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -22,7 +30,7 @@ class UserNotificationListView(generics.ListAPIView):
 class UserAllNotificationsUpdateView(generics.UpdateAPIView):
     """Обновление всех непрочитаных уведомлений пользователя"""
     permission_classes = [IsAuthenticated]
-    serializer_class = UserNotificationsUpdate
+    serializer_class = UserNotificationsAllUpdate
     queryset = Notification.objects.all()
 
     def patch(self, request, *args, **kwargs):
@@ -41,5 +49,3 @@ class UserNotificationUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserNotificationsUpdate
     queryset = Notification.objects.all()
-
-
