@@ -31,7 +31,13 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
         return None
 
 
-class UserNotificationsUpdate(serializers.ModelSerializer):
+class UserNotificationsAllUpdate(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ('is_read',)
+
+
+class UserNotificationsUpdate(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ('message', 'is_read',)

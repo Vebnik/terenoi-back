@@ -5,7 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from notifications.models import Notification
-from notifications.serializers import UserNotificationsSerializer, UserNotificationsUpdate
+from notifications.serializers import UserNotificationsSerializer, UserNotificationsUpdate, UserNotificationsAllUpdate
 
 
 class PublicationPagination(PageNumberPagination):
@@ -30,7 +30,7 @@ class UserNotificationListView(generics.ListAPIView):
 class UserAllNotificationsUpdateView(generics.UpdateAPIView):
     """Обновление всех непрочитаных уведомлений пользователя"""
     permission_classes = [IsAuthenticated]
-    serializer_class = UserNotificationsUpdate
+    serializer_class = UserNotificationsAllUpdate
     queryset = Notification.objects.all()
 
     def patch(self, request, *args, **kwargs):
