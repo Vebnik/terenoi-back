@@ -198,6 +198,9 @@ class CreateVoxiCallData(APIView):
     def post(self, request, *args, **kwargs):
         lesson_id = self.request.data.get('lesson_id')
         session_id = self.request.data.get('session_id')
-        lesson = Lesson.objects.get(pk=int(lesson_id))
-        VoximplantRecordLesson.objects.create(lesson=lesson, session_id=int(session_id))
-        return Response({'message': 'Данные добавлены'}, status=status.HTTP_200_OK)
+        try:
+            lesson = Lesson.objects.filter(pk=int(lesson_id)).first()
+            VoximplantRecordLesson.objects.create(lesson=lesson, session_id=int(session_id))
+            return Response({'message': 'Данные добавлены'}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({'message': 'Данные не добавлены'}, status=status.HTTP_403_FORBIDDEN)
