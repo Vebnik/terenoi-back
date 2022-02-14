@@ -3,7 +3,7 @@ from django.urls import path
 from lessons.views import AllUserLessonsListView, UserLessonRetrieveView, VoxiTeacherInfoRetrieveView, \
     VoxiStudentInfoRetrieveView, UserLessonCreateView, LessonUserStatusUpdateView, AllUserClassesListView, \
     LessonUpdateView, LessonMaterialsAdd, LessonHomeworksAdd, LessonMaterialsRetrieveView, LessonHomeworksRetrieveView, \
-    LessonEvaluationRetrieveView, LessonEvaluationUpdateView,CreateVoxiCallData
+    LessonEvaluationRetrieveView, LessonEvaluationUpdateView, CreateVoxiCallData
 
 app_name = 'lessons'
 
