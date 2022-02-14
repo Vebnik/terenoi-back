@@ -40,3 +40,14 @@ class TeacherSubject(models.Model):
                 if sub['subject'] == self.subject.pk:
                     TeacherSubject.objects.get(subject=self.subject).delete()
             super(TeacherSubject, self).save(*args, **kwargs)
+
+
+class ReferralPromo(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    user_link = models.CharField(max_length=10, verbose_name='Реферальный промо пользователя', unique=True)
+    from_user_link = models.CharField(max_length=10, verbose_name='Реферальный промо друга', **NULLABLE)
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'Реферальная программа'
+        verbose_name_plural = 'Реферальная программа'

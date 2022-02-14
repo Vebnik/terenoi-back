@@ -3,9 +3,10 @@ from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from authapp.models import User, VoxiAccount
-from lessons.models import Lesson, LessonMaterials, LessonHomework
+from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
     LessonMaterialsDetail, LessonHomeworksDetail
@@ -154,3 +155,13 @@ class LessonUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
+
+
+class CreateVoxiCallData(APIView):
+
+    def post(self, request, *args, **kwargs):
+        lesson_id = self.request.data.get('lesson_id')
+        session_id = self.request.data.get('session_id')
+        lesson = Lesson.objects.get(pk=int(lesson_id))
+        VoximplantRecordLesson.objects.create(lesson=lesson, session_id=int(session_id))
+        return Response({'message': 'Данные добавлены'}, status=status.HTTP_200_OK)

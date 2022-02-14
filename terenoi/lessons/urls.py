@@ -2,7 +2,8 @@ from django.urls import path
 
 from lessons.views import AllUserLessonsListView, UserLessonRetrieveView, VoxiTeacherInfoRetrieveView, \
     VoxiStudentInfoRetrieveView, UserLessonCreateView, LessonUserStatusUpdateView, AllUserClassesListView, \
-    LessonUpdateView, LessonMaterialsAdd, LessonHomeworksAdd, LessonMaterialsRetrieveView, LessonHomeworksRetrieveView
+    LessonUpdateView, LessonMaterialsAdd, LessonHomeworksAdd, LessonMaterialsRetrieveView, LessonHomeworksRetrieveView, \
+    CreateVoxiCallData
 
 app_name = 'lessons'
 
@@ -20,5 +21,6 @@ urlpatterns = [
 
     path('voxi-teacher-info/<int:pk>/', VoxiTeacherInfoRetrieveView.as_view(), name='voxi_teacher'),
     path('voxi-student-info/<int:pk>/', VoxiStudentInfoRetrieveView.as_view(), name='voxi_student'),
-    path('user-status/update/<int:pk>/', LessonUserStatusUpdateView.as_view(), name='user_status_update')
+    path('user-status/update/<int:pk>/', LessonUserStatusUpdateView.as_view(), name='user_status_update'),
+    path('voxi-call-data/', CreateVoxiCallData.as_view(), name='voxi_call_data')
 ]
