@@ -3,7 +3,7 @@ from django.urls import path
 from lessons.views import AllUserLessonsListView, UserLessonRetrieveView, VoxiTeacherInfoRetrieveView, \
     VoxiStudentInfoRetrieveView, UserLessonCreateView, LessonUserStatusUpdateView, AllUserClassesListView, \
     LessonUpdateView, LessonMaterialsAdd, LessonHomeworksAdd, LessonMaterialsRetrieveView, LessonHomeworksRetrieveView, \
-    CreateVoxiCallData
+    LessonEvaluationRetrieveView, LessonEvaluationUpdateView,CreateVoxiCallData
 
 app_name = 'lessons'
 
@@ -18,6 +18,9 @@ urlpatterns = [
     path('homeworks/add/<int:pk>/', LessonHomeworksAdd.as_view(), name='homeworks_add'),
     path('materials/<int:pk>/', LessonMaterialsRetrieveView.as_view(), name='lesson_materials'),
     path('homeworks/<int:pk>/', LessonHomeworksRetrieveView.as_view(), name='lesson_homeworks'),
+
+    path('evaluation/<int:pk>/', LessonEvaluationRetrieveView.as_view(), name='lesson_evaluation'),
+    path('evaluation/add/<int:pk>/', LessonEvaluationUpdateView.as_view(), name='lesson_student_evaluation_add'),
 
     path('voxi-teacher-info/<int:pk>/', VoxiTeacherInfoRetrieveView.as_view(), name='voxi_teacher'),
     path('voxi-student-info/<int:pk>/', VoxiStudentInfoRetrieveView.as_view(), name='voxi_student'),

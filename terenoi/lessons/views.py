@@ -9,7 +9,8 @@ from authapp.models import User, VoxiAccount
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
-    LessonMaterialsDetail, LessonHomeworksDetail
+    LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
+    LessonTeacherEvaluationAddSerializer
 from profileapp.models import Subject
 
 
@@ -77,6 +78,9 @@ class UserLessonCreateView(generics.CreateAPIView):
 
 
 class LessonMaterialsAdd(generics.UpdateAPIView):
+    """
+    Добавление материалов урока
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
@@ -95,6 +99,9 @@ class LessonMaterialsAdd(generics.UpdateAPIView):
 
 
 class LessonHomeworksAdd(generics.UpdateAPIView):
+    """
+    Добавление домашних заданий урока
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
@@ -113,15 +120,44 @@ class LessonHomeworksAdd(generics.UpdateAPIView):
 
 
 class LessonMaterialsRetrieveView(generics.RetrieveAPIView):
+    """
+    Получение материалов урока
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = LessonMaterialsDetail
     queryset = Lesson.objects.all()
 
 
 class LessonHomeworksRetrieveView(generics.RetrieveAPIView):
+    """
+    Получение домашних заданий урока
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = LessonHomeworksDetail
     queryset = Lesson.objects.all()
+
+
+class LessonEvaluationRetrieveView(generics.RetrieveAPIView):
+    """
+    Просмотр оценки урока
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = LessonEvaluationSerializer
+    queryset = Lesson.objects.all()
+
+
+class LessonEvaluationUpdateView(generics.UpdateAPIView):
+    """
+    Добавление оценки урока
+    """
+    permission_classes = [IsAuthenticated]
+    queryset = Lesson.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.user.is_student:
+            return LessonStudentEvaluationAddSerializer
+        else:
+            return LessonTeacherEvaluationAddSerializer
 
 
 class VoxiTeacherInfoRetrieveView(generics.RetrieveAPIView):

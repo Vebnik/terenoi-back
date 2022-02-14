@@ -22,6 +22,20 @@ class Lesson(models.Model):
         (DONE, 'Урок проведен'),
         (CANCEL, 'Урок отменен')
     )
+
+    LOW = 1
+    RATHER_LOW = 2
+    MEDIUM = 3
+    ABOVE_MEDIUM = 4
+    HIGH = 5
+
+    LESSON_RATE_CHOICES = (
+        (LOW, 1),
+        (RATHER_LOW, 2),
+        (MEDIUM, 3),
+        (ABOVE_MEDIUM, 4),
+        (HIGH, 5)
+    )
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='lesson_teacher',
                                 limit_choices_to={'is_teacher': True})
     student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='lesson_student',
@@ -33,6 +47,11 @@ class Lesson(models.Model):
     lesson_status = models.CharField(verbose_name='Статус урока', max_length=3, choices=LESSON_STATUS_CHOICES,
                                      default=SCHEDULED)
     record = models.URLField(blank=True)
+    student_evaluation = models.IntegerField(verbose_name='Оценка урока учеником', choices=LESSON_RATE_CHOICES, **NULLABLE)
+    student_rate_comment = models.TextField(verbose_name='Комментарий студента к оценке урока', **NULLABLE)
+    teacher_evaluation = models.IntegerField(verbose_name='Оценка урока учителем', choices=LESSON_RATE_CHOICES,
+                                             **NULLABLE)
+    teacher_rate_comment = models.TextField(verbose_name='Комментарий учителя к оценке урока', **NULLABLE)
 
     class Meta:
         verbose_name = 'Урок'
