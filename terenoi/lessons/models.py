@@ -93,3 +93,14 @@ class LessonHomework(models.Model):
     class Meta:
         verbose_name = 'Домашнее задание к уроку'
         verbose_name_plural = 'Домашнее задание к уроку'
+
+
+class VoximplantRecordLesson(models.Model):
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
+    session_id = models.IntegerField(verbose_name='Айди сессии звонка')
+
+    class Meta:
+        verbose_name = 'Данные звонка'
+        verbose_name_plural = 'Данные звонка'
+
+

@@ -4,9 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from authapp.models import User
-from profileapp.models import TeacherSubject, Subject
+from profileapp.models import TeacherSubject, Subject, ReferralPromo
 from profileapp.permissions import IsStudent, IsTeacher
-from profileapp.serializers import UpdateUserSerializer, UpdateStudentSerializer, UpdateTeacherSerializer
+from profileapp.serializers import UpdateUserSerializer, UpdateStudentSerializer, UpdateTeacherSerializer, \
+    ReferralSerializer
 
 
 class ProfileUpdateView(generics.UpdateAPIView):
@@ -52,3 +53,16 @@ class ProfileView(APIView):
         else:
             serializer = UpdateStudentSerializer(user)
             return Response(serializer.data)
+
+
+class ReferralView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request):
+        user = self.get_object()
+        promo = ReferralPromo.objects.get(user=user)
+        serializer = ReferralSerializer(promo)
+        return Response(serializer.data)

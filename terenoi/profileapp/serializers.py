@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from authapp.models import User
-from profileapp.models import TeacherSubject, Subject
+from profileapp.models import TeacherSubject, Subject, ReferralPromo
 
 
 class UpdateUserSerializer(serializers.ModelSerializer):
@@ -65,3 +65,9 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
         subjects = TeacherSubject.objects.filter(user__pk=instance.pk)
         serializer = SubjectSerializer(subjects, many=True)
         return serializer.data
+
+
+class ReferralSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReferralPromo
+        fields = ('user_link',)

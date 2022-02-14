@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from lessons.models import Lesson, LessonMaterials, LessonHomework
+from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson
 
 
 @admin.register(Lesson)
@@ -19,4 +19,9 @@ class LessonAdmin(admin.ModelAdmin):
 class LessonAdmin(admin.ModelAdmin):
     list_display = ('lesson', 'homework', 'created_at')
     list_filter = ('lesson',)
+
+
+@admin.register(VoximplantRecordLesson)
+class LessonAdmin(admin.ModelAdmin):
+    list_display = ('lesson', 'session_id')
 
