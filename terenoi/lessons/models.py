@@ -97,7 +97,7 @@ class LessonHomework(models.Model):
 
 class VoximplantRecordLesson(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
-    session_id = models.IntegerField(verbose_name='Айди сессии звонка')
+    session_id = models.BigIntegerField(verbose_name='Айди сессии звонка')
 
     class Meta:
         verbose_name = 'Данные звонка'

@@ -1,7 +1,9 @@
+from unicodedata import decimal
+
 from django.db.models import Q
 from django.shortcuts import render
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -194,6 +196,7 @@ class LessonUpdateView(generics.UpdateAPIView):
 
 
 class CreateVoxiCallData(APIView):
+    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         lesson_id = self.request.data.get('lesson_id')
@@ -202,5 +205,6 @@ class CreateVoxiCallData(APIView):
             lesson = Lesson.objects.filter(pk=int(lesson_id)).first()
             VoximplantRecordLesson.objects.create(lesson=lesson, session_id=int(session_id))
             return Response({'message': 'Данные добавлены'}, status=status.HTTP_200_OK)
-        except Exception:
-            return Response({'message': 'Данные не добавлены'}, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            print(e)
+            return Response({'message': 'Данные не добавлены'}, status=status.HTTP_404_NOT_FOUND)
