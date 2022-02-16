@@ -4,12 +4,10 @@ from django.db import models
 import pytz
 from authapp.services import add_voxiaccount
 
-
 NULLABLE = {'blank': True, 'null': True}
 
 
 class User(AbstractUser):
-
     TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
 
     avatar = models.TextField(verbose_name='Аватар', **NULLABLE)
@@ -30,12 +28,11 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         super(User, self).save(*args, **kwargs)
-        if self.is_teacher:
-            self.is_staff = True
-            voxi_user = VoxiAccount.objects.filter(user=self).first()
-            if voxi_user is None:
-                username = f'Teacher-{self.pk}'
-                add_voxiaccount(self, username, self.username)
+        voxi_user = VoxiAccount.objects.filter(user=self).first()
+        if voxi_user is None:
+            username = f'Teacher-{self.pk}'
+            add_voxiaccount(self, username, self.username)
+
         super(User, self).save(*args, **kwargs)
 
 

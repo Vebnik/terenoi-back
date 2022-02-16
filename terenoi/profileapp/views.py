@@ -56,6 +56,7 @@ class ProfileView(APIView):
 
 
 class ReferralView(APIView):
+    """Получение реферального кода"""
     permission_classes = [IsAuthenticated]
 
     def get_object(self):

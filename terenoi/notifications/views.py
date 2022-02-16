@@ -18,12 +18,23 @@ class UserNotificationListView(generics.ListAPIView):
     """Просмотр всех непрочитаных уведомлений пользователя"""
     permission_classes = [IsAuthenticated]
     serializer_class = UserNotificationsSerializer
-    pagination_class = PublicationPagination
 
     def get_queryset(self):
         user = self.request.user
         queryset = Notification.objects.filter((Q(to_user=user) & Q(is_read=False))).order_by(
             '-created_at').select_related()
+        return queryset
+
+
+class UserAllNotificationListView(generics.ListAPIView):
+    """Получение всех уведомлений пользователя"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserNotificationsSerializer
+    pagination_class = PublicationPagination
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Notification.objects.filter(to_user=user).order_by('-created_at').select_related()
         return queryset
 
 

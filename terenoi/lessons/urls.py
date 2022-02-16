@@ -3,7 +3,8 @@ from django.urls import path
 from lessons.views import AllUserLessonsListView, UserLessonRetrieveView, VoxiTeacherInfoRetrieveView, \
     VoxiStudentInfoRetrieveView, UserLessonCreateView, LessonUserStatusUpdateView, AllUserClassesListView, \
     LessonUpdateView, LessonMaterialsAdd, LessonHomeworksAdd, LessonMaterialsRetrieveView, LessonHomeworksRetrieveView, \
-    LessonEvaluationRetrieveView, LessonEvaluationUpdateView, CreateVoxiCallData, LessonTransferUpdateView
+    LessonEvaluationRetrieveView, LessonEvaluationUpdateView, CreateVoxiCallData, LessonTransferUpdateView, \
+    LessonEvaluationQuestionsRetrieveView
 
 app_name = 'lessons'
 
@@ -16,13 +17,13 @@ urlpatterns = [
 
     path('transfer/<int:pk>/', LessonTransferUpdateView.as_view(), name='lesson_transfer'),
 
-
     path('materials/add/<int:pk>/', LessonMaterialsAdd.as_view(), name='materials_add'),
     path('homeworks/add/<int:pk>/', LessonHomeworksAdd.as_view(), name='homeworks_add'),
     path('materials/<int:pk>/', LessonMaterialsRetrieveView.as_view(), name='lesson_materials'),
     path('homeworks/<int:pk>/', LessonHomeworksRetrieveView.as_view(), name='lesson_homeworks'),
 
     path('evaluation/<int:pk>/', LessonEvaluationRetrieveView.as_view(), name='lesson_evaluation'),
+    path('evaluation-questions/<int:pk>/', LessonEvaluationQuestionsRetrieveView.as_view(), name='evaluation-questions'),
     path('evaluation/add/<int:pk>/', LessonEvaluationUpdateView.as_view(), name='lesson_student_evaluation_add'),
 
     path('voxi-teacher-info/<int:pk>/', VoxiTeacherInfoRetrieveView.as_view(), name='voxi_teacher'),
