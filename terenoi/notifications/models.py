@@ -19,6 +19,8 @@ class Notification(models.Model):
     LESSON_COMING_SOON = 'LSN_CMN'
     LESSON_PROGRESS = 'LSN_PRG'
     LESSON_DONE = 'LSN_DN'
+    LESSON_REQUEST_RESCHEDULED = 'LSN_REQ_RESCH'
+    LESSON_RESCHEDULED = 'LSN_RESCH'
     LESSON_CANCEL = 'LSN_CNL'
 
     CHOICES_NOTIFICATIONS = (
@@ -26,6 +28,8 @@ class Notification(models.Model):
         (LESSON_COMING_SOON, 'Урок скоро состоится'),
         (LESSON_PROGRESS, 'Урок идет'),
         (LESSON_DONE, 'Урок проведен'),
+        (LESSON_REQUEST_RESCHEDULED, 'Запрос на перенос урока'),
+        (LESSON_RESCHEDULED, 'Урок перенесен'),
         (LESSON_CANCEL, 'Урок отменен')
     )
 
@@ -72,4 +76,13 @@ def notifications_handler(sender, instance, **kwargs):
             elif instance.type == Notification.LESSON_CANCEL:
                 subject = 'Урок отменен'
                 body = f'Урок отменен'
+                send_notifications(instance.to_user, subject, body)
+            elif instance.type == Notification.LESSON_REQUEST_RESCHEDULED:
+                if instance.to_user.is_teacher:
+                    subject = 'Запрос на перенос урока'
+                    body = f'Ученик хочет перенести урок'
+                    send_notifications(instance.to_user, subject, body)
+            elif instance.type == Notification.LESSON_RESCHEDULED:
+                subject = 'Урок перенесен'
+                body = f'Урок перенесен'
                 send_notifications(instance.to_user, subject, body)

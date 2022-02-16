@@ -84,6 +84,12 @@ class LessonMaterialsDetail(serializers.ModelSerializer):
         return serializer.data
 
 
+class LessonTransferSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ('lesson_status', 'transfer_date')
+
+
 class LessonHomeworksDetail(serializers.ModelSerializer):
     homeworks = serializers.SerializerMethodField()
 

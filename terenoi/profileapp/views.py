@@ -63,6 +63,7 @@ class ReferralView(APIView):
 
     def get(self, request):
         user = self.get_object()
-        promo = ReferralPromo.objects.get(user=user)
+        promo = ReferralPromo.objects.filter(user=user).first()
         serializer = ReferralSerializer(promo)
         return Response(serializer.data)
+

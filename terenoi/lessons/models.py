@@ -13,12 +13,16 @@ NULLABLE = {'blank': True, 'null': True}
 
 class Lesson(models.Model):
     SCHEDULED = 'SCH'
+    REQUEST_RESCHEDULED = 'REQ_RESCH'
+    RESCHEDULED = 'RESCH'
     PROGRESS = 'PRG'
     DONE = 'DN'
     CANCEL = 'CNL'
 
     LESSON_STATUS_CHOICES = (
         (SCHEDULED, 'Урок назначен'),
+        (REQUEST_RESCHEDULED, 'Запрос на перенос урока'),
+        (RESCHEDULED, 'Урок перенесен'),
         (PROGRESS, 'Урок идет'),
         (DONE, 'Урок проведен'),
         (CANCEL, 'Урок отменен')
@@ -43,9 +47,10 @@ class Lesson(models.Model):
                                 limit_choices_to={'is_student': True})
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     date = models.DateTimeField(verbose_name='Дата урока')
+    transfer_date = models.DateTimeField(verbose_name='Дата переноса', **NULLABLE)
     teacher_status = models.BooleanField(verbose_name='Статус учителя', default=False)
     student_status = models.BooleanField(verbose_name='Статус ученика', default=False)
-    lesson_status = models.CharField(verbose_name='Статус урока', max_length=3, choices=LESSON_STATUS_CHOICES,
+    lesson_status = models.CharField(verbose_name='Статус урока', max_length=15, choices=LESSON_STATUS_CHOICES,
                                      default=SCHEDULED)
     student_evaluation = models.IntegerField(verbose_name='Оценка урока учеником', choices=LESSON_RATE_CHOICES,
                                              **NULLABLE)
@@ -66,10 +71,19 @@ class Lesson(models.Model):
         if student is None:
             username = f'Student-{self.student.pk}'
             add_voxiaccount(self.student, username, self.student.username)
+        if self.lesson_status == Lesson.SCHEDULED:
+            create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+                                        teacher_status=self.teacher_status, date=self.date)
         if self.student_status and self.teacher_status and self.lesson_status == Lesson.SCHEDULED:
             self.lesson_status = Lesson.PROGRESS
-        create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
-                                    teacher_status=self.teacher_status, date=self.date)
+            create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+                                        teacher_status=self.teacher_status, date=self.date)
+        if self.lesson_status == Lesson.REQUEST_RESCHEDULED:
+            create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+                                        teacher_status=self.teacher_status, date=self.date)
+        if self.lesson_status == Lesson.RESCHEDULED:
+            create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+                                        teacher_status=self.teacher_status, date=self.transfer_date)
         if self.lesson_status == Lesson.DONE:
             get_record(lesson_id=self.pk, lesson_date=self.date)
         super(Lesson, self).save()
