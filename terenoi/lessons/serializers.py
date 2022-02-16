@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from authapp.models import User, VoxiAccount
 from authapp.serializers import UserNameSerializer, VoxiAccountSerializer
-from lessons.models import Lesson, LessonMaterials, LessonHomework
+from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson
 from lessons.services import current_date
 from profileapp.models import TeacherSubject, Subject
 from profileapp.serializers import SubjectSerializer
@@ -16,12 +16,13 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     subject = serializers.SerializerMethodField()
     materials = serializers.SerializerMethodField()
     homeworks = serializers.SerializerMethodField()
+    record_link = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
         fields = (
             'pk', 'teacher', 'student', 'subject', 'materials', 'homeworks', 'current_date',
-            'teacher_status', 'student_status', 'lesson_status', 'record')
+            'teacher_status', 'student_status', 'lesson_status', 'record_link')
 
     def _user(self):
         request = self.context.get('request', None)
@@ -57,6 +58,17 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         homework = LessonHomework.objects.filter(lesson=instance).select_related()
         serializer = LessonHomeworkSerializer(homework, many=True)
         return serializer.data
+
+    def get_record_link(self, instance):
+        record_data = VoximplantRecordLesson.objects.filter(lesson=instance).first()
+        serializer = RecordSerializer(record_data)
+        return serializer.data
+
+
+class RecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VoximplantRecordLesson
+        fields = ('record',)
 
 
 class LessonMaterialsDetail(serializers.ModelSerializer):

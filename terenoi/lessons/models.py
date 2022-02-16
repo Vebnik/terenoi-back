@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db import models
 from authapp.models import User, VoxiAccount
 from authapp.services import add_voxiaccount
+from lessons.services import get_record
 from notifications.models import Notification
 from notifications.services import create_lesson_notifications
 from profileapp.models import TeacherSubject, Subject
@@ -46,8 +47,8 @@ class Lesson(models.Model):
     student_status = models.BooleanField(verbose_name='Статус ученика', default=False)
     lesson_status = models.CharField(verbose_name='Статус урока', max_length=3, choices=LESSON_STATUS_CHOICES,
                                      default=SCHEDULED)
-    record = models.URLField(blank=True)
-    student_evaluation = models.IntegerField(verbose_name='Оценка урока учеником', choices=LESSON_RATE_CHOICES, **NULLABLE)
+    student_evaluation = models.IntegerField(verbose_name='Оценка урока учеником', choices=LESSON_RATE_CHOICES,
+                                             **NULLABLE)
     student_rate_comment = models.TextField(verbose_name='Комментарий студента к оценке урока', **NULLABLE)
     teacher_evaluation = models.IntegerField(verbose_name='Оценка урока учителем', choices=LESSON_RATE_CHOICES,
                                              **NULLABLE)
@@ -69,6 +70,8 @@ class Lesson(models.Model):
             self.lesson_status = Lesson.PROGRESS
         create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
                                     teacher_status=self.teacher_status, date=self.date)
+        if self.lesson_status == Lesson.DONE:
+            get_record(lesson_id=self.pk, lesson_date=self.date)
         super(Lesson, self).save()
 
 
@@ -98,9 +101,8 @@ class LessonHomework(models.Model):
 class VoximplantRecordLesson(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
     session_id = models.BigIntegerField(verbose_name='Айди сессии звонка')
+    record = models.TextField(blank=True)
 
     class Meta:
         verbose_name = 'Данные звонка'
         verbose_name_plural = 'Данные звонка'
-
-
