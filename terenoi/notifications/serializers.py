@@ -10,7 +10,8 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        fields = ('pk', 'to_user', 'message', 'current_lesson_date', 'type', 'is_read', 'current_created_at')
+        fields = (
+        'pk', 'to_user', 'lesson_id', 'message', 'current_lesson_date', 'type', 'is_read', 'current_created_at')
 
     def _user(self):
         request = self.context.get('request', None)
