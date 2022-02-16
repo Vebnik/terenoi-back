@@ -1,5 +1,7 @@
-from profileapp.models import ReferralPromo
+
 import random
+
+import profileapp
 
 
 def generateRefPromo():
@@ -9,7 +11,7 @@ def generateRefPromo():
         promo = ''
         for i in range(length):
             promo += random.choice(chars)
-        promos = ReferralPromo.objects.filter(user_link=promo).first()
+        promos = profileapp.models.ReferralPromo.objects.filter(user_link=promo).first()
         if promos is None:
             break
     return promo
