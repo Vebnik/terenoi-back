@@ -1,7 +1,9 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-# Create your models here.
 from authapp.models import User
+from profileapp.services import generateRefPromo
 
 NULLABLE = {'blank': True, 'null': True}
 
@@ -43,11 +45,25 @@ class TeacherSubject(models.Model):
 
 
 class ReferralPromo(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='user')
     user_link = models.CharField(max_length=10, verbose_name='Реферальный промо пользователя', unique=True)
+    from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='from_user', verbose_name='Друг',
+                                  null=True)
     from_user_link = models.CharField(max_length=10, verbose_name='Реферальный промо друга', **NULLABLE)
     is_used = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'Реферальная программа'
         verbose_name_plural = 'Реферальная программа'
+
+
+@receiver(post_save, sender=User)
+def create_ref_link(sender, instance, **kwargs):
+    user_ref = ReferralPromo.objects.filter(user=instance).first()
+    if not user_ref:
+        promo = generateRefPromo()
+        ReferralPromo.objects.create(user=instance, user_link=promo)
+
+
+
+

@@ -8,11 +8,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from authapp.models import User, VoxiAccount
+from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
-    LessonTeacherEvaluationAddSerializer
+    LessonTeacherEvaluationAddSerializer, LessonTransferSerializer
 from profileapp.models import Subject
 
 
@@ -77,6 +78,37 @@ class UserLessonCreateView(generics.CreateAPIView):
                 return Response({"message": "Такого предмета не существует."}, status=status.HTTP_404_NOT_FOUND)
 
         return super(UserLessonCreateView, self).post(request, *args, **kwargs)
+
+
+class LessonTransferUpdateView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = LessonTransferSerializer
+    queryset = Lesson.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        lesson_id = self.kwargs.get('pk')
+        lesson = Lesson.objects.get(pk=lesson_id)
+        managers = User.objects.filter(is_superuser=True)
+        if self.request.user.is_student:
+            if lesson.lesson_status == Lesson.SCHEDULED:
+                for manager in managers:
+                    send_transfer_lesson(manager, lesson)
+        if self.request.user.is_teacher:
+            if lesson.lesson_status == Lesson.SCHEDULED:
+                for manager in managers:
+                    send_transfer_lesson(manager, lesson)
+            elif lesson.lesson_status == Lesson.REQUEST_RESCHEDULED:
+                transfer = self.request.data.get('transfer')
+                if transfer:
+                    for manager in managers:
+                        send_accept_transfer_lesson(manager, lesson)
+                    return super(LessonTransferUpdateView, self).update(request, *args, **kwargs)
+                else:
+                    for manager in managers:
+                        send_reject_transfer_lesson(manager, lesson)
+                    return Response({'message': 'Запрос на перенос урока отклонен'},
+                                    status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super(LessonTransferUpdateView, self).update(request, *args, **kwargs)
 
 
 class LessonMaterialsAdd(generics.UpdateAPIView):
