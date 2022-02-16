@@ -177,9 +177,36 @@ class LessonStudentEvaluationAddSerializer(serializers.ModelSerializer):
 
 
 class LessonTeacherEvaluationAddSerializer(serializers.ModelSerializer):
+    answers = serializers.SerializerMethodField()
+
     class Meta:
         model = Lesson
-        fields = ('teacher_evaluation', 'teacher_rate_comment')
+        fields = ('teacher_evaluation', 'answers',)
+
+    def get_answers(self, instance):
+        k = self.context.get('request').data.get('answers')
+        data = ""
+        for i in k:
+            for j, h in i.items():
+                data += f"Вопрос:{j}\n"
+                data += f"Ответ:{h}\n"
+
+        lesson = Lesson.objects.get(pk=instance.pk)
+        lesson.teacher_rate_comment = data
+        lesson.save()
+        return lesson.teacher_rate_comment
+
+
+class LessonEvaluationQuestionsSerializer(serializers.ModelSerializer):
+    questions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lesson
+        fields = ('questions',)
+
+    def get_questions(self, instance):
+        questions_list = instance.teacher_rate_comment.split(',')
+        return questions_list
 
 
 class VoxiTeacherInfoSerializer(serializers.ModelSerializer):

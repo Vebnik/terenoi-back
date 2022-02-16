@@ -67,23 +67,28 @@ class Lesson(models.Model):
         return f'{self.pk}-{self.teacher}-{self.student}-{self.subject}'
 
     def save(self, *args, **kwargs):
+        super(Lesson, self).save()
+        print(self.pk)
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
             username = f'Student-{self.student.pk}'
             add_voxiaccount(self.student, username, self.student.username)
         if self.lesson_status == Lesson.SCHEDULED:
             create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date)
+                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
+        if self.lesson_status == Lesson.CANCEL:
+            create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
         if self.student_status and self.teacher_status and self.lesson_status == Lesson.SCHEDULED:
             self.lesson_status = Lesson.PROGRESS
             create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date)
+                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
         if self.lesson_status == Lesson.REQUEST_RESCHEDULED:
             create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date)
+                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
         if self.lesson_status == Lesson.RESCHEDULED:
             create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.transfer_date)
+                                        teacher_status=self.teacher_status, date=self.transfer_date, lesson_id=self.pk)
         if self.lesson_status == Lesson.DONE:
             get_record(lesson_id=self.pk, lesson_date=self.date)
         super(Lesson, self).save()

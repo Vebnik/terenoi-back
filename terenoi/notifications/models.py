@@ -34,6 +34,7 @@ class Notification(models.Model):
     )
 
     to_user = models.ForeignKey(User, verbose_name='Уведомлениe пользователя', on_delete=models.CASCADE)
+    lesson_id = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
     lesson_date = models.DateTimeField(verbose_name='Дата урока', **NULLABLE)
     type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
     message = models.CharField(max_length=255, verbose_name='Сообщение', **NULLABLE)
@@ -52,7 +53,8 @@ def notifications_handler(sender, instance, **kwargs):
         if instance.to_user.is_online:
             channel_layer = get_channel_layer()
             created_at = current_date(instance.to_user, instance.created_at)
-            data = {"user": instance.to_user.username, "created_at": created_at, "lesson_date": lesson_date,
+            data = {"user": instance.to_user.username, "lesson_id": instance.lesson_id, "created_at": created_at,
+                    "lesson_date": lesson_date,
                     "type": instance.type, "is_read": instance.is_read}
             async_to_sync(channel_layer.group_send)(
                 f'{instance.to_user.username}_group', {

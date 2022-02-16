@@ -13,7 +13,7 @@ from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRe
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
-    LessonTeacherEvaluationAddSerializer, LessonTransferSerializer
+    LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer
 from profileapp.models import Subject
 
 
@@ -81,6 +81,7 @@ class UserLessonCreateView(generics.CreateAPIView):
 
 
 class LessonTransferUpdateView(generics.UpdateAPIView):
+    """Запрос на перенос урока"""
     permission_classes = [IsAuthenticated]
     serializer_class = LessonTransferSerializer
     queryset = Lesson.objects.all()
@@ -88,7 +89,7 @@ class LessonTransferUpdateView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         lesson_id = self.kwargs.get('pk')
         lesson = Lesson.objects.get(pk=lesson_id)
-        managers = User.objects.filter(is_superuser=True)
+        managers = User.objects.filter(is_staff=True)
         if self.request.user.is_student:
             if lesson.lesson_status == Lesson.SCHEDULED:
                 for manager in managers:
@@ -194,6 +195,13 @@ class LessonEvaluationUpdateView(generics.UpdateAPIView):
             return LessonTeacherEvaluationAddSerializer
 
 
+class LessonEvaluationQuestionsRetrieveView(generics.RetrieveAPIView):
+    """Получение вопросов для оценки урока учителем"""
+    permission_classes = [IsAuthenticated]
+    queryset = Lesson.objects.all()
+    serializer_class = LessonEvaluationQuestionsSerializer
+
+
 class VoxiTeacherInfoRetrieveView(generics.RetrieveAPIView):
     """Информация об аккаунте учителя в voxiplant и статусе его готовности"""
     permission_classes = [IsAuthenticated]
@@ -228,6 +236,7 @@ class LessonUpdateView(generics.UpdateAPIView):
 
 
 class CreateVoxiCallData(APIView):
+    """Получение данных из Вокса"""
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
