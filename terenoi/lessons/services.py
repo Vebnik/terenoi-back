@@ -6,7 +6,6 @@ import lessons
 from authapp.decorators import create_voxi_file
 
 
-
 def current_date(user, date):
     user_timezone = pytz.timezone(user.time_zone or settings.TIME_ZONE)
     return date.astimezone(user_timezone)
@@ -16,6 +15,8 @@ def current_date(user, date):
 def get_record(lesson_id, lesson_date):
     voxapi = VoximplantAPI("authapp/json/credentials.json")
     lesson = lessons.models.VoximplantRecordLesson.objects.filter(lesson__pk=lesson_id).first()
+    if not lesson:
+        return
     session_id = lesson.session_id
     lesson_from_date = lesson_date.day - 2
     lesson_to_date = lesson_date.day + 1
@@ -32,12 +33,7 @@ def get_record(lesson_id, lesson_date):
                                       call_session_history_id=session_id
                                       )
         record = res.get('result')[0].get('records')[0].get('record_url')
-        print(record)
         lesson.record = record
         lesson.save()
     except VoximplantException as e:
         print("Error: {}".format(e.message))
-
-
-
-
