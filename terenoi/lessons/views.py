@@ -9,11 +9,12 @@ from rest_framework.views import APIView
 
 from authapp.models import User, VoxiAccount
 from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson
-from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson
+from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
-    LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer
+    LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
+    LessonRateHomeworkDetail
 from profileapp.models import Subject
 
 
@@ -120,17 +121,14 @@ class LessonMaterialsAdd(generics.UpdateAPIView):
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
 
-    def put(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         if self.request.FILES.getlist('material'):
             for material in self.request.FILES.getlist('material'):
                 LessonMaterials.objects.create(lesson=self.get_object(), material=material)
-        return super(LessonMaterialsAdd, self).put(request, *args, **kwargs)
-
-    def patch(self, request, *args, **kwargs):
-        if self.request.FILES.getlist('material'):
-            for material in self.request.FILES.getlist('material'):
-                LessonMaterials.objects.create(lesson=self.get_object(), material=material)
-        return super(LessonMaterialsAdd, self).patch(request, *args, **kwargs)
+        if self.request.data.get('text_material'):
+            text = self.request.data.get('text_material')
+            LessonMaterials.objects.create(lesson=self.get_object(), text_material=text)
+        return super(LessonMaterialsAdd, self).update(request, *args, **kwargs)
 
 
 class LessonHomeworksAdd(generics.UpdateAPIView):
@@ -141,17 +139,33 @@ class LessonHomeworksAdd(generics.UpdateAPIView):
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
 
-    def put(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         if self.request.FILES.getlist('homework'):
             for material in self.request.FILES.getlist('homework'):
                 LessonHomework.objects.create(lesson=self.get_object(), homework=material)
-        return super(LessonHomeworksAdd, self).put(request, *args, **kwargs)
+        if self.request.data.get('text_homework'):
+            text = self.request.data.get('text_homework')
+            LessonHomework.objects.create(lesson=self.get_object(), text_homework=text)
+        return super(LessonHomeworksAdd, self).update(request, *args, **kwargs)
 
-    def patch(self, request, *args, **kwargs):
-        if self.request.FILES.getlist('homework'):
-            for material in self.request.FILES.getlist('homework'):
-                LessonHomework.objects.create(lesson=self.get_object(), homework=material)
-        return super(LessonHomeworksAdd, self).patch(request, *args, **kwargs)
+
+class LessonRateHomeworksAdd(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserLessonsSerializer
+    queryset = Lesson.objects.all()
+    
+    def update(self, request, *args, **kwargs):
+        rate = None
+        rate_comment = None
+        if self.request.data.get('rate'):
+            rate = self.request.data.get('rate')
+        if self.request.data.get('rate_comment'):
+            rate_comment = self.request.data.get('rate_comment')
+        LessonRateHomework.objects.create(lesson=self.get_object(), rate=rate, rate_comment=rate_comment)
+        return super(LessonRateHomeworksAdd, self).update(request, *args, **kwargs)
+            
+
+        
 
 
 class LessonMaterialsRetrieveView(generics.RetrieveAPIView):
@@ -169,6 +183,15 @@ class LessonHomeworksRetrieveView(generics.RetrieveAPIView):
     """
     permission_classes = [IsAuthenticated]
     serializer_class = LessonHomeworksDetail
+    queryset = Lesson.objects.all()
+
+
+class LessonRateHomeworkRetrieveView(generics.RetrieveAPIView):
+    """
+    Получение оценки урока
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = LessonRateHomeworkDetail
     queryset = Lesson.objects.all()
 
 

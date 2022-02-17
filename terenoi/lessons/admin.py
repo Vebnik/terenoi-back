@@ -1,17 +1,17 @@
 from django.contrib import admin
 
-from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson
+from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework
 
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('pk','teacher', 'student', 'date', 'lesson_status')
+    list_display = ('pk', 'teacher', 'student', 'date', 'lesson_status')
     list_filter = ('lesson_status',)
 
 
 @admin.register(LessonMaterials)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('lesson','material', 'created_at')
+    list_display = ('lesson', 'material', 'created_at')
     list_filter = ('lesson',)
 
 
@@ -25,3 +25,8 @@ class LessonAdmin(admin.ModelAdmin):
 class LessonAdmin(admin.ModelAdmin):
     list_display = ('lesson', 'session_id')
 
+
+@admin.register(LessonRateHomework)
+class LessonAdmin(admin.ModelAdmin):
+    list_display = ('lesson', 'rate')
+    list_filter = ('rate',)
