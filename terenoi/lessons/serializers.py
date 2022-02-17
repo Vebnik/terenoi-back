@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from authapp.models import User, VoxiAccount
 from authapp.serializers import UserNameSerializer, VoxiAccountSerializer
-from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson
+from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework
 from lessons.services import current_date
 from profileapp.models import TeacherSubject, Subject
 from profileapp.serializers import SubjectSerializer
@@ -17,12 +17,13 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     materials = serializers.SerializerMethodField()
     homeworks = serializers.SerializerMethodField()
     record_link = serializers.SerializerMethodField()
+    rate = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
         fields = (
-            'pk', 'teacher', 'student', 'subject', 'materials', 'homeworks', 'current_date',
-            'teacher_status', 'student_status', 'lesson_status', 'record_link')
+            'pk', 'teacher', 'student', 'subject', 'materials', 'deadline', 'homeworks', 'current_date',
+            'teacher_status', 'student_status', 'lesson_status', 'record_link', 'rate')
 
     def _user(self):
         request = self.context.get('request', None)
@@ -59,6 +60,11 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         serializer = LessonHomeworkSerializer(homework, many=True)
         return serializer.data
 
+    def get_rate(self, instance):
+        rate = LessonRateHomework.objects.filter(lesson=instance).first()
+        serializer = LessonRateHomeworkSerializer(rate)
+        return serializer.data
+
     def get_record_link(self, instance):
         record_data = VoximplantRecordLesson.objects.filter(lesson=instance).first()
         serializer = RecordSerializer(record_data)
@@ -84,10 +90,29 @@ class LessonMaterialsDetail(serializers.ModelSerializer):
         return serializer.data
 
 
+class LessonRateHomeworkDetail(serializers.ModelSerializer):
+    rate = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lesson
+        fields = ('rate',)
+
+    def get_rate(self, instance):
+        rate = LessonRateHomework.objects.filter(lesson=instance).first()
+        serializer = LessonRateHomeworkSerializer(rate)
+        return serializer.data
+
+
 class LessonTransferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ('lesson_status', 'transfer_date')
+
+
+class LessonRateHomeworkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LessonRateHomework
+        fields = ('rate', 'rate_comment')
 
 
 class LessonHomeworksDetail(serializers.ModelSerializer):
@@ -155,13 +180,13 @@ class UserLessonsCreateSerializer(serializers.ModelSerializer):
 class LessonMaterialsSerializer(serializers.ModelSerializer):
     class Meta:
         model = LessonMaterials
-        fields = ('material',)
+        fields = ('material', 'text_material')
 
 
 class LessonHomeworkSerializer(serializers.ModelSerializer):
     class Meta:
         model = LessonHomework
-        fields = ('homework',)
+        fields = ('homework', 'text_homework')
 
 
 class LessonEvaluationSerializer(serializers.ModelSerializer):

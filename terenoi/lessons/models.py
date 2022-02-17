@@ -52,6 +52,7 @@ class Lesson(models.Model):
     student_status = models.BooleanField(verbose_name='Статус ученика', default=False)
     lesson_status = models.CharField(verbose_name='Статус урока', max_length=15, choices=LESSON_STATUS_CHOICES,
                                      default=SCHEDULED)
+    deadline = models.DateTimeField(verbose_name='Сроки сдачи домашнего задания', **NULLABLE)
     student_evaluation = models.IntegerField(verbose_name='Оценка урока учеником', choices=LESSON_RATE_CHOICES,
                                              **NULLABLE)
     student_rate_comment = models.TextField(verbose_name='Комментарий студента к оценке урока', **NULLABLE)
@@ -97,6 +98,7 @@ class Lesson(models.Model):
 class LessonMaterials(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
     material = models.FileField(upload_to='materials-for-lesson/', verbose_name='Материалы к уроку', **NULLABLE)
+    text_material = models.TextField(**NULLABLE, verbose_name='Текстовое поле для материалов и комментариев')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
 
@@ -109,12 +111,37 @@ class LessonHomework(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
     homework = models.FileField(upload_to='homework-for-lesson/', verbose_name='Домашнее задание к уроку',
                                 **NULLABLE)
+    text_homework = models.TextField(**NULLABLE, verbose_name='Текстовое домашнее задание')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
 
     class Meta:
         verbose_name = 'Домашнее задание к уроку'
         verbose_name_plural = 'Домашнее задание к уроку'
+
+
+class LessonRateHomework(models.Model):
+    LOW = 1
+    RATHER_LOW = 2
+    MEDIUM = 3
+    ABOVE_MEDIUM = 4
+    HIGH = 5
+
+    LESSON_RATE_CHOICES = (
+        (LOW, 1),
+        (RATHER_LOW, 2),
+        (MEDIUM, 3),
+        (ABOVE_MEDIUM, 4),
+        (HIGH, 5)
+    )
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
+    rate = models.IntegerField(verbose_name='Оценка домашнего задания', choices=LESSON_RATE_CHOICES,
+                               **NULLABLE)
+    rate_comment = models.TextField(**NULLABLE, verbose_name='Комментарий к домашнему заданию')
+
+    class Meta:
+        verbose_name = 'Оценки домашнего задания ученика'
+        verbose_name_plural = 'Оценки домашнего задания'
 
 
 class VoximplantRecordLesson(models.Model):
