@@ -26,7 +26,7 @@ urlpatterns = [
 
     path('evaluation/<int:pk>/', LessonEvaluationRetrieveView.as_view(), name='lesson_evaluation'),
     path('evaluation-questions/<int:pk>/', LessonEvaluationQuestionsRetrieveView.as_view(), name='evaluation-questions'),
-    path('evaluation/add/<int:pk>/', LessonEvaluationUpdateView.as_view(), name='lesson_student_evaluation_add'),
+    path('evaluation/add/<int:pk>/', LessonEvaluationUpdateView.as_view(), name='lesson_user_evaluation_add'),
 
     path('voxi-teacher-info/<int:pk>/', VoxiTeacherInfoRetrieveView.as_view(), name='voxi_teacher'),
     path('voxi-student-info/<int:pk>/', VoxiStudentInfoRetrieveView.as_view(), name='voxi_student'),

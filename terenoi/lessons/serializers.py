@@ -230,8 +230,11 @@ class LessonEvaluationQuestionsSerializer(serializers.ModelSerializer):
         fields = ('questions',)
 
     def get_questions(self, instance):
-        questions_list = instance.teacher_rate_comment.split(',')
-        return questions_list
+        if not instance.teacher_rate_comment:
+            return None
+        else:
+            questions_list = instance.teacher_rate_comment.split(',')
+            return questions_list
 
 
 class VoxiTeacherInfoSerializer(serializers.ModelSerializer):

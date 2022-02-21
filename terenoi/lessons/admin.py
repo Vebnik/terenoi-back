@@ -10,23 +10,23 @@ class LessonAdmin(admin.ModelAdmin):
 
 
 @admin.register(LessonMaterials)
-class LessonAdmin(admin.ModelAdmin):
+class LessonMaterialsAdmin(admin.ModelAdmin):
     list_display = ('lesson', 'material', 'created_at')
     list_filter = ('lesson',)
 
 
 @admin.register(LessonHomework)
-class LessonAdmin(admin.ModelAdmin):
+class LessonHomeworkAdmin(admin.ModelAdmin):
     list_display = ('lesson', 'homework', 'created_at')
     list_filter = ('lesson',)
 
 
 @admin.register(VoximplantRecordLesson)
-class LessonAdmin(admin.ModelAdmin):
+class VoximplantRecordLessonAdmin(admin.ModelAdmin):
     list_display = ('lesson', 'session_id')
 
 
 @admin.register(LessonRateHomework)
-class LessonAdmin(admin.ModelAdmin):
+class LessonRateHomeworkAdmin(admin.ModelAdmin):
     list_display = ('lesson', 'rate')
     list_filter = ('rate',)

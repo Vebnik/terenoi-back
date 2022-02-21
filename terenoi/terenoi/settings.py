@@ -47,9 +47,11 @@ INSTALLED_APPS = [
     'channels',
     'django_crontab',
     'drf_yasg',
+    'finance',
     'lessons',
     'notifications',
-    'profileapp'
+    'profileapp',
+    'settings'
 ]
 
 MIDDLEWARE = [

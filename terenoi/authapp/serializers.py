@@ -3,6 +3,8 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from authapp.models import User, VoxiAccount
+from profileapp.models import ReferralPromo
+from profileapp.services import generateRefPromo
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -21,9 +23,17 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def save(self):
-        print(self.validated_data)
         user = User.objects.create_user(username=self.validated_data['username'], email=self.validated_data['email'],
                                         password=self.validated_data['password'])
+        ref = ReferralPromo.objects.filter(user=user).first()
+        if ref:
+            if self.context.get('request').data.get('referral'):
+                ref.from_user_link = self.context.get('request').data.get('referral')
+                ref.save()
+        else:
+            promo = generateRefPromo()
+            ReferralPromo.objects.create(user=user, user_link=promo)
+
         return user
 
 
