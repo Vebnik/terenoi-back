@@ -107,6 +107,27 @@ class HistoryPaymentStudent(models.Model):
         return super(HistoryPaymentStudent, self).save(*args, **kwargs)
 
 
+class TeacherRate(models.Model):
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель',
+                                limit_choices_to={'is_teacher': True})
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет')
+    rate = models.IntegerField(verbose_name='Ставка')
+
+    class Meta:
+        verbose_name = 'Ставка учителя'
+        verbose_name_plural = 'Ставка учителя'
+
+    def save(self, *args, **kwargs):
+        user_rate = TeacherRate.objects.filter(teacher=self.teacher).select_related()
+        if len(user_rate) == 0:
+            super(TeacherRate, self).save(*args, **kwargs)
+        else:
+            for sub in user_rate.values('subject'):
+                if sub['subject'] == self.subject.pk:
+                    TeacherRate.objects.get(subject=self.subject).delete()
+            super(TeacherRate, self).save(*args, **kwargs)
+
+
 class HistoryPaymentTeacher(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель',
                                 limit_choices_to={'is_teacher': True})

@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework
+from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
+    ManagerRequests
 
 
 @admin.register(Lesson)
@@ -30,3 +31,9 @@ class VoximplantRecordLessonAdmin(admin.ModelAdmin):
 class LessonRateHomeworkAdmin(admin.ModelAdmin):
     list_display = ('lesson', 'rate')
     list_filter = ('rate',)
+
+
+@admin.register(ManagerRequests)
+class ManagerRequestsAdmin(admin.ModelAdmin):
+    list_display = ('lesson', 'user', 'type', 'is_resolved')
+    list_filter = ('is_resolved',)

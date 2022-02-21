@@ -32,15 +32,33 @@ def send_transfer_lesson(user, lesson):
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
+def send_cancel_lesson(user, lesson):
+    body = f'Пользователь {user.username} хочет отменить урок {lesson}'
+    subject = 'Отмена урока'
+    send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
+
+
 def send_accept_transfer_lesson(user, lesson):
     body = f'Пользователь {user.username} подтвердил перенос урока {lesson}'
     subject = 'Подтверждение переноса'
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
+def send_accept_cancel_lesson(user, lesson):
+    body = f'Пользователь {user.username} подтвердил отмену урока {lesson}'
+    subject = 'Подтверждение отмены'
+    send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
+
+
 def send_reject_transfer_lesson(user, lesson):
     body = f'Пользователь {user.username}  отклонил перенос урока {lesson}'
-    subject = 'Отклонение'
+    subject = 'Отклонение переноса'
+    send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
+
+
+def send_reject_cancel_lesson(user, lesson):
+    body = f'Пользователь {user.username}  отклонил отмену урока {lesson}'
+    subject = 'Отклонение отмены'
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
