@@ -18,18 +18,13 @@ class UserRegister(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
-        print(self.request.data.get('referral'))
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid(raise_exception=True):
             return Response({'message': 'Неправильный email или пароль'}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
+        print(serializer.data)
         user_data = serializer.data
         user = User.objects.get(email=user_data['email'])
-        promo = generateRefPromo()
-        if self.request.data.get('referral'):
-            ReferralPromo.objects.create(user=user, user_link=promo, from_user_link=self.request.data.get('referral'))
-        else:
-            ReferralPromo.objects.create(user=user, user_link=promo)
         send_verify_email(user)
         return Response({
             "message": "Пользователь зарегистрирован, осталось пройти верификацию почты."},
