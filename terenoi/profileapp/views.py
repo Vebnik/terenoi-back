@@ -26,11 +26,11 @@ class ProfileUpdateView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         try:
-            if request.data.get('subject').get('subject_name'):
-                subjects = Subject.objects.filter(name=request.data.get('subject').get('subject_name')).select_related()
-                if subjects:
-                    for sub in subjects:
-                        TeacherSubject.objects.create(user=self.request.user, subject=sub)
+            if request.data.get('subject'):
+                for sub in request.data.get('subject'):
+                    subject = Subject.objects.filter(name=sub).first()
+                    if subject:
+                        TeacherSubject.objects.create(user=self.request.user, subject=subject)
                         return super(ProfileUpdateView, self).update(request, *args, **kwargs)
                 else:
                     return Response({"message": "Такого предмета не существует."}, status=status.HTTP_404_NOT_FOUND)
