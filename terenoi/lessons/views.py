@@ -8,13 +8,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from authapp.models import User, VoxiAccount
-from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson
-from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework
+from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson, \
+    send_cancel_lesson
+from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
+    ManagerRequests
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
     LessonRateHomeworkDetail
+from lessons.services import request_transfer, send_transfer
 from profileapp.models import Subject
 
 
@@ -91,25 +94,30 @@ class LessonTransferUpdateView(generics.UpdateAPIView):
         lesson_id = self.kwargs.get('pk')
         lesson = Lesson.objects.get(pk=lesson_id)
         managers = User.objects.filter(is_staff=True)
-        if self.request.user.is_student:
-            if lesson.lesson_status == Lesson.SCHEDULED:
+        if self.request.data.get('lesson_status') == Lesson.REQUEST_RESCHEDULED:
+            request_transfer(self.request.user, lesson, managers, self.request.data.get('transfer_comment'), send_transfer_lesson)
+        elif self.request.data.get('lesson_status') == Lesson.RESCHEDULED:
+            transfer = self.request.data.get('transfer')
+            if transfer:
+                send_transfer(managers, lesson, send_accept_transfer_lesson)
+                return super(LessonTransferUpdateView, self).update(request, *args, **kwargs)
+            else:
                 for manager in managers:
-                    send_transfer_lesson(manager, lesson)
-        if self.request.user.is_teacher:
-            if lesson.lesson_status == Lesson.SCHEDULED:
+                    send_reject_transfer_lesson(manager, lesson)
+                return Response({'message': 'Запрос на перенос урока отклонен'},
+                                status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        elif self.request.data.get('lesson_status') == Lesson.REQUEST_CANCEL:
+            request_transfer(self.request.user, lesson, managers, self.request.data.get('transfer_comment'),send_cancel_lesson)
+        elif self.request.data.get('lesson_status') == Lesson.CANCEL:
+            transfer = self.request.data.get('transfer')
+            if transfer:
+                send_transfer(managers, lesson, send_accept_transfer_lesson)
+                return super(LessonTransferUpdateView, self).update(request, *args, **kwargs)
+            else:
                 for manager in managers:
-                    send_transfer_lesson(manager, lesson)
-            elif lesson.lesson_status == Lesson.REQUEST_RESCHEDULED:
-                transfer = self.request.data.get('transfer')
-                if transfer:
-                    for manager in managers:
-                        send_accept_transfer_lesson(manager, lesson)
-                    return super(LessonTransferUpdateView, self).update(request, *args, **kwargs)
-                else:
-                    for manager in managers:
-                        send_reject_transfer_lesson(manager, lesson)
-                    return Response({'message': 'Запрос на перенос урока отклонен'},
-                                    status=status.HTTP_405_METHOD_NOT_ALLOWED)
+                    send_reject_transfer_lesson(manager, lesson)
+                return Response({'message': 'Запрос на отмену урока отклонен'},
+                                status=status.HTTP_405_METHOD_NOT_ALLOWED)
         return super(LessonTransferUpdateView, self).update(request, *args, **kwargs)
 
 
@@ -153,7 +161,7 @@ class LessonRateHomeworksAdd(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
-    
+
     def update(self, request, *args, **kwargs):
         rate = None
         rate_comment = None
@@ -163,9 +171,6 @@ class LessonRateHomeworksAdd(generics.UpdateAPIView):
             rate_comment = self.request.data.get('rate_comment')
         LessonRateHomework.objects.create(lesson=self.get_object(), rate=rate, rate_comment=rate_comment)
         return super(LessonRateHomeworksAdd, self).update(request, *args, **kwargs)
-            
-
-        
 
 
 class LessonMaterialsRetrieveView(generics.RetrieveAPIView):

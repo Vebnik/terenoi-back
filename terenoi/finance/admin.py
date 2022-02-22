@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from finance.models import StudentBalance, TeacherBalance, HistoryPaymentStudent, HistoryPaymentTeacher
+from finance.models import StudentBalance, TeacherBalance, HistoryPaymentStudent, HistoryPaymentTeacher, TeacherRate
 
 
 @admin.register(StudentBalance)
@@ -12,6 +12,11 @@ class StudentBalanceAdmin(admin.ModelAdmin):
 @admin.register(TeacherBalance)
 class TeacherBalanceAdmin(admin.ModelAdmin):
     list_display = ('user', 'money_balance', 'currency', 'bonus_money_balance', 'withdrawal_money')
+
+
+@admin.register(TeacherRate)
+class TeacherRateAdmin(admin.ModelAdmin):
+    list_display = ('teacher', 'subject', 'rate')
 
 
 @admin.register(HistoryPaymentStudent)

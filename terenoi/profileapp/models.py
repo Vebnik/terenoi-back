@@ -54,20 +54,3 @@ class ReferralPromo(models.Model):
     class Meta:
         verbose_name = 'Реферальная программа'
         verbose_name_plural = 'Реферальная программа'
-
-
-@receiver(post_save, sender=User)
-def create_ref_link(sender, instance, created, **kwargs):
-    user_ref = ReferralPromo.objects.filter(user=instance).first()
-    if not user_ref:
-        promo = generateRefPromo()
-        ReferralPromo.objects.create(user=instance, user_link=promo)
-    if not instance.is_staff:
-        if instance.is_student:
-            user_balance = finance.models.StudentBalance.objects.filter(user=instance).first()
-            if not user_balance:
-                finance.models.StudentBalance.objects.create(user=instance)
-        else:
-            user_balance = finance.models.TeacherBalance.objects.filter(user=instance).first()
-            if not user_balance:
-                finance.models.TeacherBalance.objects.create(user=instance)

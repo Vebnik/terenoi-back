@@ -17,6 +17,7 @@ class Lesson(models.Model):
     RESCHEDULED = 'RESCH'
     PROGRESS = 'PRG'
     DONE = 'DN'
+    REQUEST_CANCEL = 'REQ_CNL'
     CANCEL = 'CNL'
 
     LESSON_STATUS_CHOICES = (
@@ -25,39 +26,27 @@ class Lesson(models.Model):
         (RESCHEDULED, 'Урок перенесен'),
         (PROGRESS, 'Урок идет'),
         (DONE, 'Урок проведен'),
+        (REQUEST_CANCEL, 'Запрос на отмену урока'),
         (CANCEL, 'Урок отменен')
     )
 
-    LOW = 1
-    RATHER_LOW = 2
-    MEDIUM = 3
-    ABOVE_MEDIUM = 4
-    HIGH = 5
-
-    LESSON_RATE_CHOICES = (
-        (LOW, 1),
-        (RATHER_LOW, 2),
-        (MEDIUM, 3),
-        (ABOVE_MEDIUM, 4),
-        (HIGH, 5)
-    )
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='lesson_teacher',
                                 limit_choices_to={'is_teacher': True})
     student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='lesson_student',
                                 limit_choices_to={'is_student': True})
+    topic = models.CharField(verbose_name='Тема урока', **NULLABLE, max_length=255)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     date = models.DateTimeField(verbose_name='Дата урока')
     transfer_date = models.DateTimeField(verbose_name='Дата переноса', **NULLABLE)
+    transfer_comment = models.TextField(verbose_name='Комментарий к переносу или отмене урока', **NULLABLE)
     teacher_status = models.BooleanField(verbose_name='Статус учителя', default=False)
     student_status = models.BooleanField(verbose_name='Статус ученика', default=False)
     lesson_status = models.CharField(verbose_name='Статус урока', max_length=15, choices=LESSON_STATUS_CHOICES,
                                      default=SCHEDULED)
     deadline = models.DateTimeField(verbose_name='Сроки сдачи домашнего задания', **NULLABLE)
-    student_evaluation = models.IntegerField(verbose_name='Оценка урока учеником', choices=LESSON_RATE_CHOICES,
-                                             **NULLABLE)
+    student_evaluation = models.IntegerField(verbose_name='Оценка урока учеником', **NULLABLE)
     student_rate_comment = models.TextField(verbose_name='Комментарий студента к оценке урока', **NULLABLE)
-    teacher_evaluation = models.IntegerField(verbose_name='Оценка урока учителем', choices=LESSON_RATE_CHOICES,
-                                             **NULLABLE)
+    teacher_evaluation = models.IntegerField(verbose_name='Оценка урока учителем', **NULLABLE)
     teacher_rate_comment = models.TextField(verbose_name='Комментарий учителя к оценке урока', **NULLABLE)
 
     class Meta:
@@ -69,12 +58,14 @@ class Lesson(models.Model):
 
     def save(self, *args, **kwargs):
         super(Lesson, self).save()
-        print(self.pk)
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
             username = f'Student-{self.student.pk}'
             add_voxiaccount(self.student, username, self.student.username)
         if self.lesson_status == Lesson.SCHEDULED:
+            create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
+        if self.lesson_status == Lesson.REQUEST_CANCEL:
             create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
         if self.lesson_status == Lesson.CANCEL:
@@ -121,22 +112,8 @@ class LessonHomework(models.Model):
 
 
 class LessonRateHomework(models.Model):
-    LOW = 1
-    RATHER_LOW = 2
-    MEDIUM = 3
-    ABOVE_MEDIUM = 4
-    HIGH = 5
-
-    LESSON_RATE_CHOICES = (
-        (LOW, 1),
-        (RATHER_LOW, 2),
-        (MEDIUM, 3),
-        (ABOVE_MEDIUM, 4),
-        (HIGH, 5)
-    )
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
-    rate = models.IntegerField(verbose_name='Оценка домашнего задания', choices=LESSON_RATE_CHOICES,
-                               **NULLABLE)
+    rate = models.IntegerField(verbose_name='Оценка домашнего задания', **NULLABLE)
     rate_comment = models.TextField(**NULLABLE, verbose_name='Комментарий к домашнему заданию')
 
     class Meta:
@@ -152,3 +129,28 @@ class VoximplantRecordLesson(models.Model):
     class Meta:
         verbose_name = 'Данные звонка'
         verbose_name_plural = 'Данные звонка'
+
+
+class ManagerRequests(models.Model):
+    REQUEST_RESCHEDULED = 'REQ_RESCH'
+    RESCHEDULED = 'RESCH'
+    REQUEST_CANCEL = 'REQ_CNL'
+    CANCEL = 'CNL'
+
+    REQUEST_CHOICES = (
+        (REQUEST_RESCHEDULED, 'Запрос на перенос урока'),
+        (RESCHEDULED, 'Урок перенесен'),
+        (REQUEST_CANCEL, 'Запрос на отмену урока'),
+        (CANCEL, 'Урок отменен')
+    )
+
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    type = models.CharField(verbose_name='Тип запроса', choices=REQUEST_CHOICES, max_length=15,**NULLABLE)
+    comment = models.TextField(verbose_name='Комментарий к переносу или отмене урока', **NULLABLE)
+    is_resolved = models.BooleanField(verbose_name='Решен', default=False)
+
+    class Meta:
+        verbose_name = 'Запрос для изменения урока'
+        verbose_name_plural = 'Запросы для изменения уроков'
+

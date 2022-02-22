@@ -22,7 +22,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = (
-            'pk', 'teacher', 'student', 'subject', 'materials', 'deadline', 'homeworks', 'current_date',
+            'pk', 'teacher', 'student', 'topic', 'subject', 'materials', 'deadline', 'homeworks', 'current_date',
             'teacher_status', 'student_status', 'lesson_status', 'record_link', 'rate')
 
     def _user(self):
@@ -106,7 +106,7 @@ class LessonRateHomeworkDetail(serializers.ModelSerializer):
 class LessonTransferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
-        fields = ('lesson_status', 'transfer_date')
+        fields = ('lesson_status', 'transfer_date', 'transfer_comment')
 
 
 class LessonRateHomeworkSerializer(serializers.ModelSerializer):
@@ -135,7 +135,7 @@ class UserLessonsCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ('pk', 'teacher', 'student', 'subject', 'materials', 'homework', 'date', 'lesson_status')
+        fields = ('pk', 'teacher', 'topic', 'student', 'subject', 'materials', 'homework', 'date', 'lesson_status')
 
     def _user(self):
         request = self.context.get('request', None)

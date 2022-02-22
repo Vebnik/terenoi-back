@@ -4,6 +4,7 @@ from django.conf import settings
 from voximplant.apiclient import VoximplantAPI, VoximplantException
 import lessons
 from authapp.decorators import create_voxi_file
+from authapp.services import send_transfer_lesson
 
 
 def current_date(user, date):
@@ -37,3 +38,27 @@ def get_record(lesson_id, lesson_date):
         lesson.save()
     except VoximplantException as e:
         print("Error: {}".format(e.message))
+
+
+def request_transfer(user, lesson, managers, transfer_comment, send_func):
+    if user.is_student:
+        if lesson.lesson_status == lessons.models.Lesson.SCHEDULED:
+            for manager in managers:
+                send_transfer_lesson(manager, lesson)
+    if user.is_teacher:
+        if lesson.lesson_status == lessons.models.Lesson.SCHEDULED:
+            for manager in managers:
+                send_func(manager, lesson)
+    lessons.models.ManagerRequests.objects.create(lesson=lesson, user=user,
+                                                  type=lessons.models.ManagerRequests.REQUEST_RESCHEDULED,
+                                                  comment=transfer_comment)
+
+
+def send_transfer(managers, lesson, send_func):
+    for manager in managers:
+        send_func(manager, lesson)
+    manager_req = lessons.models.ManagerRequests.objects.filter(lesson=lesson).first()
+    if manager_req:
+        manager_req.is_resolved = True
+        manager_req.type = lessons.models.ManagerRequests.RESCHEDULED
+        manager_req.save()
