@@ -49,8 +49,16 @@ class AllUserClassesListView(generics.ListAPIView):
                 Q(student=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
             queryset_3 = Lesson.objects.filter(
                 (Q(student=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
-            queryset = queryset_1.union(queryset_2, queryset_3).order_by('-date')
-
+            queryset_4 = Lesson.objects.filter(
+                (Q(student=self.request.user) & Q(lesson_status=Lesson.REQUEST_RESCHEDULED))).select_related()
+            queryset_5 = Lesson.objects.filter(
+                (Q(student=self.request.user) & Q(lesson_status=Lesson.RESCHEDULED))).select_related()
+            queryset_6 = Lesson.objects.filter(
+                (Q(student=self.request.user) & Q(lesson_status=Lesson.REQUEST_CANCEL))).select_related()
+            queryset_7 = Lesson.objects.filter(
+                (Q(student=self.request.user) & Q(lesson_status=Lesson.CANCEL))).select_related()
+            queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_5, queryset_6,
+                                        queryset_7).order_by('-date')
         else:
             queryset_1 = Lesson.objects.filter(
                 (Q(teacher=self.request.user) & Q(lesson_status=Lesson.DONE))).select_related()
@@ -58,7 +66,17 @@ class AllUserClassesListView(generics.ListAPIView):
                 Q(teacher=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
             queryset_3 = Lesson.objects.filter(
                 (Q(teacher=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
-            queryset = queryset_1.union(queryset_2, queryset_3).order_by('-date')
+            queryset_4 = Lesson.objects.filter(
+                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.REQUEST_RESCHEDULED))).select_related()
+            queryset_5 = Lesson.objects.filter(
+                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.RESCHEDULED))).select_related()
+            queryset_6 = Lesson.objects.filter(
+                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.REQUEST_CANCEL))).select_related()
+            queryset_7 = Lesson.objects.filter(
+                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.CANCEL))).select_related()
+            queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_5, queryset_6,
+                                        queryset_7).order_by('-date')
+
         return queryset
 
 
@@ -95,7 +113,8 @@ class LessonTransferUpdateView(generics.UpdateAPIView):
         lesson = Lesson.objects.get(pk=lesson_id)
         managers = User.objects.filter(is_staff=True)
         if self.request.data.get('lesson_status') == Lesson.REQUEST_RESCHEDULED:
-            request_transfer(self.request.user, lesson, managers, self.request.data.get('transfer_comment'), send_transfer_lesson)
+            request_transfer(self.request.user, lesson, managers, self.request.data.get('transfer_comment'),
+                             send_transfer_lesson)
         elif self.request.data.get('lesson_status') == Lesson.RESCHEDULED:
             transfer = self.request.data.get('transfer')
             if transfer:
@@ -107,7 +126,8 @@ class LessonTransferUpdateView(generics.UpdateAPIView):
                 return Response({'message': 'Запрос на перенос урока отклонен'},
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
         elif self.request.data.get('lesson_status') == Lesson.REQUEST_CANCEL:
-            request_transfer(self.request.user, lesson, managers, self.request.data.get('transfer_comment'),send_cancel_lesson)
+            request_transfer(self.request.user, lesson, managers, self.request.data.get('transfer_comment'),
+                             send_cancel_lesson)
         elif self.request.data.get('lesson_status') == Lesson.CANCEL:
             transfer = self.request.data.get('transfer')
             if transfer:

@@ -6,7 +6,7 @@ from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRe
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'teacher', 'student', 'date', 'lesson_status')
+    list_display = ('pk', 'teacher', 'student', 'date', 'transfer_date', 'lesson_status')
     list_filter = ('lesson_status',)
 
 

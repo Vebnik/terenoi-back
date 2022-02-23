@@ -2,6 +2,7 @@ import datetime
 from django.db import models
 from authapp.models import User
 from lessons.models import Lesson
+from notifications.models import PaymentNotification
 from profileapp.models import Subject, ReferralPromo
 from settings.models import ReferralSettings
 
@@ -98,6 +99,8 @@ class HistoryPaymentStudent(models.Model):
                 student_balance.lessons_balance = self.lesson_count
             else:
                 student_balance.lessons_balance += self.lesson_count
+            PaymentNotification.objects.create(to_user=self.student, payment_date=self.payment_date,
+                                               type=PaymentNotification.PAID)
         else:
             if not student_balance.bonus_lessons_balance:
                 student_balance.bonus_lessons_balance = self.lesson_count
