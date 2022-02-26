@@ -20,6 +20,7 @@ class Lesson(models.Model):
     REQUEST_CANCEL = 'REQ_CNL'
     CANCEL = 'CNL'
 
+
     LESSON_STATUS_CHOICES = (
         (SCHEDULED, 'Урок назначен'),
         (REQUEST_RESCHEDULED, 'Запрос на перенос урока'),
@@ -136,21 +137,25 @@ class ManagerRequests(models.Model):
     RESCHEDULED = 'RESCH'
     REQUEST_CANCEL = 'REQ_CNL'
     CANCEL = 'CNL'
+    REJECT = 'REJ'
 
     REQUEST_CHOICES = (
         (REQUEST_RESCHEDULED, 'Запрос на перенос урока'),
         (RESCHEDULED, 'Урок перенесен'),
         (REQUEST_CANCEL, 'Запрос на отмену урока'),
-        (CANCEL, 'Урок отменен')
+        (CANCEL, 'Урок отменен'),
+        (REJECT, 'Запрос отклонен'),
     )
 
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
-    type = models.CharField(verbose_name='Тип запроса', choices=REQUEST_CHOICES, max_length=15,**NULLABLE)
+    manager = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='Менеджер', related_name='lesson_manager',
+                                **NULLABLE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='lesson_user')
+    type = models.CharField(verbose_name='Тип запроса', choices=REQUEST_CHOICES, max_length=15, **NULLABLE)
+    date = models.DateTimeField(verbose_name='Дата урока', **NULLABLE)
     comment = models.TextField(verbose_name='Комментарий к переносу или отмене урока', **NULLABLE)
     is_resolved = models.BooleanField(verbose_name='Решен', default=False)
 
     class Meta:
         verbose_name = 'Запрос для изменения урока'
         verbose_name_plural = 'Запросы для изменения уроков'
-

@@ -17,8 +17,8 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
     LessonRateHomeworkDetail
-from lessons.services import request_transfer, send_transfer
-from profileapp.models import Subject
+from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel
+from profileapp.models import Subject, ManagerToUser
 
 
 class AllUserLessonsListView(generics.ListAPIView):
@@ -111,31 +111,29 @@ class LessonTransferUpdateView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         lesson_id = self.kwargs.get('pk')
         lesson = Lesson.objects.get(pk=lesson_id)
-        managers = User.objects.filter(is_staff=True)
+        manager = ManagerToUser.objects.get(user=self.request.user).manager
         if self.request.data.get('lesson_status') == Lesson.REQUEST_RESCHEDULED:
-            request_transfer(self.request.user, lesson, managers, self.request.data.get('transfer_comment'),
-                             send_transfer_lesson)
+            request_transfer(self.request.user, lesson, manager, self.request.data.get('transfer_comment'),
+                             send_transfer_lesson, self.request.data.get('transfer_date'))
         elif self.request.data.get('lesson_status') == Lesson.RESCHEDULED:
             transfer = self.request.data.get('transfer')
             if transfer:
-                send_transfer(managers, lesson, send_accept_transfer_lesson)
+                send_transfer(manager, lesson, send_accept_transfer_lesson)
                 return super(LessonTransferUpdateView, self).update(request, *args, **kwargs)
             else:
-                for manager in managers:
-                    send_reject_transfer_lesson(manager, lesson)
+                send_reject_transfer_lesson(manager, lesson)
                 return Response({'message': 'Запрос на перенос урока отклонен'},
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
         elif self.request.data.get('lesson_status') == Lesson.REQUEST_CANCEL:
-            request_transfer(self.request.user, lesson, managers, self.request.data.get('transfer_comment'),
+            request_cancel(self.request.user, lesson, manager, self.request.data.get('transfer_comment'),
                              send_cancel_lesson)
         elif self.request.data.get('lesson_status') == Lesson.CANCEL:
             transfer = self.request.data.get('transfer')
             if transfer:
-                send_transfer(managers, lesson, send_accept_transfer_lesson)
+                send_cancel(manager, lesson, send_accept_transfer_lesson)
                 return super(LessonTransferUpdateView, self).update(request, *args, **kwargs)
             else:
-                for manager in managers:
-                    send_reject_transfer_lesson(manager, lesson)
+                send_reject_transfer_lesson(manager, lesson)
                 return Response({'message': 'Запрос на отмену урока отклонен'},
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
         return super(LessonTransferUpdateView, self).update(request, *args, **kwargs)

@@ -54,3 +54,12 @@ class ReferralPromo(models.Model):
     class Meta:
         verbose_name = 'Реферальная программа'
         verbose_name_plural = 'Реферальная программа'
+
+
+class ManagerToUser(models.Model):
+    manager = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Менеджр', related_name='terenoi_manger')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='terenoi_user')
+
+    class Meta:
+        verbose_name = 'Менеджер-Пользователь'
+        verbose_name_plural = 'Менеджер-Пользователь'
