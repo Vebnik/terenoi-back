@@ -69,7 +69,14 @@ class ManagerRequestsAdmin(admin.ModelAdmin):
     def process_accept(self, request, pk, *args, **kwargs):
         req = ManagerRequests.objects.filter(pk=pk).first()
         req.is_resolved = True
+        if req.type == ManagerRequests.REQUEST_RESCHEDULED:
+            req.lesson.lesson_status = Lesson.RESCHEDULED
+            req.type = ManagerRequests.RESCHEDULED
+        else:
+            req.lesson.lesson_status = Lesson.CANCEL
+            req.type = ManagerRequests.CANCEL
         req.save()
+        req.lesson.save()
         Lesson.objects.create(teacher=req.lesson.teacher, student=req.lesson.student, topic=req.lesson.topic,
                               subject=req.lesson.subject,
                               date=req.date)
