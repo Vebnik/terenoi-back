@@ -86,5 +86,8 @@ class ManagerRequestsAdmin(admin.ModelAdmin):
         req = ManagerRequests.objects.filter(pk=pk).first()
         req.is_resolved = True
         req.type = ManagerRequests.REJECT
+        req.lesson.lesson_status = Lesson.SCHEDULED
+        req.lesson.transfer_date = None
         req.save()
+        req.lesson.save()
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
