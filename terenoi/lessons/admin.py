@@ -72,14 +72,14 @@ class ManagerRequestsAdmin(admin.ModelAdmin):
         if req.type == ManagerRequests.REQUEST_RESCHEDULED:
             req.lesson.lesson_status = Lesson.RESCHEDULED
             req.type = ManagerRequests.RESCHEDULED
+            Lesson.objects.create(teacher=req.lesson.teacher, student=req.lesson.student, topic=req.lesson.topic,
+                                  subject=req.lesson.subject,
+                                  date=req.date)
         else:
             req.lesson.lesson_status = Lesson.CANCEL
             req.type = ManagerRequests.CANCEL
         req.save()
         req.lesson.save()
-        Lesson.objects.create(teacher=req.lesson.teacher, student=req.lesson.student, topic=req.lesson.topic,
-                              subject=req.lesson.subject,
-                              date=req.date)
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
     def process_reject(self, request, pk, *args, **kwargs):
