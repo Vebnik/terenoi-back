@@ -69,8 +69,8 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_record_link(self, instance):
-        record_data = VoximplantRecordLesson.objects.filter(lesson=instance).first()
-        serializer = RecordSerializer(record_data)
+        record_data = VoximplantRecordLesson.objects.filter(lesson=instance)
+        serializer = RecordSerializer(record_data, many=True)
         return serializer.data
 
 
