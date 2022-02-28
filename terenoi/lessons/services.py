@@ -16,29 +16,30 @@ def current_date(user, date):
 @create_voxi_file
 def get_record(lesson_id, lesson_date):
     voxapi = VoximplantAPI("authapp/json/credentials.json")
-    lesson = lessons.models.VoximplantRecordLesson.objects.filter(lesson__pk=lesson_id).first()
-    if not lesson:
+    lesson_list = lessons.models.VoximplantRecordLesson.objects.filter(lesson__pk=lesson_id)
+    if not lesson_list:
         return
-    session_id = lesson.session_id
-    lesson_from_date = lesson_date.day - 2
-    lesson_to_date = lesson_date.day + 1
-    FROM_DATE = datetime.datetime(lesson_date.year, lesson_date.month, lesson_from_date, 0, 0, 0, tzinfo=pytz.utc)
-    TO_DATE = datetime.datetime(lesson_date.year, lesson_date.month, lesson_to_date, 23, 59, 59, tzinfo=pytz.utc)
-    WITH_CALLS = True
-    WITH_RECORDS = True
-    record = ''
-    try:
-        res = voxapi.get_call_history(FROM_DATE,
-                                      TO_DATE,
-                                      with_calls=WITH_CALLS,
-                                      with_records=WITH_RECORDS,
-                                      call_session_history_id=session_id
-                                      )
-        record = res.get('result')[0].get('records')[0].get('record_url')
-        lesson.record = record
-        lesson.save()
-    except VoximplantException as e:
-        print("Error: {}".format(e.message))
+    for lesson in lesson_list:
+        session_id = lesson.session_id
+        lesson_from_date = lesson_date.day - 2
+        lesson_to_date = lesson_date.day + 1
+        FROM_DATE = datetime.datetime(lesson_date.year, lesson_date.month, lesson_from_date, 0, 0, 0, tzinfo=pytz.utc)
+        TO_DATE = datetime.datetime(lesson_date.year, lesson_date.month, lesson_to_date, 23, 59, 59, tzinfo=pytz.utc)
+        WITH_CALLS = True
+        WITH_RECORDS = True
+        record = ''
+        try:
+            res = voxapi.get_call_history(FROM_DATE,
+                                          TO_DATE,
+                                          with_calls=WITH_CALLS,
+                                          with_records=WITH_RECORDS,
+                                          call_session_history_id=session_id
+                                          )
+            record = res.get('result')[0].get('records')[0].get('record_url')
+            lesson.record = record
+            lesson.save()
+        except VoximplantException as e:
+            print("Error: {}".format(e.message))
 
 
 def request_transfer(user, lesson, manager, transfer_comment, send_func, date):

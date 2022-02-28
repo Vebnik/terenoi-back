@@ -43,10 +43,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
 
     def get_current_date(self, instance):
         user = self._user()
-        if instance.lesson_status == Lesson.RESCHEDULED:
-            date = current_date(user, instance.transfer_date)
-        else:
-            date = current_date(user, instance.date)
+        date = current_date(user, instance.date)
         return date
 
     def get_subject(self, instance):
@@ -69,8 +66,8 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_record_link(self, instance):
-        record_data = VoximplantRecordLesson.objects.filter(lesson=instance).first()
-        serializer = RecordSerializer(record_data)
+        record_data = VoximplantRecordLesson.objects.filter(lesson=instance)
+        serializer = RecordSerializer(record_data, many=True)
         return serializer.data
 
 
