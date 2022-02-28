@@ -21,8 +21,8 @@ def get_record(lesson_id, lesson_date):
         return
     for lesson in lesson_list:
         session_id = lesson.session_id
-        lesson_from_date = lesson_date.day - 2
-        lesson_to_date = lesson_date.day + 1
+        lesson_from_date = lesson_date.day
+        lesson_to_date = lesson_date.day
         FROM_DATE = datetime.datetime(lesson_date.year, lesson_date.month, lesson_from_date, 0, 0, 0, tzinfo=pytz.utc)
         TO_DATE = datetime.datetime(lesson_date.year, lesson_date.month, lesson_to_date, 23, 59, 59, tzinfo=pytz.utc)
         WITH_CALLS = True
