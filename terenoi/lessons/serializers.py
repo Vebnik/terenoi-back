@@ -43,10 +43,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
 
     def get_current_date(self, instance):
         user = self._user()
-        if instance.lesson_status == Lesson.RESCHEDULED:
-            date = current_date(user, instance.transfer_date)
-        else:
-            date = current_date(user, instance.date)
+        date = current_date(user, instance.date)
         return date
 
     def get_subject(self, instance):
