@@ -1,11 +1,15 @@
 import datetime
 import pytz
 from django.conf import settings
+from django.db.models import Sum
 from voximplant.apiclient import VoximplantAPI, VoximplantException
+
+import finance
 import lessons
+import notifications
 from authapp.decorators import create_voxi_file
 from authapp.services import send_transfer_lesson
-
+from settings.models import RateTeachers
 
 
 def current_date(user, date):
@@ -63,8 +67,9 @@ def request_cancel(user, lesson, manager, transfer_comment, send_func):
 def send_transfer(manager, lesson, send_func):
     send_func(manager, lesson)
     manager_req = lessons.models.ManagerRequests.objects.filter(lesson=lesson).first()
-    lessons.models.Lesson.objects.create(teacher=lesson.teacher, student=lesson.student, topic=lesson.topic, subject=lesson.subject,
-                          date=manager_req.date)
+    lessons.models.Lesson.objects.create(teacher=lesson.teacher, student=lesson.student, topic=lesson.topic,
+                                         subject=lesson.subject,
+                                         date=manager_req.date)
     if manager_req:
         manager_req.is_resolved = True
         manager_req.type = lessons.models.ManagerRequests.RESCHEDULED
@@ -78,3 +83,34 @@ def send_cancel(manager, lesson, send_func):
         manager_req.is_resolved = True
         manager_req.type = lessons.models.ManagerRequests.CANCEL
         manager_req.save()
+
+
+def payment_for_lesson(lesson):
+    teacher_lesson = finance.models.HistoryPaymentTeacher.objects.filter(lesson=lesson)
+    student_lesson = finance.models.HistoryPaymentStudent.objects.filter(lesson=lesson)
+    student_payment = finance.models.HistoryPaymentStudent.objects.filter(student=lesson.student,
+                                                                          subject=lesson.subject).aggregate(
+        total_amount=Sum('amount'))
+    student_count_lesson = finance.models.HistoryPaymentStudent.objects.filter(student=lesson.student,
+                                                                               subject=lesson.subject).aggregate(
+        total_count=Sum('lesson_count'))
+    if student_count_lesson['total_count'] < 2:
+        notifications.models.PaymentNotification.objects.create(to_user=lesson.student,
+                                                                type=notifications.models.PaymentNotification.AWAITING_PAYMENT)
+    one_lesson_amount = student_payment['total_amount'] / student_count_lesson['total_count']
+    if not student_lesson:
+        finance.models.HistoryPaymentStudent.objects.create(student=lesson.student,
+                                                            payment_date=datetime.datetime.now(),
+                                                            amount=-one_lesson_amount, subject=lesson.subject,
+                                                            lesson_count=-1, lesson=lesson, debit=True)
+    if not teacher_lesson:
+        default_rate = RateTeachers.objects.filter(subject=lesson.subject).first().rate
+        rate = finance.models.TeacherRate.objects.filter(teacher=lesson.teacher, subject=lesson.subject).first()
+        if not rate:
+            finance.models.HistoryPaymentTeacher.objects.create(teacher=lesson.teacher,
+                                                                payment_date=datetime.datetime.now(),
+                                                                lesson=lesson, amount=default_rate)
+        else:
+            finance.models.HistoryPaymentTeacher.objects.create(teacher=lesson.teacher,
+                                                                payment_date=datetime.datetime.now(),
+                                                                lesson=lesson, amount=rate.rate)

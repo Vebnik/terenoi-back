@@ -50,8 +50,10 @@ class Notification(models.Model):
 
 class PaymentNotification(models.Model):
     PAID = 'PD'
+    AWAITING_PAYMENT = 'AP'
     CHOICES_NOTIFICATIONS = (
         (PAID, 'Оплачено'),
+        (AWAITING_PAYMENT, 'Ожидает оплаты')
     )
 
     to_user = models.ForeignKey(User, verbose_name='Уведомлениe пользователя', on_delete=models.CASCADE)

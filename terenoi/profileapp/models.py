@@ -10,6 +10,7 @@ NULLABLE = {'blank': True, 'null': True}
 
 class Subject(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название предмета', **NULLABLE)
+    questions = models.TextField(verbose_name='Вопросы к предмету', **NULLABLE)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
 
     class Meta:
@@ -49,6 +50,7 @@ class ReferralPromo(models.Model):
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='from_user', verbose_name='Друг',
                                   null=True)
     from_user_link = models.CharField(max_length=10, verbose_name='Реферальный промо друга', **NULLABLE)
+    friend_is_used = models.BooleanField(default=False)
     is_used = models.BooleanField(default=False)
 
     class Meta:
