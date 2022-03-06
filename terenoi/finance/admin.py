@@ -21,7 +21,8 @@ class TeacherRateAdmin(admin.ModelAdmin):
 
 @admin.register(HistoryPaymentStudent)
 class HistoryPaymentStudentAdmin(admin.ModelAdmin):
-    list_display = ('student', 'manager', 'payment_date', 'amount', 'currency', 'subject', 'lesson_count', 'referral')
+    list_display = (
+    'student', 'manager', 'payment_date', 'amount', 'currency', 'subject', 'lesson_count', 'debit', 'referral')
 
 
 @admin.register(HistoryPaymentTeacher)

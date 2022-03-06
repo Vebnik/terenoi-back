@@ -1,12 +1,17 @@
+import datetime
+
 import pytz
 from django.conf import settings
 from django.db import models
+from django.db.models import Sum
+
 from authapp.models import User, VoxiAccount
 from authapp.services import add_voxiaccount
-from lessons.services import get_record
+from lessons.services import get_record, payment_for_lesson
 from notifications.models import Notification
 from notifications.services import create_lesson_notifications
 from profileapp.models import TeacherSubject, Subject
+from settings.models import RateTeachers, DeadlineSettings
 
 NULLABLE = {'blank': True, 'null': True}
 
@@ -19,7 +24,6 @@ class Lesson(models.Model):
     DONE = 'DN'
     REQUEST_CANCEL = 'REQ_CNL'
     CANCEL = 'CNL'
-
 
     LESSON_STATUS_CHOICES = (
         (SCHEDULED, 'Урок назначен'),
@@ -66,6 +70,8 @@ class Lesson(models.Model):
         if self.lesson_status == Lesson.SCHEDULED:
             create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
+            questions = Subject.objects.filter(name=self.subject.name).first()
+            self.teacher_rate_comment = questions.questions
         if self.lesson_status == Lesson.REQUEST_CANCEL:
             create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
@@ -84,6 +90,11 @@ class Lesson(models.Model):
                                         teacher_status=self.teacher_status, date=self.transfer_date, lesson_id=self.pk)
         if self.lesson_status == Lesson.DONE:
             get_record(lesson_id=self.pk, lesson_date=self.date)
+            payment_for_lesson(self)
+            count = DeadlineSettings.objects.filter(subject=self.subject).first().day_count
+            days = datetime.timedelta(days=count)
+            deadline = self.date + days
+            self.deadline = deadline
         super(Lesson, self).save()
 
 

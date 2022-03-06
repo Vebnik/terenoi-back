@@ -47,11 +47,14 @@ class HistoryPaymentStudent(models.Model):
                                 limit_choices_to={'is_student': True})
     manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name='manager', verbose_name='Менеджер',
                                 limit_choices_to={'is_staff': True}, **NULLABLE)
-    payment_date = models.DateTimeField(verbose_name='Дата и время зачисления')
-    amount = models.IntegerField(verbose_name='Сумма зачисления', **NULLABLE)
+    payment_date = models.DateTimeField(verbose_name='Дата и время зачисления или списания')
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок', **NULLABLE)
+    amount = models.IntegerField(verbose_name='Сумма зачисления или списания', **NULLABLE)
     currency = models.CharField(verbose_name='Валюта', choices=CURRENCY_CHOICES, default=TENGE, max_length=5)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     lesson_count = models.IntegerField(verbose_name='Кол-во уроков', **NULLABLE)
+    comment = models.TextField(verbose_name='Комментарий к оплате', **NULLABLE)
+    debit = models.BooleanField(verbose_name='Списание', default=False)
     referral = models.BooleanField(verbose_name='Реферальная программа', default=False)
 
     class Meta:
@@ -63,6 +66,9 @@ class HistoryPaymentStudent(models.Model):
         if not self.referral:
             if not student_balance.money_balance:
                 student_balance.money_balance = self.amount
+            else:
+                student_balance.money_balance += self.amount
+            if self.debit:
                 ref_user = ReferralPromo.objects.filter(user=self.student).first()
                 lesson_count = ReferralSettings.objects.all().first().lesson_count
                 amount = ReferralSettings.objects.all().first().amount
@@ -93,8 +99,6 @@ class HistoryPaymentStudent(models.Model):
                                                              referral=True)
                         ref_user.is_used = True
                         ref_user.save()
-            else:
-                student_balance.money_balance += self.amount
             if not student_balance.lessons_balance:
                 student_balance.lessons_balance = self.lesson_count
             else:
@@ -138,6 +142,7 @@ class HistoryPaymentTeacher(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок', **NULLABLE)
     amount = models.IntegerField(verbose_name='Сумма зачисления или снятия', **NULLABLE)
     currency = models.CharField(verbose_name='Валюта', choices=CURRENCY_CHOICES, default=TENGE, max_length=5)
+    comment = models.TextField(verbose_name='Комментарий к оплате', **NULLABLE)
     referral = models.BooleanField(verbose_name='Реферальная программа', default=False)
 
     class Meta:
@@ -150,11 +155,9 @@ class HistoryPaymentTeacher(models.Model):
             if not teacher_balance.money_balance:
                 teacher_balance.money_balance = self.amount
                 ref_user = ReferralPromo.objects.filter(user=self.teacher).first()
-                print(ref_user)
                 lesson_count = ReferralSettings.objects.all().first().lesson_count
                 amount = ReferralSettings.objects.all().first().amount
                 if ref_user.from_user and not ref_user.is_used:
-                    print(ref_user.from_user)
                     if ref_user.from_user.is_student:
                         HistoryPaymentStudent.objects.create(student=ref_user.from_user,
                                                              payment_date=datetime.datetime.now(),
