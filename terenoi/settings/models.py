@@ -59,3 +59,20 @@ class DeadlineSettings(models.Model):
         else:
             DeadlineSettings.objects.get(subject=self.subject).delete()
             super(DeadlineSettings, self).save(*args, **kwargs)
+
+
+class CityTimeZone(models.Model):
+    city = models.CharField(verbose_name='Город', max_length=150)
+    time_zone = models.CharField(verbose_name='Часовой пояс', max_length=15)
+
+    class Meta:
+        verbose_name = 'Город и часовой пояс'
+        verbose_name_plural = 'Города и часовые пояса'
+
+    def save(self, *args, **kwargs):
+        city = CityTimeZone.objects.filter(city=self.city)
+        if not city:
+            super(CityTimeZone, self).save(*args, **kwargs)
+        else:
+            CityTimeZone.objects.get(city=self.city).delete()
+            super(CityTimeZone, self).save(*args, **kwargs)

@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import pytz
@@ -27,12 +28,17 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         super(User, self).save(*args, **kwargs)
+        if 'pbkdf2_sha256' not in self.password:
+            password = make_password(self.password)
+            self.password = password
         if self.is_teacher:
             voxi_user = VoxiAccount.objects.filter(user=self).first()
             if voxi_user is None:
                 username = f'Teacher-{self.pk}'
                 add_voxiaccount(self, username, self.username)
         super(User, self).save(*args, **kwargs)
+
+
 
 
 class VoxiAccount(models.Model):
