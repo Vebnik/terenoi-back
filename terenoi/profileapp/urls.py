@@ -1,7 +1,7 @@
 from django.urls import path
 from profileapp.views import ProfileUpdateView, ProfileView, ReferralView
 
-app_name = 'authapp'
+app_name = 'profileapp'
 
 urlpatterns = [
     path('profile/', ProfileView.as_view(), name='profile'),
