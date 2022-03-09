@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from authapp.models import User
-from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParents, UserInterest, Interests
+from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParents, UserInterest, Interests, \
+    LanguageInterface
 from profileapp.permissions import IsStudent, IsTeacher
 from profileapp.serializers import UpdateUserSerializer, UpdateStudentSerializer, UpdateTeacherSerializer, \
     ReferralSerializer
@@ -66,6 +67,27 @@ class ProfileUpdateView(generics.UpdateAPIView):
                         if user_interest:
                             user_interest.interests.remove(interest_l)
                             user_interest.save()
+            if request.data.get('language_interface'):
+                lang_interface = LanguageInterface.objects.filter(user=self.request.user).first()
+                if lang_interface:
+                    if request.data.get('language_interface') == LanguageInterface.RUSSIAN:
+                        lang_interface.interface_language = LanguageInterface.RUSSIAN
+                    elif request.data.get('language_interface') == LanguageInterface.KAZAKH:
+                        lang_interface.interface_language = LanguageInterface.KAZAKH
+                    else:
+                        lang_interface.interface_language = LanguageInterface.ENGLISH
+                    lang_interface.save()
+                else:
+                    if request.data.get('language_interface') == LanguageInterface.RUSSIAN:
+                        LanguageInterface.objects.create(user=self.request.user,
+                                                         interface_language=LanguageInterface.RUSSIAN)
+                    elif request.data.get('language_interface') == LanguageInterface.KAZAKH:
+                        LanguageInterface.objects.create(user=self.request.user,
+                                                         interface_language=LanguageInterface.KAZAKH)
+                    else:
+                        LanguageInterface.objects.create(user=self.request.user,
+                                                         interface_language=LanguageInterface.ENGLISH)
+
         except AttributeError:
             return super(ProfileUpdateView, self).update(request, *args, **kwargs)
         return super(ProfileUpdateView, self).update(request, *args, **kwargs)
