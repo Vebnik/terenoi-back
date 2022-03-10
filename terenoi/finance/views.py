@@ -31,16 +31,17 @@ class StudentHistoryPayment(generics.ListAPIView):
             queryset = HistoryPaymentStudent.objects.filter(student=user,
                                                             subject__name=self.request.query_params.get('subject'),
                                                             payment_date__range=[self.request.query_params.get('from'),
-                                                                                 self.request.query_params.get('to')])
+                                                                                 self.request.query_params.get(
+                                                                                     'to')]).order_by('-payment_date')
             return queryset
         elif self.request.query_params.get('subject'):
             queryset = HistoryPaymentStudent.objects.filter(student=user,
-                                                            subject__name=self.request.query_params.get('subject'))
+                                                            subject__name=self.request.query_params.get('subject')).order_by('-payment_date')
             return queryset
         elif self.request.query_params.get('from'):
             queryset = HistoryPaymentStudent.objects.filter(student=user,
                                                             payment_date__range=[self.request.query_params.get('from'),
-                                                                                 self.request.query_params.get('to')])
+                                                                                 self.request.query_params.get('to')]).order_by('-payment_date')
             return queryset
-        queryset = HistoryPaymentStudent.objects.filter(student=user)
+        queryset = HistoryPaymentStudent.objects.filter(student=user).order_by('-payment_date')
         return queryset
