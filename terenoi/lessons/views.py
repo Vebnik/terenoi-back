@@ -51,13 +51,11 @@ class AllUserClassesListView(generics.ListAPIView):
                 (Q(student=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
             queryset_4 = Lesson.objects.filter(
                 (Q(student=self.request.user) & Q(lesson_status=Lesson.REQUEST_RESCHEDULED))).select_related()
-            queryset_5 = Lesson.objects.filter(
-                (Q(student=self.request.user) & Q(lesson_status=Lesson.RESCHEDULED))).select_related()
             queryset_6 = Lesson.objects.filter(
                 (Q(student=self.request.user) & Q(lesson_status=Lesson.REQUEST_CANCEL))).select_related()
             queryset_7 = Lesson.objects.filter(
                 (Q(student=self.request.user) & Q(lesson_status=Lesson.CANCEL))).select_related()
-            queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_5, queryset_6,
+            queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_6,
                                         queryset_7).order_by('-date')
         else:
             queryset_1 = Lesson.objects.filter(
@@ -68,13 +66,11 @@ class AllUserClassesListView(generics.ListAPIView):
                 (Q(teacher=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
             queryset_4 = Lesson.objects.filter(
                 (Q(teacher=self.request.user) & Q(lesson_status=Lesson.REQUEST_RESCHEDULED))).select_related()
-            queryset_5 = Lesson.objects.filter(
-                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.RESCHEDULED))).select_related()
             queryset_6 = Lesson.objects.filter(
                 (Q(teacher=self.request.user) & Q(lesson_status=Lesson.REQUEST_CANCEL))).select_related()
             queryset_7 = Lesson.objects.filter(
                 (Q(teacher=self.request.user) & Q(lesson_status=Lesson.CANCEL))).select_related()
-            queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_5, queryset_6,
+            queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_6,
                                         queryset_7).order_by('-date')
 
         return queryset
@@ -126,7 +122,7 @@ class LessonTransferUpdateView(generics.UpdateAPIView):
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
         elif self.request.data.get('lesson_status') == Lesson.REQUEST_CANCEL:
             request_cancel(self.request.user, lesson, manager, self.request.data.get('transfer_comment'),
-                             send_cancel_lesson)
+                           send_cancel_lesson)
         elif self.request.data.get('lesson_status') == Lesson.CANCEL:
             transfer = self.request.data.get('transfer')
             if transfer:
