@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from authapp.models import User
-from settings.models import CityTimeZone
+from settings.models import CityTimeZone, UserCity
 
 
 class CitiesSerializer(serializers.ModelSerializer):
@@ -25,3 +25,15 @@ class CitiesSerializer(serializers.ModelSerializer):
         for zone in time_zones:
             time_zones_lst.append(zone['time_zone'])
         return time_zones_lst
+
+
+class CityUserSerializer(serializers.ModelSerializer):
+    city_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserCity
+        fields = ('city_title',)
+
+    def get_city_title(self, instance):
+        city = CityTimeZone.objects.filter(city=instance.city).first()
+        return city.city

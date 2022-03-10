@@ -65,3 +65,73 @@ class ManagerToUser(models.Model):
     class Meta:
         verbose_name = 'Менеджер-Пользователь'
         verbose_name_plural = 'Менеджер-Пользователь'
+
+
+class UserParents(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь',
+                             limit_choices_to={'is_student': True})
+    full_name = models.CharField(verbose_name='ФИО Родителя', max_length=255)
+    parent_phone = models.CharField(max_length=25, verbose_name='Телефон родителя', **NULLABLE)
+    parent_email = models.CharField(max_length=100, verbose_name='Email родителя', **NULLABLE)
+
+    class Meta:
+        verbose_name = 'Родитель'
+        verbose_name_plural = 'Родители'
+
+
+class GlobalUserPurpose(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь',
+                             limit_choices_to={'is_student': True})
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет')
+    purpose = models.CharField(max_length=255, verbose_name='Цель')
+
+    class Meta:
+        verbose_name = 'Цель ученика'
+        verbose_name_plural = 'Цели учеников'
+
+
+class LanguageInterface(models.Model):
+    RUSSIAN = 'RU'
+    KAZAKH = 'KZ'
+    ENGLISH = 'EN'
+    LANGUAGE_INTERFACE_CHOICES = (
+        (RUSSIAN, 'Русский'),
+        (KAZAKH, 'Казахстанский'),
+        (ENGLISH, 'Английский'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    interface_language = models.CharField(max_length=10, choices=LANGUAGE_INTERFACE_CHOICES, default=RUSSIAN,
+                                          verbose_name='Язык интерфейса')
+
+    class Meta:
+        verbose_name = 'Язык интерфейса пользователя'
+        verbose_name_plural = 'Языки интерфейса пользователя'
+
+
+class Interests(models.Model):
+    name = models.CharField(max_length=50, verbose_name='Название')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Интерес'
+        verbose_name_plural = 'Интересы'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        interest = Interests.objects.filter(name=self.name)
+        if not interest:
+            super(Interests, self).save(*args, **kwargs)
+        else:
+            Interests.objects.get(name=self.name).delete()
+            super(Interests, self).save(*args, **kwargs)
+
+
+class UserInterest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    interests = models.ManyToManyField(Interests)
+
+    class Meta:
+        verbose_name = 'Интерес пользователя'
+        verbose_name_plural = 'Интересы пользователей'

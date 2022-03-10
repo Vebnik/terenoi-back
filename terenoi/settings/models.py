@@ -1,5 +1,6 @@
 from django.db import models
 
+from authapp.models import User
 from profileapp.models import Subject
 
 NULLABLE = {'blank': True, 'null': True}
@@ -69,6 +70,9 @@ class CityTimeZone(models.Model):
         verbose_name = 'Город и часовой пояс'
         verbose_name_plural = 'Города и часовые пояса'
 
+    def __str__(self):
+        return self.city
+
     def save(self, *args, **kwargs):
         city = CityTimeZone.objects.filter(city=self.city)
         if not city:
@@ -76,3 +80,12 @@ class CityTimeZone(models.Model):
         else:
             CityTimeZone.objects.get(city=self.city).delete()
             super(CityTimeZone, self).save(*args, **kwargs)
+
+
+class UserCity(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    city = models.ForeignKey(CityTimeZone, on_delete=models.CASCADE, verbose_name='Город проживания')
+
+    class Meta:
+        verbose_name = 'Город пользователя'
+        verbose_name_plural = 'Города пользователей'
