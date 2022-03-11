@@ -16,7 +16,7 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
-    LessonRateHomeworkDetail, UserClassesSerializer
+    LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel
 from profileapp.models import Subject, ManagerToUser
 
@@ -171,6 +171,20 @@ class LessonHomeworksAdd(generics.UpdateAPIView):
             text = self.request.data.get('text_homework')
             LessonHomework.objects.create(lesson=self.get_object(), text_homework=text)
         return super(LessonHomeworksAdd, self).update(request, *args, **kwargs)
+
+
+class HomepageListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request):
+        user = self.get_object()
+        if user.is_student:
+            serializer = HomepageStudentSerializer(user)
+            return Response(serializer.data)
+
 
 
 class LessonRateHomeworksAdd(generics.UpdateAPIView):

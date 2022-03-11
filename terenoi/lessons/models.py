@@ -91,10 +91,11 @@ class Lesson(models.Model):
         if self.lesson_status == Lesson.DONE:
             get_record(lesson_id=self.pk, lesson_date=self.date)
             payment_for_lesson(self)
-            count = DeadlineSettings.objects.filter(subject=self.subject).first().day_count
-            days = datetime.timedelta(days=count)
-            deadline = self.date + days
-            self.deadline = deadline
+            count = DeadlineSettings.objects.filter(subject=self.subject).first()
+            if count:
+                days = datetime.timedelta(days=count.day_count)
+                deadline = self.date + days
+                self.deadline = deadline
         super(Lesson, self).save()
 
 

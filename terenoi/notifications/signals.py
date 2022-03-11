@@ -1,3 +1,4 @@
+import datetime
 import json
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -61,7 +62,10 @@ def notifications_handler(sender, instance, **kwargs):
 @receiver(post_save, sender=PaymentNotification)
 def payment_notifications_handler(sender, instance, **kwargs):
     if not instance.is_read:
-        payment_date = current_date(instance.to_user, instance.payment_date)
+        if instance.payment_date:
+            payment_date = current_date(instance.to_user, instance.payment_date)
+        else:
+            payment_date = current_date(instance.to_user, datetime.datetime.now())
         if instance.to_user.is_online:
             channel_layer = get_channel_layer()
             created_at = current_date(instance.to_user, instance.created_at)
