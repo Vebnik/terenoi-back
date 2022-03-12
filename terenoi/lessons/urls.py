@@ -4,7 +4,7 @@ from lessons.views import AllUserLessonsListView, UserLessonRetrieveView, VoxiTe
     VoxiStudentInfoRetrieveView, UserLessonCreateView, LessonUserStatusUpdateView, AllUserClassesListView, \
     LessonUpdateView, LessonMaterialsAdd, LessonHomeworksAdd, LessonMaterialsRetrieveView, LessonHomeworksRetrieveView, \
     LessonEvaluationRetrieveView, LessonEvaluationUpdateView, CreateVoxiCallData, LessonTransferUpdateView, \
-    LessonEvaluationQuestionsRetrieveView, LessonRateHomeworksAdd, LessonRateHomeworkRetrieveView
+    LessonEvaluationQuestionsRetrieveView, LessonRateHomeworksAdd, LessonRateHomeworkRetrieveView, HomepageListView
 
 app_name = 'lessons'
 
@@ -17,6 +17,8 @@ urlpatterns = [
 
     path('transfer/<int:pk>/', LessonTransferUpdateView.as_view(), name='lesson_transfer'),
 
+    path('homepage/', HomepageListView.as_view(), name='homepage'),
+
     path('materials/add/<int:pk>/', LessonMaterialsAdd.as_view(), name='materials_add'),
     path('homeworks/add/<int:pk>/', LessonHomeworksAdd.as_view(), name='homeworks_add'),
     path('materials/<int:pk>/', LessonMaterialsRetrieveView.as_view(), name='lesson_materials'),
@@ -25,7 +27,8 @@ urlpatterns = [
     path('rate/<int:pk>/', LessonRateHomeworkRetrieveView.as_view(), name='homework_rate'),
 
     path('evaluation/<int:pk>/', LessonEvaluationRetrieveView.as_view(), name='lesson_evaluation'),
-    path('evaluation-questions/<int:pk>/', LessonEvaluationQuestionsRetrieveView.as_view(), name='evaluation-questions'),
+    path('evaluation-questions/<int:pk>/', LessonEvaluationQuestionsRetrieveView.as_view(),
+         name='evaluation-questions'),
     path('evaluation/add/<int:pk>/', LessonEvaluationUpdateView.as_view(), name='lesson_user_evaluation_add'),
 
     path('voxi-teacher-info/<int:pk>/', VoxiTeacherInfoRetrieveView.as_view(), name='voxi_teacher'),
