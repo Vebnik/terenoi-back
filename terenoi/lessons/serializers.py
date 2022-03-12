@@ -9,10 +9,37 @@ from profileapp.models import TeacherSubject, Subject
 from profileapp.serializers import SubjectSerializer
 
 
+class UserClassesSerializer(serializers.ModelSerializer):
+    current_date = serializers.SerializerMethodField()
+    lessons = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lesson
+        fields = ('current_date', 'lessons')
+
+    def _user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return None
+
+    def get_current_date(self, instance):
+        return instance
+
+    def get_lessons(self, instance):
+        user = self._user()
+        if user.is_student:
+            lessons = Lesson.objects.filter(student=user, date__date=instance)
+        else:
+            lessons = Lesson.objects.filter(teacher=user, date__date=instance)
+        serializer = UserLessonsSerializer(lessons, many=True)
+        return serializer.data
+
+
 class UserLessonsSerializer(serializers.ModelSerializer):
     teacher = serializers.SerializerMethodField()
     student = serializers.SerializerMethodField()
-    current_date = serializers.SerializerMethodField()
+    # current_date = serializers.SerializerMethodField()
     subject = serializers.SerializerMethodField()
     materials = serializers.SerializerMethodField()
     homeworks = serializers.SerializerMethodField()
@@ -22,7 +49,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = (
-            'pk', 'teacher', 'student', 'topic', 'subject', 'materials', 'deadline', 'homeworks', 'current_date',
+            'pk', 'teacher', 'student', 'topic', 'subject', 'materials', 'deadline', 'homeworks', 'date',
             'teacher_status', 'student_status', 'lesson_status', 'record_link', 'rate')
 
     def _user(self):
@@ -41,10 +68,10 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         serializer = UserNameSerializer(user)
         return serializer.data
 
-    def get_current_date(self, instance):
-        user = self._user()
-        date = current_date(user, instance.date)
-        return date
+    # def get_current_date(self, instance):
+    #     user = self._user()
+    #     date = current_date(user, instance.date)
+    #     return date
 
     def get_subject(self, instance):
         serializer = SubjectSerializer(instance.subject)

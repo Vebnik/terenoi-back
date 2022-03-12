@@ -16,7 +16,7 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
-    LessonRateHomeworkDetail
+    LessonRateHomeworkDetail, UserClassesSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel
 from profileapp.models import Subject, ManagerToUser
 
@@ -38,40 +38,42 @@ class AllUserLessonsListView(generics.ListAPIView):
 class AllUserClassesListView(generics.ListAPIView):
     """Список всех прошедших уроков пользователя и одного будущего"""
     permission_classes = [IsAuthenticated]
-    serializer_class = UserLessonsSerializer
+    serializer_class = UserClassesSerializer
 
     def get_queryset(self):
         user = self.request.user
         if user.is_student:
-            queryset_1 = Lesson.objects.filter(
-                (Q(student=self.request.user) & Q(lesson_status=Lesson.DONE))).select_related()
-            queryset_2 = Lesson.objects.filter(
-                Q(student=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
-            queryset_3 = Lesson.objects.filter(
-                (Q(student=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
-            queryset_4 = Lesson.objects.filter(
-                (Q(student=self.request.user) & Q(lesson_status=Lesson.REQUEST_RESCHEDULED))).select_related()
-            queryset_6 = Lesson.objects.filter(
-                (Q(student=self.request.user) & Q(lesson_status=Lesson.REQUEST_CANCEL))).select_related()
-            queryset_7 = Lesson.objects.filter(
-                (Q(student=self.request.user) & Q(lesson_status=Lesson.CANCEL))).select_related()
-            queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_6,
-                                        queryset_7).order_by('-date')
+            queryset = Lesson.objects.filter(student=self.request.user).dates('date', 'day')
+            # queryset_1 = Lesson.objects.filter(
+            #     (Q(student=self.request.user) & Q(lesson_status=Lesson.DONE))).select_related()
+            # queryset_2 = Lesson.objects.filter(
+            #     Q(student=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
+            # queryset_3 = Lesson.objects.filter(
+            #     (Q(student=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
+            # queryset_4 = Lesson.objects.filter(
+            #     (Q(student=self.request.user) & Q(lesson_status=Lesson.REQUEST_RESCHEDULED))).select_related()
+            # queryset_6 = Lesson.objects.filter(
+            #     (Q(student=self.request.user) & Q(lesson_status=Lesson.REQUEST_CANCEL))).select_related()
+            # queryset_7 = Lesson.objects.filter(
+            #     (Q(student=self.request.user) & Q(lesson_status=Lesson.CANCEL))).select_related()
+            # queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_6,
+            #                             queryset_7).order_by('-date')
         else:
-            queryset_1 = Lesson.objects.filter(
-                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.DONE))).select_related()
-            queryset_2 = Lesson.objects.filter(
-                Q(teacher=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
-            queryset_3 = Lesson.objects.filter(
-                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
-            queryset_4 = Lesson.objects.filter(
-                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.REQUEST_RESCHEDULED))).select_related()
-            queryset_6 = Lesson.objects.filter(
-                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.REQUEST_CANCEL))).select_related()
-            queryset_7 = Lesson.objects.filter(
-                (Q(teacher=self.request.user) & Q(lesson_status=Lesson.CANCEL))).select_related()
-            queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_6,
-                                        queryset_7).order_by('-date')
+            queryset = Lesson.objects.filter(teacher=self.request.user).dates('date', 'day')
+        #     queryset_1 = Lesson.objects.filter(
+        #         (Q(teacher=self.request.user) & Q(lesson_status=Lesson.DONE))).select_related()
+        #     queryset_2 = Lesson.objects.filter(
+        #         Q(teacher=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
+        #     queryset_3 = Lesson.objects.filter(
+        #         (Q(teacher=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
+        #     queryset_4 = Lesson.objects.filter(
+        #         (Q(teacher=self.request.user) & Q(lesson_status=Lesson.REQUEST_RESCHEDULED))).select_related()
+        #     queryset_6 = Lesson.objects.filter(
+        #         (Q(teacher=self.request.user) & Q(lesson_status=Lesson.REQUEST_CANCEL))).select_related()
+        #     queryset_7 = Lesson.objects.filter(
+        #         (Q(teacher=self.request.user) & Q(lesson_status=Lesson.CANCEL))).select_related()
+        #     queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_6,
+        #                                 queryset_7).order_by('-date')
 
         return queryset
 
