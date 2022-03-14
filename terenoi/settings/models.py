@@ -89,3 +89,15 @@ class UserCity(models.Model):
     class Meta:
         verbose_name = 'Город пользователя'
         verbose_name_plural = 'Города пользователей'
+
+
+class WeekDays(models.Model):
+    name = models.CharField(max_length=100, verbose_name='Название')
+    number = models.PositiveSmallIntegerField(**NULLABLE, verbose_name='Номер дня')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'День недели'
+        verbose_name_plural = 'Дни недели'
