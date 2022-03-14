@@ -1,27 +1,13 @@
 stages:
-#    - linting
     - deploy
-# TODO: run unit tests, linters
-Deploy to prod:
-    stage: deploy
-    script:
-        - cp $ENV_PROD ./terenoi/.env
-        - bash deployment_script.sh
-        - chown -R gitlab-runner /home/girlab-runner/
-#        - ln -s /home/gitlab-runner/fs/media /home/gitlab-runner/builds/QzntZfHK/0/oscarbot/fan_service/
-    only:
-        - main
-    tags:
-        - prod
 
-# TODO: run unit tests, linters
 Deploy to stage:
     stage: deploy
     script:
         - cp $ENV_STAGE ./terenoi/.env
-        - bash deployment_script.sh
-#        - ln -s /home/gitlab-runner/fs/media /home/gitlab-runner/builds/zHdyiqwn/0/oscarbot/fan_service/
+        - bash deploy.sh
+#        - ln -s /home/gitlab-runner/media/ /home/gitlab-runner/projects/backend/
     only:
         - develop
     tags:
-        - stage
+        - dev
