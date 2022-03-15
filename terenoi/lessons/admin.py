@@ -4,7 +4,7 @@ from django.urls import reverse, path
 from django.utils.html import format_html
 
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
-    ManagerRequests
+    ManagerRequests, Schedule, ScheduleSettings
 
 
 @admin.register(Lesson)
@@ -91,3 +91,16 @@ class ManagerRequestsAdmin(admin.ModelAdmin):
         req.save()
         req.lesson.save()
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+
+class ScheduleSettingsInline(admin.TabularInline):
+    model = ScheduleSettings
+
+
+@admin.register(Schedule)
+class ScheduleAdmin(admin.ModelAdmin):
+    list_display = ('teacher', 'student', 'title')
+
+    inlines = [
+        ScheduleSettingsInline,
+    ]

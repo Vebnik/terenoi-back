@@ -28,22 +28,26 @@ class UserClassesSerializer(serializers.ModelSerializer):
         return None
 
     def get_current_date(self, instance):
-        return instance
+        user = self._user()
+        date = current_date(user=user, date=instance.get('date'))
+        return date
 
     def get_lessons(self, instance):
         user = self._user()
         if user.is_student:
-            lessons = Lesson.objects.filter(student=user, date__date=instance)
+            date = current_date(user=user, date=instance.get('date'))
+            lessons = Lesson.objects.filter(student=user, date__date=date.date())
         else:
-            lessons = Lesson.objects.filter(teacher=user, date__date=instance)
-        serializer = UserLessonsSerializer(lessons, many=True)
+            date = current_date(user=user, date=instance.get('date'))
+            lessons = Lesson.objects.filter(teacher=user, date__date=date.date())
+        serializer = UserLessonsSerializer(lessons, many=True, context={'user': user})
         return serializer.data
 
 
 class UserLessonsSerializer(serializers.ModelSerializer):
     teacher = serializers.SerializerMethodField()
     student = serializers.SerializerMethodField()
-    # current_date = serializers.SerializerMethodField()
+    current_date = serializers.SerializerMethodField()
     subject = serializers.SerializerMethodField()
     materials = serializers.SerializerMethodField()
     homeworks = serializers.SerializerMethodField()
@@ -53,7 +57,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = (
-            'pk', 'teacher', 'student', 'topic', 'subject', 'materials', 'deadline', 'homeworks', 'date',
+            'pk', 'teacher', 'student', 'topic', 'subject', 'materials', 'deadline', 'homeworks', 'current_date',
             'teacher_status', 'student_status', 'lesson_status', 'record_link', 'rate')
 
     def _user(self):
@@ -72,10 +76,13 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         serializer = UserNameSerializer(user)
         return serializer.data
 
-    # def get_current_date(self, instance):
-    #     user = self._user()
-    #     date = current_date(user, instance.date)
-    #     return date
+    def get_current_date(self, instance):
+        user = self._user()
+        if not user and self.context.get('user'):
+            date = current_date(self.context.get('user'), instance.date)
+        else:
+            date = current_date(user, instance.date)
+        return date
 
     def get_subject(self, instance):
         serializer = SubjectSerializer(instance.subject)
@@ -139,7 +146,7 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
 
     def get_next_lesson(self, instance):
         lesson = Lesson.objects.filter(student=instance, lesson_status=Lesson.SCHEDULED).order_by('date').first()
-        serializer = UserLessonsSerializer(lesson)
+        serializer = UserLessonsSerializer(lesson, context={'user': instance})
         return serializer.data
 
     def get_weeks(self, instance):
@@ -257,9 +264,12 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
                         pass
                 except Exception:
                     pass
-        teacher_eval_average = sum(teacher_eval) / len(teacher_eval)
-        data.append(teacher_eval_average * 10)
-        avg = sum(data) / len(data)
+        try:
+            teacher_eval_average = sum(teacher_eval) / len(teacher_eval)
+            data.append(teacher_eval_average * 10)
+            avg = sum(data) / len(data)
+        except Exception:
+            return None
         return round(avg, 2)
 
 

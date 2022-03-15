@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db import ProgrammingError
-from settings.models import ReferralSettings, RateTeachers, DeadlineSettings, CityTimeZone, UserCity
+from settings.models import ReferralSettings, RateTeachers, DeadlineSettings, CityTimeZone, UserCity, WeekDays
 
 
 @admin.register(ReferralSettings)
@@ -26,3 +26,9 @@ class CityTimeZoneAdmin(admin.ModelAdmin):
 @admin.register(UserCity)
 class UserCityAdmin(admin.ModelAdmin):
     list_display = ('user', 'city')
+
+
+@admin.register(WeekDays)
+class WeekDaysAdmin(admin.ModelAdmin):
+    list_display = ('name', 'number')
+

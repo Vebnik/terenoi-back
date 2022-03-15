@@ -94,15 +94,28 @@ def payment_for_lesson(lesson):
     student_count_lesson = finance.models.HistoryPaymentStudent.objects.filter(student=lesson.student,
                                                                                subject=lesson.subject).aggregate(
         total_count=Sum('lesson_count'))
-    if student_count_lesson['total_count'] < 2:
-        notifications.models.PaymentNotification.objects.create(to_user=lesson.student,
-                                                                type=notifications.models.PaymentNotification.AWAITING_PAYMENT)
-    one_lesson_amount = student_payment['total_amount'] / student_count_lesson['total_count']
+    # if student_count_lesson['total_count']:
+    #     if student_count_lesson['total_count'] < 2:
+    #         notifications.models.PaymentNotification.objects.create(to_user=lesson.student,
+    #                                                                 type=notifications.models.PaymentNotification.AWAITING_PAYMENT)
+    #     one_lesson_amount = student_payment['total_amount'] / student_count_lesson['total_count']
+    # else:
+    #     one_lesson_amount = 0
     if not student_lesson:
-        finance.models.HistoryPaymentStudent.objects.create(student=lesson.student,
-                                                            payment_date=datetime.datetime.now(),
-                                                            amount=-one_lesson_amount, subject=lesson.subject,
-                                                            lesson_count=-1, lesson=lesson, debit=True)
+        if student_count_lesson['total_count']:
+            if student_count_lesson['total_count'] < 2:
+                notifications.models.PaymentNotification.objects.create(to_user=lesson.student,
+                                                                        type=notifications.models.PaymentNotification.AWAITING_PAYMENT)
+            one_lesson_amount = student_payment['total_amount'] / student_count_lesson['total_count']
+            finance.models.HistoryPaymentStudent.objects.create(student=lesson.student,
+                                                                payment_date=datetime.datetime.now(),
+                                                                amount=-one_lesson_amount, subject=lesson.subject,
+                                                                lesson_count=-1, lesson=lesson, debit=True)
+        else:
+            finance.models.HistoryPaymentStudent.objects.create(student=lesson.student,
+                                                                payment_date=datetime.datetime.now(),
+                                                                amount=-0, subject=lesson.subject,
+                                                                lesson_count=0, lesson=lesson, debit=True)
     if not teacher_lesson:
         default_rate = RateTeachers.objects.filter(subject=lesson.subject).first().rate
         rate = finance.models.TeacherRate.objects.filter(teacher=lesson.teacher, subject=lesson.subject).first()

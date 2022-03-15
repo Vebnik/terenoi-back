@@ -1,17 +1,20 @@
 import datetime
+import calendar
 
 import pytz
+from dateutil.rrule import rrule, DAILY, WEEKLY
 from django.conf import settings
 from django.db import models
 from django.db.models import Sum
 
+import finance
 from authapp.models import User, VoxiAccount
 from authapp.services import add_voxiaccount
 from lessons.services import get_record, payment_for_lesson
 from notifications.models import Notification
 from notifications.services import create_lesson_notifications
 from profileapp.models import TeacherSubject, Subject
-from settings.models import RateTeachers, DeadlineSettings
+from settings.models import RateTeachers, DeadlineSettings, WeekDays
 
 NULLABLE = {'blank': True, 'null': True}
 
@@ -171,3 +174,50 @@ class ManagerRequests(models.Model):
     class Meta:
         verbose_name = 'Запрос для изменения урока'
         verbose_name_plural = 'Запросы для изменения уроков'
+
+
+class Schedule(models.Model):
+    title = models.CharField(max_length=50, **NULLABLE, verbose_name='Название')
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='schedule_teacher',
+                                limit_choices_to={'is_teacher': True})
+    student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='schedule_student',
+                                limit_choices_to={'is_student': True})
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
+    weekday = models.ManyToManyField(WeekDays, verbose_name='Дни недели')
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'Расписание'
+        verbose_name_plural = 'Расписания'
+
+
+class ScheduleSettings(models.Model):
+    shedule = models.ForeignKey(Schedule, **NULLABLE, on_delete=models.CASCADE, verbose_name='Расписание')
+    count = models.IntegerField(verbose_name='Кол-во уроков', **NULLABLE)
+    near_lesson = models.DateTimeField(**NULLABLE, verbose_name='Ближайший урок')
+    last_lesson = models.DateTimeField(**NULLABLE, verbose_name='Последний урок')
+
+    def save(self, *args, **kwargs):
+        super(ScheduleSettings, self).save(*args, **kwargs)
+        lesson = Lesson.objects.filter(student=self.shedule.student, teacher=self.shedule.teacher,
+                                       date=self.near_lesson)
+        if lesson:
+            super(ScheduleSettings, self).save(*args, **kwargs)
+        else:
+            number_list = []
+            for i in self.shedule.weekday.all().values('number'):
+                number_list.append(i['number'])
+            date_list = rrule(freq=WEEKLY, dtstart=self.near_lesson, count=self.count,
+                              wkst=calendar.firstweekday(),
+                              byweekday=number_list)
+
+            len_date_list = len(list(date_list))
+            for i, date in enumerate(list(date_list)):
+                Lesson.objects.create(student=self.shedule.student, teacher=self.shedule.teacher,
+                                      subject=self.shedule.subject, date=date)
+                if i == len_date_list - 1:
+                    self.last_lesson = date
+
+        super(ScheduleSettings, self).save(*args, **kwargs)

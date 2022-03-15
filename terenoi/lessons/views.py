@@ -1,3 +1,4 @@
+import datetime
 from unicodedata import decimal
 
 from django.db.models import Q
@@ -43,7 +44,17 @@ class AllUserClassesListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.is_student:
-            queryset = Lesson.objects.filter(student=self.request.user).dates('date', 'day')
+            time_delta = datetime.timedelta(days=1)
+            day_now = datetime.datetime.now()
+            lesson_query = Lesson.objects.filter(student=self.request.user, date__lte=day_now.date() + time_delta).order_by('-date')
+            lesson_shedule = Lesson.objects.filter(
+                Q(student=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
+            if lesson_shedule in lesson_query:
+                queryset = lesson_query.dates('date', 'day').order_by('-date')
+            else:
+                queryset = lesson_shedule.values('date').union(lesson_query.values('date')).order_by('-date')
+
+            # queryset = Lesson.objects.filter(student=self.request.user).dates('date', 'day').order_by('-date')
             # queryset_1 = Lesson.objects.filter(
             #     (Q(student=self.request.user) & Q(lesson_status=Lesson.DONE))).select_related()
             # queryset_2 = Lesson.objects.filter(
@@ -59,7 +70,7 @@ class AllUserClassesListView(generics.ListAPIView):
             # queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_6,
             #                             queryset_7).order_by('-date')
         else:
-            queryset = Lesson.objects.filter(teacher=self.request.user).dates('date', 'day')
+            queryset = Lesson.objects.filter(teacher=self.request.user).dates('date', 'day').order_by('-date')
         #     queryset_1 = Lesson.objects.filter(
         #         (Q(teacher=self.request.user) & Q(lesson_status=Lesson.DONE))).select_related()
         #     queryset_2 = Lesson.objects.filter(
@@ -184,7 +195,6 @@ class HomepageListView(APIView):
         if user.is_student:
             serializer = HomepageStudentSerializer(user)
             return Response(serializer.data)
-
 
 
 class LessonRateHomeworksAdd(generics.UpdateAPIView):
