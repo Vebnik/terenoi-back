@@ -18,7 +18,7 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
     LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer
-from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel
+from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date
 from profileapp.models import Subject, ManagerToUser
 
 
@@ -46,13 +46,23 @@ class AllUserClassesListView(generics.ListAPIView):
         if user.is_student:
             time_delta = datetime.timedelta(days=1)
             day_now = datetime.datetime.now()
-            lesson_query = Lesson.objects.filter(student=self.request.user, date__lte=day_now.date() + time_delta).order_by('-date')
+            lesson_query = Lesson.objects.filter(student=self.request.user,
+                                                 date__lte=day_now.date() + time_delta).order_by('-date')
             lesson_shedule = Lesson.objects.filter(
                 Q(student=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
             if lesson_shedule in lesson_query:
-                queryset = lesson_query.dates('date', 'day').order_by('-date')
+                lesson_list = lesson_query.dates('date', 'day').order_by('-date')
             else:
-                queryset = lesson_shedule.values('date').union(lesson_query.values('date')).order_by('-date')
+                lesson_list = lesson_shedule.values('date').union(lesson_query.values('date')).order_by('-date')
+            date_list = []
+            for item in lesson_list:
+                date = current_date(user=self.request.user, date=item.get('date')).date()
+                if date in date_list:
+                    pass
+                else:
+                    date_list.append(current_date(user=self.request.user, date=item.get('date')).date())
+
+            queryset = date_list
 
             # queryset = Lesson.objects.filter(student=self.request.user).dates('date', 'day').order_by('-date')
             # queryset_1 = Lesson.objects.filter(
