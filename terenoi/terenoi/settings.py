@@ -212,11 +212,12 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = [
     'http://localhost',
-    'http://localhost:8000',
     'http://slot2b.oscarbot.ru',
     'http://slot2f.oscarbot.ru',
     'http://slot2t.oscarbot.ru'
 ]
+
+CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
 
 CORS_ALLOW_HEADERS = (
     '*',
