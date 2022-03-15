@@ -19,7 +19,7 @@ class UserClassesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ('current_date', 'lessons')
+        fields = ('current_date','lessons')
 
     def _user(self):
         request = self.context.get('request', None)
@@ -28,18 +28,14 @@ class UserClassesSerializer(serializers.ModelSerializer):
         return None
 
     def get_current_date(self, instance):
-        user = self._user()
-        date = current_date(user=user, date=instance.get('date'))
-        return date
+        return instance
 
     def get_lessons(self, instance):
         user = self._user()
         if user.is_student:
-            date = current_date(user=user, date=instance.get('date'))
-            lessons = Lesson.objects.filter(student=user, date__date=date.date())
+            lessons = Lesson.objects.filter(student=user, date__date=instance)
         else:
-            date = current_date(user=user, date=instance.get('date'))
-            lessons = Lesson.objects.filter(teacher=user, date__date=date.date())
+            lessons = Lesson.objects.filter(teacher=user, date__date=instance)
         serializer = UserLessonsSerializer(lessons, many=True, context={'user': user})
         return serializer.data
 
