@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from authapp.models import User
+from lessons.models import Lesson
 from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParents, GlobalUserPurpose, LanguageInterface, \
     Interests, UserInterest
 from settings.models import UserCity
@@ -66,7 +67,24 @@ class UpdateStudentSerializer(serializers.ModelSerializer):
 
     def get_purposes(self, instance):
         purposes = GlobalUserPurpose.objects.filter(user=instance)
-        serializer = GlobalUserPurposeSerializer(purposes, many=True)
+        serializer = GlobalUserPurposeSerializer(purposes, many=True, context={'user': instance})
+        if not serializer.data:
+            data = []
+            lesson_subjects = Lesson.objects.filter(student=instance).distinct('subject')
+            for lesson in lesson_subjects:
+                lesson_count_all = Lesson.objects.filter(student=instance,
+                                                         subject__name=lesson.subject.name).exclude(
+                    lesson_status=Lesson.CANCEL).exclude(lesson_status=Lesson.RESCHEDULED).count()
+                lesson_count_done = Lesson.objects.filter(student=instance,
+                                                          subject__name=lesson.subject.name,
+                                                          lesson_status=Lesson.DONE).count()
+                data.append(
+                    {'subject': lesson.subject.name,
+                     'lesson_count_all': lesson_count_all,
+                     'lesson_count_done': lesson_count_done
+                     }
+                )
+            return data
         return serializer.data
 
     def get_language_interface(self, instance):
@@ -129,14 +147,27 @@ class UserParentsSerializer(serializers.ModelSerializer):
 
 class GlobalUserPurposeSerializer(serializers.ModelSerializer):
     subject_name = serializers.SerializerMethodField()
+    lesson_count_all = serializers.SerializerMethodField()
+    lesson_count_done = serializers.SerializerMethodField()
 
     class Meta:
         model = GlobalUserPurpose
-        fields = ('subject_name', 'purpose')
+        fields = ('subject_name', 'purpose', 'lesson_count_all', 'lesson_count_done')
 
     def get_subject_name(self, instance):
         subject = Subject.objects.filter(name=instance.subject.name).first()
         return subject.name
+
+    def get_lesson_count_all(self, instance):
+        lesson_count = Lesson.objects.filter(student=self.context.get('user'),
+                                             subject__name=instance.subject.name).exclude(
+            lesson_status=Lesson.CANCEL).exclude(lesson_status=Lesson.RESCHEDULED).count()
+        return lesson_count
+
+    def get_lesson_count_done(self, instance):
+        lesson_count = Lesson.objects.filter(student=self.context.get('user'),
+                                             subject__name=instance.subject.name, lesson_status=Lesson.DONE).count()
+        return lesson_count
 
 
 class LanguageInterfaceSerializer(serializers.ModelSerializer):
@@ -160,4 +191,3 @@ class InterestsSerializer(serializers.ModelSerializer):
             return True
         else:
             return False
-
