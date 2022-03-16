@@ -94,13 +94,6 @@ def payment_for_lesson(lesson):
     student_count_lesson = finance.models.HistoryPaymentStudent.objects.filter(student=lesson.student,
                                                                                subject=lesson.subject).aggregate(
         total_count=Sum('lesson_count'))
-    # if student_count_lesson['total_count']:
-    #     if student_count_lesson['total_count'] < 2:
-    #         notifications.models.PaymentNotification.objects.create(to_user=lesson.student,
-    #                                                                 type=notifications.models.PaymentNotification.AWAITING_PAYMENT)
-    #     one_lesson_amount = student_payment['total_amount'] / student_count_lesson['total_count']
-    # else:
-    #     one_lesson_amount = 0
     if not student_lesson:
         if student_count_lesson['total_count']:
             if student_count_lesson['total_count'] < 2:

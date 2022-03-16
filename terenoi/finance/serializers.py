@@ -1,14 +1,33 @@
+from django.db.models import Sum, Q
 from rest_framework import serializers
 
 from finance.models import StudentBalance, HistoryPaymentStudent
+from lessons.models import Lesson
 from lessons.services import current_date
 from profileapp.models import Subject
 
 
 class StudentBalanceSerializer(serializers.ModelSerializer):
+    lessons_count = serializers.SerializerMethodField()
+
     class Meta:
         model = StudentBalance
-        fields = ('user', 'money_balance', 'currency', 'lessons_balance', 'bonus_lessons_balance')
+        fields = ('user', 'money_balance', 'lessons_count', 'currency', 'lessons_balance', 'bonus_lessons_balance')
+
+    def _user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return None
+
+    def get_lessons_count(self, instance):
+        user = self._user()
+        lessons_count = Lesson.objects.filter(student=user).exclude(
+            Q(lesson_status=Lesson.RESCHEDULED) & Q(lesson_status=Lesson.CANCEL)).count()
+        lessons_count_done = Lesson.objects.filter(student=user, lesson_status=Lesson.DONE).count()
+        lesson_date = Lesson.objects.filter(student=user).order_by('-date')[:1].first().date
+        date = current_date(user=user, date=lesson_date)
+        return [lessons_count, lessons_count_done, date.date()]
 
 
 class HistoryPaymentStudentSerializer(serializers.ModelSerializer):
@@ -27,10 +46,10 @@ class HistoryPaymentStudentSerializer(serializers.ModelSerializer):
             return request.user
         return None
 
-    def get_status(self, instace):
-        if instace.debit:
+    def get_status(self, instance):
+        if instance.debit:
             return 'Списание'
-        elif instace.referral:
+        elif instance.referral:
             return 'Зачисление реферальной программы'
         else:
             return 'Зачисление'
