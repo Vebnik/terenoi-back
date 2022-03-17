@@ -37,7 +37,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                 else:
                     return Response({"message": "Такого предмета не существует."}, status=status.HTTP_404_NOT_FOUND)
             if request.data.get('city'):
-                city = CityTimeZone.objects.filter(city=request.data.get('city')).first()
+                city = CityTimeZone.objects.filter(city=request.data.get('city').get('city_title')).first()
                 if city:
                     user_city = UserCity.objects.filter(user=self.request.user).first()
                     if user_city:
@@ -71,18 +71,18 @@ class ProfileUpdateView(generics.UpdateAPIView):
             if request.data.get('language_interface'):
                 lang_interface = LanguageInterface.objects.filter(user=self.request.user).first()
                 if lang_interface:
-                    if request.data.get('language_interface') == LanguageInterface.RUSSIAN:
+                    if request.data.get('language_interface').get('interface_language') == LanguageInterface.RUSSIAN:
                         lang_interface.interface_language = LanguageInterface.RUSSIAN
-                    elif request.data.get('language_interface') == LanguageInterface.KAZAKH:
+                    elif request.data.get('language_interface').get('interface_language') == LanguageInterface.KAZAKH:
                         lang_interface.interface_language = LanguageInterface.KAZAKH
                     else:
                         lang_interface.interface_language = LanguageInterface.ENGLISH
                     lang_interface.save()
                 else:
-                    if request.data.get('language_interface') == LanguageInterface.RUSSIAN:
+                    if request.data.get('language_interface').get('interface_language') == LanguageInterface.RUSSIAN:
                         LanguageInterface.objects.create(user=self.request.user,
                                                          interface_language=LanguageInterface.RUSSIAN)
-                    elif request.data.get('language_interface') == LanguageInterface.KAZAKH:
+                    elif request.data.get('language_interface').get('interface_language') == LanguageInterface.KAZAKH:
                         LanguageInterface.objects.create(user=self.request.user,
                                                          interface_language=LanguageInterface.KAZAKH)
                     else:
