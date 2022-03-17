@@ -142,7 +142,7 @@ class ReferralSerializer(serializers.ModelSerializer):
 class UserParentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserParents
-        fields = ('full_name', 'parent_phone', 'parent_email')
+        fields = ('pk', 'full_name', 'parent_phone', 'parent_email')
 
 
 class GlobalUserPurposeSerializer(serializers.ModelSerializer):
