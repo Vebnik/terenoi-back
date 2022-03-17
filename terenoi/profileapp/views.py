@@ -37,7 +37,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                 else:
                     return Response({"message": "Такого предмета не существует."}, status=status.HTTP_404_NOT_FOUND)
             if request.data.get('city'):
-                city = CityTimeZone.objects.filter(city=request.data.get('city')).first()
+                city = CityTimeZone.objects.filter(city=request.data.get('city').get('city_title')).first()
                 if city:
                     user_city = UserCity.objects.filter(user=self.request.user).first()
                     if user_city:
