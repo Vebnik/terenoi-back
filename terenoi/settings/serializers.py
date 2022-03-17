@@ -36,4 +36,6 @@ class CityUserSerializer(serializers.ModelSerializer):
 
     def get_city_title(self, instance):
         city = CityTimeZone.objects.filter(city=instance.city).first()
+        if not city:
+            return None
         return city.city
