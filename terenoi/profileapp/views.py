@@ -50,9 +50,21 @@ class ProfileUpdateView(generics.UpdateAPIView):
                     return Response({"message": "Такого города не существует."}, status=status.HTTP_404_NOT_FOUND)
             if request.data.get('parents_data'):
                 for parent in request.data.get('parents_data'):
-                    UserParents.objects.create(user=self.request.user, full_name=parent.get('full_name'),
-                                               parent_phone=parent.get('parent_phone'),
-                                               parent_email=parent.get('parent_email'))
+                    if parent.get('pk'):
+                        parent_user = UserParents.objects.filter(pk=int(parent.get('pk'))).first()
+                        if parent_user:
+                            UserParents.objects.filter(pk=int(parent.get('pk'))).update(
+                                full_name=parent.get('full_name'),
+                                parent_phone=parent.get('parent_phone'), parent_email=parent.get('parent_email'))
+                        else:
+                            UserParents.objects.create(user=self.request.user, full_name=parent.get('full_name'),
+                                                       parent_phone=parent.get('parent_phone'),
+                                                       parent_email=parent.get('parent_email'))
+
+                    else:
+                        UserParents.objects.create(user=self.request.user, full_name=parent.get('full_name'),
+                                                   parent_phone=parent.get('parent_phone'),
+                                                   parent_email=parent.get('parent_email'))
             if request.data.get('interests'):
                 for interest in request.data.get('interests'):
                     user_interest = UserInterest.objects.filter(user=self.request.user).first()
