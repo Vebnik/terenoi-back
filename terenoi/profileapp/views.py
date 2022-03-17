@@ -45,7 +45,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                         user_city.save()
                     else:
                         UserCity.objects.create(user=self.request.user, city=city)
-                    return super(ProfileUpdateView, self).update(request, *args, **kwargs)
+                    # return super(ProfileUpdateView, self).update(request, *args, **kwargs)
                 else:
                     return Response({"message": "Такого города не существует."}, status=status.HTTP_404_NOT_FOUND)
             if request.data.get('parents_data'):
