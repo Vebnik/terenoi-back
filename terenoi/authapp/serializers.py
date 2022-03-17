@@ -5,6 +5,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from authapp.models import User, VoxiAccount
 from profileapp.models import ReferralPromo
 from profileapp.services import generateRefPromo
+from settings.models import UserCity
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -33,6 +34,10 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         else:
             promo = generateRefPromo()
             ReferralPromo.objects.create(user=user, user_link=promo)
+
+        user_city = UserCity.objects.filter(user=user).first()
+        if not user_city:
+            UserCity.objects.create(user=user)
 
         return user
 

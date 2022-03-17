@@ -84,7 +84,7 @@ class CityTimeZone(models.Model):
 
 class UserCity(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
-    city = models.ForeignKey(CityTimeZone, on_delete=models.CASCADE, verbose_name='Город проживания')
+    city = models.ForeignKey(CityTimeZone, on_delete=models.CASCADE, verbose_name='Город проживания', **NULLABLE)
 
     class Meta:
         verbose_name = 'Город пользователя'

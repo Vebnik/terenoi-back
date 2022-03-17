@@ -4,6 +4,7 @@ from django.db import models
 import pytz
 from authapp.services import add_voxiaccount
 
+
 NULLABLE = {'blank': True, 'null': True}
 
 
