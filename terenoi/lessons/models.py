@@ -65,7 +65,7 @@ class Lesson(models.Model):
         return f'{self.pk}-{self.teacher}-{self.student}-{self.subject}'
 
     def save(self, *args, **kwargs):
-        super(Lesson, self).save()
+        # super(Lesson, self).save(*args, **kwargs)
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
             username = f'Student-{self.student.pk}'
@@ -74,7 +74,8 @@ class Lesson(models.Model):
             create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
             questions = Subject.objects.filter(name=self.subject.name).first()
-            self.teacher_rate_comment = questions.questions
+            if not self.teacher_rate_comment:
+                self.teacher_rate_comment = questions.questions
         if self.lesson_status == Lesson.REQUEST_CANCEL:
             create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
@@ -99,7 +100,7 @@ class Lesson(models.Model):
                 days = datetime.timedelta(days=count.day_count)
                 deadline = self.date + days
                 self.deadline = deadline
-        super(Lesson, self).save()
+        super(Lesson, self).save(*args, **kwargs)
 
 
 class LessonMaterials(models.Model):
@@ -199,25 +200,3 @@ class ScheduleSettings(models.Model):
     near_lesson = models.DateTimeField(**NULLABLE, verbose_name='Ближайший урок')
     last_lesson = models.DateTimeField(**NULLABLE, verbose_name='Последний урок')
 
-    def save(self, *args, **kwargs):
-        super(ScheduleSettings, self).save(*args, **kwargs)
-        lesson = Lesson.objects.filter(student=self.shedule.student, teacher=self.shedule.teacher,
-                                       date=self.near_lesson)
-        if lesson:
-            super(ScheduleSettings, self).save(*args, **kwargs)
-        else:
-            number_list = []
-            for i in self.shedule.weekday.all().values('number'):
-                number_list.append(i['number'])
-            date_list = rrule(freq=WEEKLY, dtstart=self.near_lesson, count=self.count,
-                              wkst=calendar.firstweekday(),
-                              byweekday=number_list)
-
-            len_date_list = len(list(date_list))
-            for i, date in enumerate(list(date_list)):
-                Lesson.objects.create(student=self.shedule.student, teacher=self.shedule.teacher,
-                                      subject=self.shedule.subject, date=date)
-                if i == len_date_list - 1:
-                    self.last_lesson = date
-
-        super(ScheduleSettings, self).save(*args, **kwargs)
