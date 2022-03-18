@@ -19,7 +19,7 @@ class UserClassesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ('current_date','lessons')
+        fields = ('current_date', 'lessons')
 
     def _user(self):
         request = self.context.get('request', None)
@@ -128,9 +128,11 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
         return None
 
     def get_balance(self, instance):
-        balance = HistoryPaymentStudent.objects.filter(student=instance, debit=False, referral=False).aggregate(
-            total_count=Sum('lesson_count'))
-        return balance['total_count']
+        # balance = HistoryPaymentStudent.objects.filter(student=instance, debit=False, referral=False).aggregate(
+        #     total_count=Sum('lesson_count'))
+        lesson_count = Lesson.objects.filter(student=instance).exclude(lesson_status=Lesson.CANCEL).exclude(
+            lesson_status=Lesson.RESCHEDULED).count()
+        return lesson_count
 
     def get_lesson_completed(self, instance):
         lessons = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE).count()
@@ -142,6 +144,10 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
 
     def get_next_lesson(self, instance):
         lesson = Lesson.objects.filter(student=instance, lesson_status=Lesson.SCHEDULED).order_by('date').first()
+        if not lesson:
+            lesson_done = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE).order_by('-date').first()
+            serializer = UserLessonsSerializer(lesson_done, context={'user': instance})
+            return serializer.data
         serializer = UserLessonsSerializer(lesson, context={'user': instance})
         return serializer.data
 
@@ -196,8 +202,9 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
                         average = sum(quality) / len(quality)
 
                         sub_dict[subject.subject.name] = {
-                            new_str[0].strip('Вопрос:'): count_examples,
-                            new_str[2].strip('Вопрос:'): average
+                            'title': new_str[2].strip('Вопрос:'),
+                            'percent': average,
+                            'count_issues': count_examples
                         }
                     else:
                         speaking_list.append(int(new_str[1].strip('Ответ:')) * 10)
@@ -208,16 +215,37 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
                         average_writing = sum(writing_list) / len(writing_list)
                         average_listening = sum(listening_list) / len(listening_list)
                         average_grammar = sum(grammar_list) / len(grammar_list)
-                        sub_dict[subject.subject.name] = {
-                            new_str[0].strip('Вопрос:'): average_speaking,
-                            new_str[2].strip('Вопрос:'): average_writing,
-                            new_str[4].strip('Вопрос:'): average_listening,
-                            new_str[6].strip('Вопрос:'): average_grammar
-                        }
+                        sub_dict[subject.subject.name] = [
+                            {
+                                'title': new_str[0].strip('Вопрос:'),
+                                'percent': average_speaking
+                            },
+                            {
+                                'title': new_str[2].strip('Вопрос:'),
+                                'percent': average_writing
+                            },
+                            {
+                                'title': new_str[4].strip('Вопрос:'),
+                                'percent': average_listening
+                            },
+                            {
+                                'title': new_str[6].strip('Вопрос:'),
+                                'percent': average_grammar
+                            },
+
+                            # new_str[0].strip('Вопрос:'): average_speaking,
+                            # new_str[2].strip('Вопрос:'): average_writing,
+                            # new_str[4].strip('Вопрос:'): average_listening,
+                            # new_str[6].strip('Вопрос:'): average_grammar
+                        ]
                         pass
                 except Exception:
                     pass
-        data.append(sub_dict)
+        for i in sub_dict.keys():
+            data.append({
+                'subject': i,
+                'items': sub_dict[i]
+            })
         return data
 
     def get_efficiency(self, instance):
