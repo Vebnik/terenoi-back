@@ -83,8 +83,8 @@ def create_voxi_account(username, display_name, password):
 
 
 def add_voxiaccount(user, username, display_name):
-    password = f'{username}{username}'
-    password_encode = hashlib.sha1(password.encode('utf-8')).hexdigest()[:9]
+    password = f'{user.username}{user.username}'
+    # password_encode = hashlib.sha1(password.encode('utf-8')).hexdigest()[:9]
     authapp.models.VoxiAccount.objects.create(user=user, voxi_username=username, voxi_display_name=display_name,
-                                              voxi_password=password_encode)
+                                              voxi_password=password)
     create_voxi_account(username=username, display_name=display_name, password=password)
