@@ -17,7 +17,7 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
-    LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer
+    LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date
 from profileapp.models import Subject, ManagerToUser
 
@@ -204,6 +204,9 @@ class HomepageListView(APIView):
         user = self.get_object()
         if user.is_student:
             serializer = HomepageStudentSerializer(user)
+            return Response(serializer.data)
+        elif user.is_teacher:
+            serializer = HomepageTeacherSerializer(user)
             return Response(serializer.data)
 
 
