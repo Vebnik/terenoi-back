@@ -135,3 +135,15 @@ class UserInterest(models.Model):
     class Meta:
         verbose_name = 'Интерес пользователя'
         verbose_name_plural = 'Интересы пользователей'
+
+
+class ManagerRequestsPassword(models.Model):
+    manager = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='Менеджер', related_name='password_manager',
+                                **NULLABLE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='password_user')
+    new_password = models.CharField(max_length=50, verbose_name='Новый пароль')
+    is_resolved = models.BooleanField(verbose_name='Решен', default=False)
+
+    class Meta:
+        verbose_name = 'Запрос для изменения пароля'
+        verbose_name_plural = 'Запросы для изменения паролей'

@@ -5,10 +5,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from authapp.models import User
 from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParents, UserInterest, Interests, \
-    LanguageInterface
+    LanguageInterface, ManagerToUser, ManagerRequestsPassword
 from profileapp.permissions import IsStudent, IsTeacher
 from profileapp.serializers import UpdateUserSerializer, UpdateStudentSerializer, UpdateTeacherSerializer, \
-    ReferralSerializer
+    ReferralSerializer, UserParentsSerializer, ChangePasswordSerializer
 from settings.models import CityTimeZone, UserCity
 
 
@@ -135,3 +135,25 @@ class ReferralView(APIView):
         promo = ReferralPromo.objects.filter(user=user).first()
         serializer = ReferralSerializer(promo)
         return Response(serializer.data)
+
+
+class DeleteParentView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = UserParents.objects.all()
+    serializer_class = UserParentsSerializer
+
+
+class ChangePasswordView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ChangePasswordSerializer
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        manager = ManagerToUser.objects.get(user=self.request.user).manager
+        if self.request.data.get('password'):
+            ManagerRequestsPassword.objects.create(manager=manager, user=self.request.user, new_password=self.request.data.get('password'))
+            return Response({'message': 'Запрос на изменение пароля отправлен'},
+                                status=status.HTTP_200_OK)
+        return super(ChangePasswordView, self).update(request, *args, **kwargs)
