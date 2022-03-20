@@ -24,7 +24,7 @@ def add_schedule(sender, instance, **kwargs):
         len_date_list = len(list(date_list))
         for i, date in enumerate(list(date_list)):
             Lesson.objects.create(student=instance.shedule.student, teacher=instance.shedule.teacher,
-                                  subject=instance.shedule.subject, date=date)
+                                  subject=instance.shedule.subject, date=date, schedule=instance.shedule)
             if i == len_date_list - 1:
                 instance.last_lesson = date
                 instance.save()

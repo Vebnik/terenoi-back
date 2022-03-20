@@ -191,3 +191,9 @@ class InterestsSerializer(serializers.ModelSerializer):
             return True
         else:
             return False
+
+
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('pk', 'username')

@@ -19,6 +19,30 @@ from settings.models import RateTeachers, DeadlineSettings, WeekDays
 NULLABLE = {'blank': True, 'null': True}
 
 
+class Schedule(models.Model):
+    title = models.CharField(max_length=50, **NULLABLE, verbose_name='Название')
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='schedule_teacher',
+                                limit_choices_to={'is_teacher': True})
+    student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='schedule_student',
+                                limit_choices_to={'is_student': True})
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
+    weekday = models.ManyToManyField(WeekDays, verbose_name='Дни недели')
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'Расписание'
+        verbose_name_plural = 'Расписания'
+
+
+class ScheduleSettings(models.Model):
+    shedule = models.ForeignKey(Schedule, **NULLABLE, on_delete=models.CASCADE, verbose_name='Расписание')
+    count = models.IntegerField(verbose_name='Кол-во уроков', **NULLABLE)
+    near_lesson = models.DateTimeField(**NULLABLE, verbose_name='Ближайший урок')
+    last_lesson = models.DateTimeField(**NULLABLE, verbose_name='Последний урок')
+
+
 class Lesson(models.Model):
     SCHEDULED = 'SCH'
     REQUEST_RESCHEDULED = 'REQ_RESCH'
@@ -42,6 +66,7 @@ class Lesson(models.Model):
                                 limit_choices_to={'is_teacher': True})
     student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='lesson_student',
                                 limit_choices_to={'is_student': True})
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, verbose_name='Расписание', **NULLABLE)
     topic = models.CharField(verbose_name='Тема урока', **NULLABLE, max_length=255)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     date = models.DateTimeField(verbose_name='Дата урока')
@@ -175,28 +200,3 @@ class ManagerRequests(models.Model):
     class Meta:
         verbose_name = 'Запрос для изменения урока'
         verbose_name_plural = 'Запросы для изменения уроков'
-
-
-class Schedule(models.Model):
-    title = models.CharField(max_length=50, **NULLABLE, verbose_name='Название')
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='schedule_teacher',
-                                limit_choices_to={'is_teacher': True})
-    student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='schedule_student',
-                                limit_choices_to={'is_student': True})
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
-    weekday = models.ManyToManyField(WeekDays, verbose_name='Дни недели')
-
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        verbose_name = 'Расписание'
-        verbose_name_plural = 'Расписания'
-
-
-class ScheduleSettings(models.Model):
-    shedule = models.ForeignKey(Schedule, **NULLABLE, on_delete=models.CASCADE, verbose_name='Расписание')
-    count = models.IntegerField(verbose_name='Кол-во уроков', **NULLABLE)
-    near_lesson = models.DateTimeField(**NULLABLE, verbose_name='Ближайший урок')
-    last_lesson = models.DateTimeField(**NULLABLE, verbose_name='Последний урок')
-

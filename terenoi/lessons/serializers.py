@@ -1,5 +1,6 @@
 import datetime
 
+from dateutil.rrule import rrule, DAILY
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Sum
 from rest_framework import serializers
@@ -111,10 +112,11 @@ class HomepageTeacherSerializer(serializers.ModelSerializer):
     balance = serializers.SerializerMethodField()
     rate = serializers.SerializerMethodField()
     next_lesson = serializers.SerializerMethodField()
+    all_lessons = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('month_lessons', 'student_count', 'balance', 'rate', 'next_lesson')
+        fields = ('month_lessons', 'all_lessons', 'student_count', 'balance', 'rate', 'next_lesson')
 
     def _user(self):
         request = self.context.get('request', None)
@@ -133,8 +135,13 @@ class HomepageTeacherSerializer(serializers.ModelSerializer):
         }
         return data
 
+    def get_all_lessons(self, instance):
+        all_lessons = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.DONE).count()
+        return all_lessons
+
     def get_student_count(self, instance):
-        student_count = Lesson.objects.filter(teacher=instance).distinct('student').count()
+        student_count = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.SCHEDULED).distinct(
+            'student').count()
         return student_count
 
     def get_balance(self, instance):
@@ -216,29 +223,62 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
 
     def get_weeks(self, instance):
         lessons = Lesson.objects.filter(student=instance).dates('date', 'week').count()
+        lessons_all = Lesson.objects.filter(student=instance).exclude(lesson_status=Lesson.CANCEL).exclude(
+            lesson_status=Lesson.RESCHEDULED).count()
+        k = lessons_all / lessons
+        count_lessons_list = []
         week_list = []
-        for i in range(1, lessons + 1):
+        count = 0
+        for i in range(0, lessons + 1):
+            if i == 0:
+                count_lessons_list.append(str(i))
+            else:
+                count += k
+                count_lessons_list.append(str(count))
+
             week_list.append(str(i))
-        return week_list
+        data = [week_list, count_lessons_list]
+        return data
 
     def get_weeks_complete_lesson(self, instance):
         lessons = Lesson.objects.filter(student=instance).dates('date', 'week')
+        date_now = datetime.datetime.now()
         d = datetime.timedelta(days=7)
+        count = 0
+        flag = False
+        for i, lesson in enumerate(lessons):
+            if flag:
+                break
+            date_list = rrule(freq=DAILY, dtstart=lesson, count=7)
+            for date in list(date_list):
+                if date_now.date() == date.date():
+                    count += 1
+                    flag = True
+                    break
+            if not flag:
+                count += 1
         complete_lesson_week = []
         complete_lesson = []
         all_lessons = 0
         all_list = []
-        for i, j in enumerate(lessons):
-            try:
-                lesson_user = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE,
-                                                    date__range=[j, lessons[i + 1]]).count()
-            except Exception as e:
-                new_day = j + d
-                lesson_user = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE,
-                                                    date__range=[j, new_day]).count()
-            complete_lesson_week.append(str(lesson_user))
-            all_lessons += lesson_user
-            complete_lesson.append(str(all_lessons))
+        for i, lesson in enumerate(lessons):
+            if i >= count:
+                break
+            else:
+                try:
+                    lesson_user = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE,
+                                                        date__range=[lesson, lessons[i + 1]]).count()
+                except Exception as e:
+                    new_day = lesson + d
+                    lesson_user = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE,
+                                                        date__range=[lesson, new_day]).count()
+                if i == 0:
+                    complete_lesson_week.append(str(i))
+                    complete_lesson.append(str(i))
+
+                complete_lesson_week.append(str(lesson_user))
+                all_lessons += lesson_user
+                complete_lesson.append(str(all_lessons))
         all_list.append(complete_lesson_week)
         all_list.append(complete_lesson)
 
