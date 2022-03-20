@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 from authapp.models import User, VoxiAccount
 from authapp.serializers import UserNameSerializer, VoxiAccountSerializer
-from finance.models import StudentBalance, HistoryPaymentStudent
+from finance.models import StudentBalance, HistoryPaymentStudent, TeacherBalance
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework
 from lessons.services import current_date
 from profileapp.models import TeacherSubject, Subject
@@ -102,6 +102,69 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     def get_record_link(self, instance):
         record_data = VoximplantRecordLesson.objects.filter(lesson=instance)
         serializer = RecordSerializer(record_data, many=True)
+        return serializer.data
+
+
+class HomepageTeacherSerializer(serializers.ModelSerializer):
+    month_lessons = serializers.SerializerMethodField()
+    student_count = serializers.SerializerMethodField()
+    balance = serializers.SerializerMethodField()
+    rate = serializers.SerializerMethodField()
+    next_lesson = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('month_lessons', 'student_count', 'balance', 'rate', 'next_lesson')
+
+    def _user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return None
+
+    def get_month_lessons(self, instance):
+        today_month = datetime.datetime.now()
+        lesson_month = Lesson.objects.filter(teacher=instance, date__month=today_month.month).count()
+        lesson_month_done = Lesson.objects.filter(teacher=instance, date__month=today_month.month,
+                                                  lesson_status=Lesson.DONE).count()
+        data = {
+            'lesson_month_all': lesson_month,
+            'lesson_month_done': lesson_month_done
+        }
+        return data
+
+    def get_student_count(self, instance):
+        student_count = Lesson.objects.filter(teacher=instance).distinct('student').count()
+        return student_count
+
+    def get_balance(self, instance):
+        balance = TeacherBalance.objects.filter(user=instance).first().money_balance
+        return balance
+
+    def get_rate(self, instance):
+        data = []
+        lessons = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.DONE)
+        for lesson in lessons:
+            try:
+                if not lesson.student_evaluation:
+                    pass
+                else:
+                    data.append(lesson.student_evaluation)
+            except Exception:
+                pass
+        if data:
+            average = sum(data) / len(data)
+            return average
+        else:
+            return None
+
+    def get_next_lesson(self, instance):
+        lesson = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.SCHEDULED).order_by('date').first()
+        if not lesson:
+            lesson_done = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.DONE).order_by('-date').first()
+            serializer = UserLessonsSerializer(lesson_done, context={'user': instance})
+            return serializer.data
+        serializer = UserLessonsSerializer(lesson, context={'user': instance})
         return serializer.data
 
 
