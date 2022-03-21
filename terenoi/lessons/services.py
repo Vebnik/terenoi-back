@@ -115,8 +115,8 @@ def payment_for_lesson(lesson):
         if not rate:
             finance.models.HistoryPaymentTeacher.objects.create(teacher=lesson.teacher,
                                                                 payment_date=datetime.datetime.now(),
-                                                                lesson=lesson, amount=default_rate)
+                                                                lesson=lesson, amount=default_rate, is_enrollment=True)
         else:
             finance.models.HistoryPaymentTeacher.objects.create(teacher=lesson.teacher,
                                                                 payment_date=datetime.datetime.now(),
-                                                                lesson=lesson, amount=rate.rate)
+                                                                lesson=lesson, amount=rate.rate,is_enrollment=True)

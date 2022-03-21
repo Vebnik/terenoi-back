@@ -143,6 +143,7 @@ class HistoryPaymentTeacher(models.Model):
     amount = models.IntegerField(verbose_name='Сумма зачисления или снятия', **NULLABLE)
     currency = models.CharField(verbose_name='Валюта', choices=CURRENCY_CHOICES, default=TENGE, max_length=5)
     comment = models.TextField(verbose_name='Комментарий к оплате', **NULLABLE)
+    is_enrollment = models.BooleanField(verbose_name='Зачисление', default=False)
     referral = models.BooleanField(verbose_name='Реферальная программа', default=False)
 
     class Meta:
@@ -199,3 +200,16 @@ class HistoryPaymentTeacher(models.Model):
                 teacher_balance.bonus_money_balance += self.amount
         teacher_balance.save()
         return super(HistoryPaymentTeacher, self).save(*args, **kwargs)
+
+
+class TeacherBankData(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель')
+    bank_name = models.CharField(max_length=255, verbose_name='Банк получателя', **NULLABLE)
+    bik = models.CharField(verbose_name='БИК', max_length=255, **NULLABLE)
+    full_teacher_name = models.CharField(verbose_name='Получатель', max_length=255)
+    bill = models.CharField(verbose_name='Счет получателя', max_length=255)
+    card = models.TextField(verbose_name='Номер карты', **NULLABLE)
+
+    class Meta:
+        verbose_name = 'Реквизиты учителя'
+        verbose_name_plural = 'Реквизиты учителей'
