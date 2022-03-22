@@ -206,8 +206,8 @@ class TeacherBankData(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель')
     bank_name = models.CharField(max_length=255, verbose_name='Банк получателя', **NULLABLE)
     bik = models.CharField(verbose_name='БИК', max_length=255, **NULLABLE)
-    full_teacher_name = models.CharField(verbose_name='Получатель', max_length=255)
-    bill = models.CharField(verbose_name='Счет получателя', max_length=255)
+    full_teacher_name = models.CharField(verbose_name='Получатель', max_length=255, **NULLABLE)
+    bill = models.CharField(verbose_name='Счет получателя', max_length=255, **NULLABLE)
     card = models.TextField(verbose_name='Номер карты', **NULLABLE)
 
     class Meta:

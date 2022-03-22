@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from authapp.models import User, VoxiAccount, UserStudyLanguage, StudyLanguage
+from finance.models import TeacherBankData
 from profileapp.models import ReferralPromo
 from profileapp.services import generateRefPromo
 from settings.models import UserCity
@@ -39,6 +40,10 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         if not user_city:
             UserCity.objects.create(user=user)
 
+        if user.is_teacher:
+            bank = TeacherBankData.objects.filter(user=user).first()
+            if not bank:
+                TeacherBankData.objects.create(user=user)
         return user
 
 

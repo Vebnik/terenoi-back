@@ -95,9 +95,13 @@ class TeacherBalanceSerializer(serializers.ModelSerializer):
         return None
 
     def get_date(self, instance):
-        date = HistoryPaymentTeacher.objects.filter(teacher=self._user(), ).order_by(
-            '-payment_date').first().payment_date
-        return date.date()
+        user_date = HistoryPaymentTeacher.objects.filter(teacher=self._user()).first()
+        if not user_date:
+            return None
+        else:
+            date = HistoryPaymentTeacher.objects.filter(teacher=self._user()).order_by(
+                '-payment_date').first().payment_date
+            return date.date()
 
     def get_rate(self, instance):
         data = []
