@@ -101,22 +101,6 @@ class ProfileUpdateView(generics.UpdateAPIView):
                     else:
                         LanguageInterface.objects.create(user=self.request.user,
                                                          interface_language=LanguageInterface.ENGLISH)
-            if request.data.get('language'):
-                user_language = UserStudyLanguage.objects.filter(user=self.request.user).first()
-                if not user_language:
-                    user_study = UserStudyLanguage.objects.create(user=self.request.user)
-                    for lang in request.data.get('language'):
-                        language = StudyLanguage.objects.filter(name=lang.get('name')).first()
-                        user_study.language.add(language)
-                    user_study.save()
-                else:
-                    user_language.delete()
-                    user_study = UserStudyLanguage.objects.create(user=self.request.user)
-                    for lang in request.data.get('language'):
-                        language = StudyLanguage.objects.filter(name=lang.get('name')).first()
-                        user_study.language.add(language)
-                    user_study.save()
-
             if request.data.get('age'):
                 for age in request.data.get('age'):
                     user_age = TeacherAgeLearning.objects.filter(user=self.request.user).first()
