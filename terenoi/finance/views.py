@@ -89,16 +89,6 @@ class TeacherHistoryPayment(generics.ListAPIView):
         return queryset
 
 
-class BillCreateView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
-    queryset = TeacherBankData.objects.all()
-    serializer_class = BillSerializer
-
-    def perform_create(self, serializer):
-        return serializer.save(user=self.request.user)
-
-
-#
 class BillUpdateView(generics.UpdateAPIView):
     queryset = TeacherBankData.objects.all()
     permission_classes = [IsAuthenticated]
