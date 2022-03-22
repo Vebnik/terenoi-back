@@ -4,8 +4,19 @@ from django.db import models
 import pytz
 from authapp.services import add_voxiaccount
 
-
 NULLABLE = {'blank': True, 'null': True}
+
+
+class StudyLanguage(models.Model):
+    name = models.CharField(verbose_name='Язык обучения', max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Язык обучения'
+        verbose_name_plural = 'Языки обучения'
+
+    def __str__(self):
+        return self.name
 
 
 class User(AbstractUser):
@@ -16,14 +27,6 @@ class User(AbstractUser):
     GENDER_CHOICES = (
         (MALE, 'Мужской'),
         (FEMALE, 'Женский')
-    )
-    RUSSIAN = 'RU'
-    KAZAKH = 'KZ'
-    ENGLISH = 'EN'
-    LANGUAGE_CHOICES = (
-        (RUSSIAN, 'Русский'),
-        (KAZAKH, 'Казахстанский'),
-        (ENGLISH, 'Английский'),
     )
 
     avatar = models.ImageField(upload_to='user_avatar/', verbose_name='Avatar', **NULLABLE)
@@ -36,7 +39,6 @@ class User(AbstractUser):
     is_teacher = models.BooleanField(default=False, verbose_name='Учитель')
     education = models.CharField(max_length=255, verbose_name='Образование', **NULLABLE)
     experience = models.TextField(verbose_name='Опыт работы', **NULLABLE)
-    language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, verbose_name='Язык обучения', **NULLABLE)
     is_verified = models.BooleanField(default=False, verbose_name='Верефицирован')
     is_online = models.BooleanField(default=False, verbose_name='Онлайн')
 
@@ -57,6 +59,15 @@ class User(AbstractUser):
         super(User, self).save(*args, **kwargs)
 
 
+class UserStudyLanguage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    language = models.ManyToManyField(StudyLanguage, verbose_name='Язык обучения')
+
+    class Meta:
+        verbose_name = 'Язык обучения пользователя'
+        verbose_name_plural = 'Языки обучения пользователей'
+
+
 class VoxiAccount(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
     voxi_user_id = models.CharField(max_length=15, **NULLABLE, verbose_name='id пользователя Voxiplant')
@@ -67,4 +78,3 @@ class VoxiAccount(models.Model):
     class Meta:
         verbose_name = 'Voxiplant Аккаунт'
         verbose_name_plural = 'Voxiplant Аккаунты'
-

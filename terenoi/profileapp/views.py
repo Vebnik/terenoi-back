@@ -3,9 +3,11 @@ from rest_framework import generics, permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from authapp.models import User
+from authapp.models import User, UserStudyLanguage, StudyLanguage
 from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParents, UserInterest, Interests, \
-    LanguageInterface, ManagerToUser, ManagerRequestsPassword
+    LanguageInterface, ManagerToUser, ManagerRequestsPassword, TeacherAgeLearning, AgeLearning, \
+    TeacherMathSpecializations, MathSpecializations, EnglishSpecializations, TeacherEnglishSpecializations, \
+    EnglishLevel, TeacherEnglishLevel
 from profileapp.permissions import IsStudent, IsTeacher
 from profileapp.serializers import UpdateUserSerializer, UpdateStudentSerializer, UpdateTeacherSerializer, \
     ReferralSerializer, UserParentsSerializer, ChangePasswordSerializer
@@ -33,7 +35,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                     subject = Subject.objects.filter(name=sub).first()
                     if subject:
                         TeacherSubject.objects.create(user=self.request.user, subject=subject)
-                        return super(ProfileUpdateView, self).update(request, *args, **kwargs)
+                        # return super(ProfileUpdateView, self).update(request, *args, **kwargs)
                 else:
                     return Response({"message": "Такого предмета не существует."}, status=status.HTTP_404_NOT_FOUND)
             if request.data.get('city'):
@@ -45,7 +47,6 @@ class ProfileUpdateView(generics.UpdateAPIView):
                         user_city.save()
                     else:
                         UserCity.objects.create(user=self.request.user, city=city)
-                    # return super(ProfileUpdateView, self).update(request, *args, **kwargs)
                 else:
                     return Response({"message": "Такого города не существует."}, status=status.HTTP_404_NOT_FOUND)
             if request.data.get('parents_data'):
@@ -75,7 +76,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                             user_interest.save()
                         else:
                             instance = UserInterest.objects.create(user=self.request.user)
-                            instance.interests.set(interest_l)
+                            instance.interests.add(interest_l)
                     else:
                         if user_interest:
                             user_interest.interests.remove(interest_l)
@@ -100,6 +101,83 @@ class ProfileUpdateView(generics.UpdateAPIView):
                     else:
                         LanguageInterface.objects.create(user=self.request.user,
                                                          interface_language=LanguageInterface.ENGLISH)
+            if request.data.get('age'):
+                for age in request.data.get('age'):
+                    user_age = TeacherAgeLearning.objects.filter(user=self.request.user).first()
+                    age_l = AgeLearning.objects.filter(name=age.get('name')).first()
+                    if age.get('status'):
+                        if user_age:
+                            user_age.age_learning.add(age_l)
+                            user_age.save()
+                        else:
+                            instance = TeacherAgeLearning.objects.create(user=self.request.user)
+                            instance.age_learning.add(age_l)
+                    else:
+                        if user_age:
+                            user_age.age_learning.remove(age_l)
+                            user_age.save()
+            if request.data.get('math_special'):
+                for math in request.data.get('math_special'):
+                    user_math = TeacherMathSpecializations.objects.filter(user=self.request.user).first()
+                    math_l = MathSpecializations.objects.filter(name=math.get('name')).first()
+                    if math.get('status'):
+                        if user_math:
+                            user_math.special.add(math_l)
+                            user_math.save()
+                        else:
+                            instance = TeacherMathSpecializations.objects.create(user=self.request.user)
+                            instance.special.add(math_l)
+                    else:
+                        if user_math:
+                            user_math.special.remove(math_l)
+                            user_math.save()
+            if request.data.get('english_special'):
+                for eng in request.data.get('english_special'):
+                    user_eng = TeacherEnglishSpecializations.objects.filter(user=self.request.user).first()
+                    eng_l = EnglishSpecializations.objects.filter(name=eng.get('name')).first()
+                    if eng.get('status'):
+                        if user_eng:
+                            user_eng.special.add(eng_l)
+                            user_eng.save()
+                        else:
+                            instance = TeacherMathSpecializations.objects.create(user=self.request.user)
+                            instance.special.add(eng_l)
+                    else:
+                        if user_eng:
+                            user_eng.special.remove(eng_l)
+                            user_eng.save()
+            if request.data.get('level'):
+                for lvl in request.data.get('level'):
+                    user_lvl = TeacherEnglishLevel.objects.filter(user=self.request.user).first()
+                    lvl_l = EnglishLevel.objects.filter(name=lvl.get('name')).first()
+                    if lvl.get('status'):
+                        if user_lvl:
+                            user_lvl.level.add(lvl_l)
+                            user_lvl.save()
+                        else:
+                            instance = TeacherEnglishLevel.objects.create(user=self.request.user)
+                            instance.level.add(lvl_l)
+                    else:
+                        if user_lvl:
+                            user_lvl.level.remove(lvl_l)
+                            user_lvl.save()
+            if request.data.get('language'):
+                for lang in request.data.get('language'):
+                    user_lang = UserStudyLanguage.objects.filter(user=self.request.user).first()
+                    l_lang = StudyLanguage.objects.filter(name=lang.get('name')).first()
+                    if lang.get('status'):
+                        if user_lang:
+                            user_lang.language.add(l_lang)
+                            user_lang.save()
+                        else:
+                            instance = UserStudyLanguage.objects.create(user=self.request.user)
+                            instance.language.add(l_lang)
+
+                    else:
+                        if user_lang:
+                            user_lang.language.remove(l_lang)
+                            user_lang.save()
+
 
         except AttributeError:
             return super(ProfileUpdateView, self).update(request, *args, **kwargs)
@@ -153,7 +231,8 @@ class ChangePasswordView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         manager = ManagerToUser.objects.get(user=self.request.user).manager
         if self.request.data.get('password'):
-            ManagerRequestsPassword.objects.create(manager=manager, user=self.request.user, new_password=self.request.data.get('password'))
+            ManagerRequestsPassword.objects.create(manager=manager, user=self.request.user,
+                                                   new_password=self.request.data.get('password'))
             return Response({'message': 'Запрос на изменение пароля отправлен'},
-                                status=status.HTTP_200_OK)
+                            status=status.HTTP_200_OK)
         return super(ChangePasswordView, self).update(request, *args, **kwargs)

@@ -1,8 +1,10 @@
 from rest_framework import serializers
-from authapp.models import User
+from authapp.models import User, UserStudyLanguage, StudyLanguage
+from authapp.serializers import StudyLanguageSerializer
 from lessons.models import Lesson
 from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParents, GlobalUserPurpose, LanguageInterface, \
-    Interests, UserInterest
+    Interests, UserInterest, AgeLearning, MathSpecializations, TeacherAgeLearning, TeacherMathSpecializations, \
+    EnglishSpecializations, TeacherEnglishSpecializations, EnglishLevel, TeacherEnglishLevel
 from settings.models import UserCity
 from settings.serializers import CityUserSerializer
 
@@ -31,6 +33,7 @@ class UpdateStudentSerializer(serializers.ModelSerializer):
     purposes = serializers.SerializerMethodField()
     language_interface = serializers.SerializerMethodField()
     interests = serializers.SerializerMethodField()
+    language = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -97,9 +100,20 @@ class UpdateStudentSerializer(serializers.ModelSerializer):
         serializer = InterestsSerializer(interests, many=True, context={'user': instance})
         return serializer.data
 
+    def get_language(self, instance):
+        langs = StudyLanguage.objects.all()
+        serializer = StudyLanguageSerializer(langs, many=True, context={'user': instance})
+        return serializer.data
+
 
 class UpdateTeacherSerializer(serializers.ModelSerializer):
     subjects = serializers.SerializerMethodField()
+    city = serializers.SerializerMethodField()
+    age = serializers.SerializerMethodField()
+    math_special = serializers.SerializerMethodField()
+    english_special = serializers.SerializerMethodField()
+    level = serializers.SerializerMethodField()
+    language = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -112,12 +126,13 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
             'email',
             'birth_date',
             'city',
-            'time_zone',
             'phone',
             'gender',
-            'bio',
-            'education',
-            'experience',
+            'language',
+            'age',
+            'math_special',
+            'english_special',
+            'level',
             'is_teacher',
             'subjects',
         )
@@ -131,6 +146,99 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
         city = UserCity.objects.filter(user=instance).first()
         serializer = CityUserSerializer(city)
         return serializer.data
+
+    def get_age(self, instance):
+        ages = AgeLearning.objects.all()
+        serializer = AgeLearningSerializer(ages, many=True, context={'user': instance})
+        return serializer.data
+
+    def get_math_special(self, instance):
+        specials = MathSpecializations.objects.all()
+        serializer = MathSpecializationsSerializer(specials, many=True, context={'user': instance})
+        return serializer.data
+
+    def get_english_special(self, instance):
+        specials = EnglishSpecializations.objects.all()
+        serializer = EnglishSpecializationsSerializer(specials, many=True, context={'user': instance})
+        return serializer.data
+
+    def get_level(self, instance):
+        specials = EnglishLevel.objects.all()
+        serializer = EnglishLevelSerializer(specials, many=True, context={'user': instance})
+        return serializer.data
+
+    def get_language(self, instance):
+        langs = StudyLanguage.objects.all()
+        serializer = StudyLanguageSerializer(langs, many=True, context={'user': instance})
+        return serializer.data
+
+
+class EnglishLevelSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EnglishLevel
+        fields = ('name', 'status')
+
+    def get_status(self, instance):
+        user_level = TeacherEnglishLevel.objects.filter(user=self.context.get('user')).first()
+        if not user_level:
+            return False
+        elif instance in user_level.level.all():
+            return True
+        else:
+            return False
+
+
+class EnglishSpecializationsSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EnglishSpecializations
+        fields = ('name', 'status')
+
+    def get_status(self, instance):
+        user_english = TeacherEnglishSpecializations.objects.filter(user=self.context.get('user')).first()
+        if not user_english:
+            return False
+        elif instance in user_english.special.all():
+            return True
+        else:
+            return False
+
+
+class MathSpecializationsSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MathSpecializations
+        fields = ('name', 'status')
+
+    def get_status(self, instance):
+        user_math = TeacherMathSpecializations.objects.filter(user=self.context.get('user')).first()
+        if not user_math:
+            return False
+        elif instance in user_math.special.all():
+            return True
+        else:
+            return False
+
+
+class AgeLearningSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AgeLearning
+        fields = ('name', 'status')
+
+    def get_status(self, instance):
+        user_age = TeacherAgeLearning.objects.filter(user=self.context.get('user')).first()
+        if not user_age:
+            return False
+        elif instance in user_age.age_learning.all():
+            return True
+        else:
+            return False
 
 
 class ReferralSerializer(serializers.ModelSerializer):

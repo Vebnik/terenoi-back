@@ -209,7 +209,7 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
         return lessons
 
     def get_homework_completed(self, instance):
-        homework = LessonHomework.objects.filter(lesson__student=instance).count()
+        homework = LessonHomework.objects.filter(lesson__student=instance).distinct('lesson').count()
         return homework
 
     def get_next_lesson(self, instance):

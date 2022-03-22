@@ -137,8 +137,125 @@ class UserInterest(models.Model):
         verbose_name_plural = 'Интересы пользователей'
 
 
+class AgeLearning(models.Model):
+    name = models.CharField(max_length=255, verbose_name='Название')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Возраст обучения'
+        verbose_name_plural = 'Возраста обучения'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        age = AgeLearning.objects.filter(name=self.name)
+        if not age:
+            super(AgeLearning, self).save(*args, **kwargs)
+        else:
+            AgeLearning.objects.get(name=self.name).delete()
+            super(AgeLearning, self).save(*args, **kwargs)
+
+
+class TeacherAgeLearning(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    age_learning = models.ManyToManyField(AgeLearning)
+
+    class Meta:
+        verbose_name = 'Возраст обучения учителя'
+        verbose_name_plural = 'Возраста обучения учителя'
+
+
+class MathSpecializations(models.Model):
+    name = models.CharField(max_length=255, verbose_name='Название')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Специализация по математике'
+        verbose_name_plural = 'Специализации по математике'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        special = MathSpecializations.objects.filter(name=self.name)
+        if not special:
+            super(MathSpecializations, self).save(*args, **kwargs)
+        else:
+            MathSpecializations.objects.get(name=self.name).delete()
+            super(MathSpecializations, self).save(*args, **kwargs)
+
+
+class TeacherMathSpecializations(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    special = models.ManyToManyField(MathSpecializations)
+
+    class Meta:
+        verbose_name = 'Специализация по математике учителя'
+        verbose_name_plural = 'Специализации по математике учителей'
+
+
+class EnglishSpecializations(models.Model):
+    name = models.CharField(max_length=255, verbose_name='Название')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Специализация по английскому'
+        verbose_name_plural = 'Специализации по английскому'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        special = EnglishSpecializations.objects.filter(name=self.name)
+        if not special:
+            super(EnglishSpecializations, self).save(*args, **kwargs)
+        else:
+            EnglishSpecializations.objects.get(name=self.name).delete()
+            super(EnglishSpecializations, self).save(*args, **kwargs)
+
+
+class TeacherEnglishSpecializations(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    special = models.ManyToManyField(EnglishSpecializations)
+
+    class Meta:
+        verbose_name = 'Специализация по английскому учителя'
+        verbose_name_plural = 'Специализации по английскому учителей'
+
+
+class EnglishLevel(models.Model):
+    name = models.CharField(max_length=255, verbose_name='Название')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Уровень английского'
+        verbose_name_plural = 'Уровни английского'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        level = EnglishLevel.objects.filter(name=self.name)
+        if not level:
+            super(EnglishLevel, self).save(*args, **kwargs)
+        else:
+            EnglishLevel.objects.get(name=self.name).delete()
+            super(EnglishLevel, self).save(*args, **kwargs)
+
+
+class TeacherEnglishLevel(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    level = models.ManyToManyField(EnglishLevel)
+
+    class Meta:
+        verbose_name = 'Уровень английского учителя'
+        verbose_name_plural = 'Уровни английского учителей'
+
+
 class ManagerRequestsPassword(models.Model):
-    manager = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='Менеджер', related_name='password_manager',
+    manager = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='Менеджер',
+                                related_name='password_manager',
                                 **NULLABLE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='password_user')
     new_password = models.CharField(max_length=50, verbose_name='Новый пароль')
