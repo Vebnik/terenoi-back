@@ -2,6 +2,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import pytz
+
 from authapp.services import add_voxiaccount
 
 NULLABLE = {'blank': True, 'null': True}
@@ -29,6 +30,22 @@ class User(AbstractUser):
         (FEMALE, 'Женский')
     )
 
+    BEGINNER = "Beginner"
+    ELEMENTARY = "Elementary"
+    PRE_INTERMEDIATE = "Pre-intermediate"
+    INTERMEDIATE = "Intermediate"
+    UPPER_INTERMEDIATE = "Upper-intermediate"
+    ADVANCED = "Advanced"
+
+    LEVEL_CHOICES = (
+        (BEGINNER, 'Beginner'),
+        (ELEMENTARY, 'Elementary'),
+        (PRE_INTERMEDIATE, 'Pre-intermediate'),
+        (INTERMEDIATE, 'Intermediate'),
+        (UPPER_INTERMEDIATE, 'Upper-intermediate'),
+        (ADVANCED, 'Advanced'),
+    )
+
     avatar = models.ImageField(upload_to='user_avatar/', verbose_name='Avatar', **NULLABLE)
     birth_date = models.DateField(verbose_name='Дата Рождения', **NULLABLE)
     phone = models.CharField(max_length=25, verbose_name='Телефон', **NULLABLE)
@@ -39,6 +56,9 @@ class User(AbstractUser):
     is_teacher = models.BooleanField(default=False, verbose_name='Учитель')
     education = models.CharField(max_length=255, verbose_name='Образование', **NULLABLE)
     experience = models.TextField(verbose_name='Опыт работы', **NULLABLE)
+    english_level = models.CharField(max_length=50, choices=LEVEL_CHOICES, default=BEGINNER,
+                                     verbose_name='Уровень английского у ученика')
+    student_class = models.CharField(max_length=50, verbose_name='Класс ученика', **NULLABLE)
     is_verified = models.BooleanField(default=False, verbose_name='Верефицирован')
     is_online = models.BooleanField(default=False, verbose_name='Онлайн')
 
