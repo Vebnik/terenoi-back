@@ -76,7 +76,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                             user_interest.save()
                         else:
                             instance = UserInterest.objects.create(user=self.request.user)
-                            instance.interests.set(interest_l)
+                            instance.interests.add(interest_l)
                     else:
                         if user_interest:
                             user_interest.interests.remove(interest_l)
@@ -111,7 +111,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                             user_age.save()
                         else:
                             instance = TeacherAgeLearning.objects.create(user=self.request.user)
-                            instance.age_learning.set(age_l)
+                            instance.age_learning.add(age_l)
                     else:
                         if user_age:
                             user_age.age_learning.remove(age_l)
@@ -126,7 +126,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                             user_math.save()
                         else:
                             instance = TeacherMathSpecializations.objects.create(user=self.request.user)
-                            instance.special.set(math_l)
+                            instance.special.add(math_l)
                     else:
                         if user_math:
                             user_math.special.remove(math_l)
@@ -141,7 +141,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                             user_eng.save()
                         else:
                             instance = TeacherMathSpecializations.objects.create(user=self.request.user)
-                            instance.special.set(eng_l)
+                            instance.special.add(eng_l)
                     else:
                         if user_eng:
                             user_eng.special.remove(eng_l)
@@ -156,7 +156,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                             user_lvl.save()
                         else:
                             instance = TeacherEnglishLevel.objects.create(user=self.request.user)
-                            instance.level.set(lvl_l)
+                            instance.level.add(lvl_l)
                     else:
                         if user_lvl:
                             user_lvl.level.remove(lvl_l)
@@ -171,7 +171,8 @@ class ProfileUpdateView(generics.UpdateAPIView):
                             user_lang.save()
                         else:
                             instance = UserStudyLanguage.objects.create(user=self.request.user)
-                            instance.language.set(l_lang)
+                            instance.language.add(l_lang)
+
                     else:
                         if user_lang:
                             user_lang.language.remove(l_lang)
