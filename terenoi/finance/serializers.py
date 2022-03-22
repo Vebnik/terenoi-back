@@ -143,12 +143,13 @@ class TeacherBalanceSerializer(serializers.ModelSerializer):
 class HistoryPaymentTeacherSerializer(serializers.ModelSerializer):
     current_date = serializers.SerializerMethodField()
     current_time = serializers.SerializerMethodField()
-    status = serializers.SerializerMethodField()
+    action = serializers.SerializerMethodField()
     subject_name = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = HistoryPaymentTeacher
-        fields = ('current_date', 'current_time', 'subject_name', 'status')
+        fields = ('current_date', 'current_time', 'amount', 'subject_name', 'action', 'status')
 
     def _user(self):
         request = self.context.get('request', None)
@@ -156,13 +157,16 @@ class HistoryPaymentTeacherSerializer(serializers.ModelSerializer):
             return request.user
         return None
 
-    def get_status(self, instance):
+    def get_action(self, instance):
         if instance.is_enrollment:
             return 'Зачисление'
         elif instance.referral:
             return 'Зачисление реферальной программы'
         else:
             return 'Вывод средств'
+
+    def get_status(self, instance):
+        return 'Успешно'
 
     def get_current_date(self, instance):
         user = self._user()
