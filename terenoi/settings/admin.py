@@ -32,3 +32,5 @@ class UserCityAdmin(admin.ModelAdmin):
 class WeekDaysAdmin(admin.ModelAdmin):
     list_display = ('name', 'number')
 
+
+

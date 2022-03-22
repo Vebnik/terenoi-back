@@ -1,5 +1,5 @@
 from django.contrib import admin
-from authapp.models import User, VoxiAccount
+from authapp.models import User, VoxiAccount, UserStudyLanguage, StudyLanguage
 from profileapp.models import ManagerToUser
 
 
@@ -20,3 +20,12 @@ class UserAdmin(admin.ModelAdmin):
 class VoxiAccountAdmin(admin.ModelAdmin):
     list_display = ('user', 'voxi_username', 'voxi_display_name')
 
+
+@admin.register(StudyLanguage)
+class StudyLanguageAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
+@admin.register(UserStudyLanguage)
+class UserStudyLanguageAdmin(admin.ModelAdmin):
+    list_display = ('user',)

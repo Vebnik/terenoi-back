@@ -2,7 +2,7 @@ from django.db.models import Q
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from authapp.models import User, VoxiAccount
+from authapp.models import User, VoxiAccount, UserStudyLanguage, StudyLanguage
 from profileapp.models import ReferralPromo
 from profileapp.services import generateRefPromo
 from settings.models import UserCity
@@ -86,3 +86,20 @@ class VoxiAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = VoxiAccount
         fields = ('voxi_username', 'voxi_password')
+
+
+class StudyLanguageSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StudyLanguage
+        fields = ('name', 'status')
+
+    def get_status(self, instance):
+        user_lang = UserStudyLanguage.objects.filter(user=self.context.get('user')).first()
+        if not user_lang:
+            return False
+        elif instance in user_lang.language.all():
+            return True
+        else:
+            return False

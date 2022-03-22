@@ -8,7 +8,9 @@ from django.utils.html import format_html
 
 from authapp.models import User
 from profileapp.models import TeacherSubject, Subject, ReferralPromo, ManagerToUser, UserParents, GlobalUserPurpose, \
-    LanguageInterface, Interests, UserInterest, ManagerRequestsPassword
+    LanguageInterface, Interests, UserInterest, ManagerRequestsPassword, AgeLearning, MathSpecializations, \
+    EnglishSpecializations, EnglishLevel, TeacherAgeLearning, TeacherMathSpecializations, TeacherEnglishSpecializations, \
+    TeacherEnglishLevel
 
 
 @admin.register(Subject)
@@ -58,7 +60,7 @@ class UserInterestAdmin(admin.ModelAdmin):
 
 @admin.register(ManagerRequestsPassword)
 class ManagerRequestsPasswordAdmin(admin.ModelAdmin):
-    list_display = ('manager', 'user','is_resolved', 'account_actions')
+    list_display = ('manager', 'user', 'is_resolved', 'account_actions')
     list_filter = ('is_resolved',)
 
     def get_urls(self):
@@ -101,3 +103,43 @@ class ManagerRequestsPasswordAdmin(admin.ModelAdmin):
         req.is_resolved = True
         req.save()
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+
+@admin.register(AgeLearning)
+class AgeLearningAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
+@admin.register(MathSpecializations)
+class MathSpecializationsAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
+@admin.register(EnglishSpecializations)
+class EnglishSpecializationsAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
+@admin.register(EnglishLevel)
+class EnglishLevelAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
+@admin.register(TeacherAgeLearning)
+class TeacherAgeLearningAdmin(admin.ModelAdmin):
+    list_display = ('user',)
+
+
+@admin.register(TeacherMathSpecializations)
+class TeacherMathSpecializationsAdmin(admin.ModelAdmin):
+    list_display = ('user',)
+
+
+@admin.register(TeacherEnglishSpecializations)
+class TeacherEnglishSpecializationsAdmin(admin.ModelAdmin):
+    list_display = ('user',)
+
+
+@admin.register(TeacherEnglishLevel)
+class TeacherEnglishLevelAdmin(admin.ModelAdmin):
+    list_display = ('user',)
