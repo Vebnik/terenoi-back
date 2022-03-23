@@ -108,7 +108,7 @@ class ScheduleAdmin(admin.ModelAdmin):
 
 @admin.register(ManagerRequestsRejectTeacher)
 class ManagerRequestsRejectTeacherAdmin(admin.ModelAdmin):
-    list_display = ('manager', 'student', 'old_teacher', 'is_resolved','account_actions')
+    list_display = ('manager', 'student', 'old_teacher', 'is_resolved', 'account_actions')
     list_filter = ('is_resolved',)
 
     def get_urls(self):
@@ -144,6 +144,10 @@ class ManagerRequestsRejectTeacherAdmin(admin.ModelAdmin):
             for sh in shedules:
                 sh.teacher = req.new_teacher
                 sh.save()
+        else:
+            lessons = Lesson.objects.filter(student=req.student, teacher=req.old_teacher,
+                                            subject=req.subject)
+            lessons.update(teacher=req.new_teacher)
         req.save()
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
