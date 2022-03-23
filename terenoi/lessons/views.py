@@ -91,7 +91,7 @@ class StudentsRejectView(APIView):
             subject_name = Subject.objects.filter(name=subject).first()
             ManagerRequestsRejectTeacher.objects.create(manager=manager, student=student, old_teacher=self.request.user,
                                                         subject=subject_name, comment=comment)
-            return Response({'message': 'Запрос на изменение пароля отправлен'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Запрос на отказ ученика отправлен'}, status=status.HTTP_200_OK)
         except Exception:
             return Response({'message': 'Что-то пошло не так, попробуйте еще раз'}, status=status.HTTP_400_BAD_REQUEST)
 
