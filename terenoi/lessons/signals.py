@@ -1,10 +1,10 @@
 import calendar
 
 from dateutil.rrule import rrule, WEEKLY
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
-from lessons.models import ScheduleSettings, Lesson
+from lessons.models import ScheduleSettings, Lesson, Schedule
 
 
 @receiver(post_save, sender=ScheduleSettings)
@@ -28,3 +28,14 @@ def add_schedule(sender, instance, **kwargs):
             if i == len_date_list - 1:
                 instance.last_lesson = date
                 instance.save()
+
+
+@receiver(pre_save, sender=Schedule)
+def add_schedule(sender, instance, **kwargs):
+    try:
+        old_instance = Schedule.objects.get(id=instance.id)
+        lessons = Lesson.objects.filter(student=instance.student, teacher=old_instance.teacher,
+                                        subject=instance.subject)
+        lessons.update(teacher=instance.teacher)
+    except Schedule.DoesNotExist:
+        return None

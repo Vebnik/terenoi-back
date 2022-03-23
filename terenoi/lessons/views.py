@@ -12,12 +12,13 @@ from authapp.models import User, VoxiAccount
 from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson, \
     send_cancel_lesson
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
-    ManagerRequests
+    ManagerRequests, ManagerRequestsRejectTeacher
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
-    LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer
+    LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer, \
+    StudentsSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date
 from profileapp.models import Subject, ManagerToUser
 
@@ -63,40 +64,36 @@ class AllUserClassesListView(generics.ListAPIView):
                     date_list.append(current_date(user=self.request.user, date=item.get('date')).date())
 
             queryset = date_list
+            return queryset
 
-            # queryset = Lesson.objects.filter(student=self.request.user).dates('date', 'day').order_by('-date')
-            # queryset_1 = Lesson.objects.filter(
-            #     (Q(student=self.request.user) & Q(lesson_status=Lesson.DONE))).select_related()
-            # queryset_2 = Lesson.objects.filter(
-            #     Q(student=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
-            # queryset_3 = Lesson.objects.filter(
-            #     (Q(student=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
-            # queryset_4 = Lesson.objects.filter(
-            #     (Q(student=self.request.user) & Q(lesson_status=Lesson.REQUEST_RESCHEDULED))).select_related()
-            # queryset_6 = Lesson.objects.filter(
-            #     (Q(student=self.request.user) & Q(lesson_status=Lesson.REQUEST_CANCEL))).select_related()
-            # queryset_7 = Lesson.objects.filter(
-            #     (Q(student=self.request.user) & Q(lesson_status=Lesson.CANCEL))).select_related()
-            # queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_6,
-            #                             queryset_7).order_by('-date')
-        else:
-            queryset = Lesson.objects.filter(teacher=self.request.user).dates('date', 'day').order_by('-date')
-        #     queryset_1 = Lesson.objects.filter(
-        #         (Q(teacher=self.request.user) & Q(lesson_status=Lesson.DONE))).select_related()
-        #     queryset_2 = Lesson.objects.filter(
-        #         Q(teacher=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
-        #     queryset_3 = Lesson.objects.filter(
-        #         (Q(teacher=self.request.user) & Q(lesson_status=Lesson.PROGRESS))).select_related()
-        #     queryset_4 = Lesson.objects.filter(
-        #         (Q(teacher=self.request.user) & Q(lesson_status=Lesson.REQUEST_RESCHEDULED))).select_related()
-        #     queryset_6 = Lesson.objects.filter(
-        #         (Q(teacher=self.request.user) & Q(lesson_status=Lesson.REQUEST_CANCEL))).select_related()
-        #     queryset_7 = Lesson.objects.filter(
-        #         (Q(teacher=self.request.user) & Q(lesson_status=Lesson.CANCEL))).select_related()
-        #     queryset = queryset_1.union(queryset_2, queryset_3, queryset_4, queryset_6,
-        #                                 queryset_7).order_by('-date')
 
-        return queryset
+class StudentsListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request):
+        user = self.get_object()
+        serializer = StudentsSerializer(user)
+        return Response(serializer.data)
+
+
+class StudentsRejectView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            student = User.objects.filter(pk=pk).first()
+            manager = ManagerToUser.objects.get(user=student).manager
+            subject = self.request.data.get('subject')
+            comment = self.request.data.get('comment')
+            subject_name = Subject.objects.filter(name=subject).first()
+            ManagerRequestsRejectTeacher.objects.create(manager=manager, student=student, old_teacher=self.request.user,
+                                                        subject=subject_name, comment=comment)
+            return Response({'message': 'Запрос на отказ ученика отправлен'}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({'message': 'Что-то пошло не так, попробуйте еще раз'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLessonRetrieveView(generics.RetrieveAPIView):

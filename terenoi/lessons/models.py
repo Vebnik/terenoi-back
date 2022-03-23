@@ -200,3 +200,21 @@ class ManagerRequests(models.Model):
     class Meta:
         verbose_name = 'Запрос для изменения урока'
         verbose_name_plural = 'Запросы для изменения уроков'
+
+
+class ManagerRequestsRejectTeacher(models.Model):
+    manager = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='Менеджер', related_name='reject_manager',
+                                **NULLABLE)
+    student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='reject_student')
+    old_teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Старый учитель',
+                                    related_name='reject_old_teacher')
+    new_teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Новый учитель',
+                                    related_name='reject_new_teacher', limit_choices_to={'is_teacher': True},
+                                    **NULLABLE)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
+    comment = models.TextField(verbose_name='Комментарий к отказу от ученика', **NULLABLE)
+    is_resolved = models.BooleanField(verbose_name='Решен', default=False)
+
+    class Meta:
+        verbose_name = 'Запрос на изменение учителя у ученика'
+        verbose_name_plural = 'Запросы на изменение учителя у ученика'

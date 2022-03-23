@@ -17,16 +17,28 @@ from profileapp.serializers import SubjectSerializer
 class UserClassesSerializer(serializers.ModelSerializer):
     current_date = serializers.SerializerMethodField()
     lessons = serializers.SerializerMethodField()
+    all_lessons = serializers.SerializerMethodField()
+    done_lessons = serializers.SerializerMethodField()
+    subjects = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
-        fields = ('current_date', 'lessons')
+        fields = ('all_lessons', 'done_lessons','subjects', 'current_date', 'lessons')
 
     def _user(self):
         request = self.context.get('request', None)
         if request:
             return request.user
         return None
+
+    def get_all_lessons(self, instance):
+        all_lessons = Lesson.objects.filter(student=self._user()).exclude(lesson_status=Lesson.CANCEL).exclude(
+            lesson_status=Lesson.RESCHEDULED).count()
+        return all_lessons
+
+    def get_done_lessons(self, instance):
+        done_lessons = Lesson.objects.filter(student=self._user(), lesson_status=Lesson.DONE).count()
+        return done_lessons
 
     def get_current_date(self, instance):
         return instance
@@ -39,6 +51,17 @@ class UserClassesSerializer(serializers.ModelSerializer):
             lessons = Lesson.objects.filter(teacher=user, date__date=instance)
         serializer = UserLessonsSerializer(lessons, many=True, context={'user': user})
         return serializer.data
+
+    def get_subjects(self, instance):
+        subject_list = []
+        subjects = Lesson.objects.filter(student=self._user()).distinct('subject')
+        if subjects:
+            for sub in subjects:
+                subject_list.append(sub.subject)
+            serializer = SubjectSerializer(subject_list, many=True)
+            return serializer.data
+        else:
+            return None
 
 
 class UserLessonsSerializer(serializers.ModelSerializer):
@@ -601,3 +624,51 @@ class StudentStatusUpdate(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ('student_status',)
+
+
+class StudentsTeacherSerializer(serializers.ModelSerializer):
+    lessons_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'pk', 'avatar', 'username', 'first_name', 'last_name', 'english_level', 'student_class', 'lessons_count')
+
+    def get_lessons_count(self, instance):
+        lessons_count = Lesson.objects.filter(student=instance, lesson_status=Lesson.SCHEDULED,
+                                              subject=self.context.get('subject')).count()
+        return lessons_count
+
+
+class StudentsSerializer(serializers.ModelSerializer):
+    students = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('students',)
+
+    def get_students(self, instance):
+        data = []
+        subjects = Lesson.objects.filter(teacher=instance).distinct('subject')
+        for subject in subjects:
+            print(subject.subject.name)
+            inactive_list = []
+            active_list = []
+            all_students = Lesson.objects.filter(teacher=instance, subject=subject.subject).distinct('student')
+            for student in all_students:
+                inactive = Lesson.objects.filter(teacher=instance, subject=subject.subject, student=student.student,
+                                                 lesson_status=Lesson.SCHEDULED).first()
+                if not inactive:
+                    inactive_list.append(student.student)
+                else:
+                    active_list.append(student.student)
+
+            serializer_active = StudentsTeacherSerializer(active_list, many=True, context={'subject': subject.subject})
+            serializer_inactive = StudentsTeacherSerializer(inactive_list, many=True)
+            data.append({
+                'subject': subject.subject.name,
+                'active_students': serializer_active.data,
+                'inactive_students': serializer_inactive.data
+            })
+        return data
+
