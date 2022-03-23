@@ -23,7 +23,7 @@ class UserClassesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ('all_lessons', 'done_lessons', 'current_date', 'subjects', 'lessons')
+        fields = ('all_lessons', 'done_lessons','subjects', 'current_date', 'lessons')
 
     def _user(self):
         request = self.context.get('request', None)
@@ -53,8 +53,15 @@ class UserClassesSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_subjects(self, instance):
-        subjects = Lesson.objects.filter(student=instance).distinct('subject')
-        return 'ff'
+        subject_list = []
+        subjects = Lesson.objects.filter(student=self._user()).distinct('subject')
+        if subjects:
+            for sub in subjects:
+                subject_list.append(sub.subject)
+            serializer = SubjectSerializer(subject_list, many=True)
+            return serializer.data
+        else:
+            return None
 
 
 class UserLessonsSerializer(serializers.ModelSerializer):
