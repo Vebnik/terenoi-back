@@ -4,7 +4,7 @@ from django.urls import reverse, path
 from django.utils.html import format_html
 
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
-    ManagerRequests, Schedule, ScheduleSettings
+    ManagerRequests, Schedule, ScheduleSettings, ManagerRequestsRejectTeacher
 
 
 @admin.register(Lesson)
@@ -104,3 +104,51 @@ class ScheduleAdmin(admin.ModelAdmin):
     inlines = [
         ScheduleSettingsInline,
     ]
+
+
+@admin.register(ManagerRequestsRejectTeacher)
+class ManagerRequestsRejectTeacherAdmin(admin.ModelAdmin):
+    list_display = ('manager', 'student', 'old_teacher', 'is_resolved','account_actions')
+    list_filter = ('is_resolved',)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                '<int:pk>/accept/',
+                self.admin_site.admin_view(self.process_accept),
+                name='account-accept_student',
+            ),
+            path(
+                '<int:pk>/reject/',
+                self.admin_site.admin_view(self.process_reject),
+                name='account-reject_student',
+            ),
+        ]
+        return custom_urls + urls
+
+    def account_actions(self, obj):
+        if not obj.is_resolved:
+            return format_html(
+                '<a class="button" href="{}">Подтвердить</a> '
+                '<a class="button" href="{}">Отклонить</a> ',
+                reverse('admin:account-accept_student', args=[obj.pk]),
+                reverse('admin:account-reject_student', args=[obj.pk]),
+            )
+
+    def process_accept(self, request, pk, *args, **kwargs):
+        req = ManagerRequestsRejectTeacher.objects.filter(pk=pk).first()
+        req.is_resolved = True
+        shedules = Schedule.objects.filter(student=req.student, teacher=req.old_teacher, subject=req.subject)
+        if shedules:
+            for sh in shedules:
+                sh.teacher = req.new_teacher
+                sh.save()
+        req.save()
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+    def process_reject(self, request, pk, *args, **kwargs):
+        req = ManagerRequestsRejectTeacher.objects.filter(pk=pk).first()
+        req.is_resolved = True
+        req.save()
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
