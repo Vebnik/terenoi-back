@@ -305,3 +305,9 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('pk', 'username')
+
+
+class PurposeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GlobalUserPurpose
+        fields = ('user', 'subject')

@@ -18,9 +18,10 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
     LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer, \
-    StudentsSerializer
+    StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date
-from profileapp.models import Subject, ManagerToUser
+from profileapp.models import Subject, ManagerToUser, GlobalUserPurpose
+from profileapp.serializers import PurposeSerializer
 
 
 class AllUserLessonsListView(generics.ListAPIView):
@@ -77,6 +78,85 @@ class StudentsListView(APIView):
         user = self.get_object()
         serializer = StudentsSerializer(user)
         return Response(serializer.data)
+
+
+class TopicUpdateView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TopicSerializer
+    queryset = Lesson.objects.all()
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            for item in self.request.data:
+                lesson = Lesson.objects.filter(pk=item.get('lesson_id', None)).first()
+                lesson.topic = item.get('topic', None)
+                lesson.save()
+            return Response({'message': 'Темы уроков добавлены'}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({'message': 'Что-то пошло не так, попробуйте еще раз'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PurposeUpdateView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PurposeSerializer
+    queryset = GlobalUserPurpose.objects.all()
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            purpose = GlobalUserPurpose.objects.filter(user__pk=int(self.kwargs.get('pk')),
+                                                       subject__name=self.request.data.get('subject')).first()
+            if not purpose:
+                student = User.objects.filter(pk=int(self.kwargs.get('pk'))).first()
+                subject = Subject.objects.filter(name=self.request.data.get('subject')).first()
+                GlobalUserPurpose.objects.create(user=student,
+                                                 subject=subject, purpose=self.request.data.get('purpose'))
+            else:
+                purpose.purpose = self.request.data.get('purpose')
+                purpose.save()
+            return Response({'message': 'Цель ученика добавлена'}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print(e)
+            return Response({'message': 'Что-то пошло не так, попробуйте еще раз'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class HomeworksView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request):
+        user = self.get_object()
+        if not self.request.query_params:
+            serializer = HomeworksSerializer(user)
+            return Response(serializer.data)
+        else:
+            serializer = HomeworksSerializer(user, context={'filter': self.request.query_params.get('filter')})
+            return Response(serializer.data)
+
+
+class StudentsDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request, pk):
+        user = self.get_object()
+        if not self.request.query_params:
+            serializer = StudentDetailSerializer(user, context={'pk': pk})
+            return Response(serializer.data)
+        else:
+            serializer = StudentDetailSerializer(user,
+                                                 context={'pk': pk, 'filter': self.request.query_params.get('filter')})
+            return Response(serializer.data)
 
 
 class StudentsRejectView(APIView):
