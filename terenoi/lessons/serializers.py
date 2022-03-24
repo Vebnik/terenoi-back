@@ -758,14 +758,11 @@ class StudentDetailSerializer(serializers.ModelSerializer):
                 purpose = student_purpose.purpose
             lessons = Lesson.objects.filter(student=self._student(), teacher=instance, subject=sub.subject, schedule__isnull=False).exclude(
                 lesson_status=Lesson.CANCEL).exclude(lesson_status=Lesson.RESCHEDULED).order_by('date')
-            count = 1
             for les in lessons:
                 data_lesson.append({
-                    'count': count,
                     'lesson_id': les.pk,
                     'topic': les.topic
                 })
-                count += 1
 
             data.append({
                 'subject': sub.subject.name,
@@ -802,7 +799,6 @@ class StudentDetailSerializer(serializers.ModelSerializer):
                         check = True
                     data_lesson.append({
                         'lesson_id': les.pk,
-                        'l_d':les.date,
                         'topic': les.topic,
                         'homework': serializer_homework.data,
                         'rate': serializer_rate.data,
