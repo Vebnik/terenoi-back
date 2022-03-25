@@ -1,3 +1,10 @@
+import base64
+import os
+import re
+from io import BytesIO
+
+from PIL import Image
+from django.conf import settings
 from rest_framework import serializers
 from authapp.models import User, UserStudyLanguage, StudyLanguage
 from authapp.serializers import StudyLanguageSerializer
@@ -59,6 +66,7 @@ class UpdateStudentSerializer(serializers.ModelSerializer):
         )
 
     def get_city(self, instance):
+
         city = UserCity.objects.filter(user=instance).first()
         serializer = CityUserSerializer(city)
         return serializer.data
@@ -104,6 +112,29 @@ class UpdateStudentSerializer(serializers.ModelSerializer):
         langs = StudyLanguage.objects.all()
         serializer = StudyLanguageSerializer(langs, many=True, context={'user': instance})
         return serializer.data
+
+
+class UpdateUserAvatarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'pk',
+            'username',)
+
+    def to_internal_value(self, data):
+        if 'avatar' in data:
+            image_path = f'{settings.MEDIA_ROOT}/user_avatar/{self.instance.username}-avatar.jpeg'
+            image_name = f'{self.instance.username}-avatar.jpeg'
+            if data['avatar']:
+                base64_img = data['avatar']
+                byte_data = base64.b64decode(base64_img)
+                image_data = BytesIO(byte_data)
+                if self.instance.avatar:
+                    self.instance.avatar.delete()
+                self.instance.avatar.save(image_name, image_data, save=True)
+            else:
+                os.remove(image_path)
+        return super(UpdateUserAvatarSerializer, self).to_internal_value(data)
 
 
 class UpdateTeacherSerializer(serializers.ModelSerializer):
