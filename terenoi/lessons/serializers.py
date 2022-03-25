@@ -133,7 +133,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
 
     def get_teacher_avatar(self, instance):
         if instance.teacher.avatar:
-            return instance.teacher.avatar
+            return instance.teacher.avatar.url
         else:
             return None
 
