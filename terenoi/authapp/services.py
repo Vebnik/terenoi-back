@@ -9,7 +9,7 @@ from authapp.decorators import create_voxi_file
 
 def send_verify_email(user):
     token = RefreshToken.for_user(user).access_token
-    relative_link = 'api/auth/verify-email/'
+    relative_link = 'verify-email/'
     url = f'{settings.BASE_URL}/{relative_link}?token={token}'
     # context = {
     #     'static_url': settings.BACK_URL + settings.STATIC_URL,

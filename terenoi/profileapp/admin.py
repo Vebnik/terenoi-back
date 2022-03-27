@@ -95,6 +95,7 @@ class ManagerRequestsPasswordAdmin(admin.ModelAdmin):
         password = make_password(req.new_password)
         user.password = password
         user.save()
+        req.new_password = None
         req.save()
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
 

@@ -10,7 +10,7 @@ from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParent
     EnglishLevel, TeacherEnglishLevel
 from profileapp.permissions import IsStudent, IsTeacher
 from profileapp.serializers import UpdateUserSerializer, UpdateStudentSerializer, UpdateTeacherSerializer, \
-    ReferralSerializer, UserParentsSerializer, ChangePasswordSerializer
+    ReferralSerializer, UserParentsSerializer, ChangePasswordSerializer, UpdateUserAvatarSerializer
 from settings.models import CityTimeZone, UserCity
 
 
@@ -182,6 +182,22 @@ class ProfileUpdateView(generics.UpdateAPIView):
         except AttributeError:
             return super(ProfileUpdateView, self).update(request, *args, **kwargs)
         return super(ProfileUpdateView, self).update(request, *args, **kwargs)
+
+
+class ProfileUpdateAvatarView(generics.UpdateAPIView):
+    """Редактирование пользователя"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = UpdateUserAvatarSerializer
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    # def get_serializer_class(self):
+    #     user = self.get_object()
+    #     if user.is_teacher or user.is_superuser:
+    #         return UpdateTeacherSerializer
+    #     else:
+    #         return UpdateStudentSerializer
 
 
 class ProfileView(APIView):

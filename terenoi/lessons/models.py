@@ -121,7 +121,9 @@ class Lesson(models.Model):
             get_record(lesson_id=self.pk, lesson_date=self.date)
             payment_for_lesson(self)
             count = DeadlineSettings.objects.filter(subject=self.subject).first()
-            if count:
+            if self.deadline:
+                pass
+            elif count:
                 days = datetime.timedelta(days=count.day_count)
                 deadline = self.date + days
                 self.deadline = deadline
