@@ -183,16 +183,19 @@ class HomepageTeacherSerializer(serializers.ModelSerializer):
 
     def get_payment_date(self, instance):
         data = []
-        status = "Выплата"
-        date = HistoryPaymentTeacher.objects.filter(teacher=instance).order_by('-payment_date').first()
-        curr_date = current_date(user=instance, date=date.payment_date)
-        if date.amount > 0:
-            status = 'Зачисление'
-        data.append({
-            'date': curr_date.date(),
-            'status': status
-        })
-        return data
+        try:
+            status = "Выплата"
+            date = HistoryPaymentTeacher.objects.filter(teacher=instance).order_by('-payment_date').first()
+            curr_date = current_date(user=instance, date=date.payment_date)
+            if date.amount > 0:
+                status = 'Зачисление'
+            data.append({
+                'date': curr_date.date(),
+                'status': status
+            })
+            return data
+        except Exception:
+            return None
 
     def get_rate(self, instance):
         data = []
@@ -281,19 +284,22 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
         lessons = Lesson.objects.filter(student=instance).dates('date', 'week').count()
         lessons_all = Lesson.objects.filter(student=instance).exclude(lesson_status=Lesson.CANCEL).exclude(
             lesson_status=Lesson.RESCHEDULED).count()
-        k = lessons_all / lessons
-        count_lessons_list = []
-        week_list = []
-        count = 0
-        for i in range(0, lessons + 1):
-            if i == 0:
-                count_lessons_list.append(str(i))
-            else:
-                count += k
-                count_lessons_list.append(str(count))
+        try:
+            k = lessons_all / lessons
+            count_lessons_list = []
+            week_list = []
+            count = 0
+            for i in range(0, lessons + 1):
+                if i == 0:
+                    count_lessons_list.append(str(i))
+                else:
+                    count += k
+                    count_lessons_list.append(str(count))
 
-            week_list.append(str(i))
-        data = [week_list, count_lessons_list]
+                week_list.append(str(i))
+            data = [week_list, count_lessons_list]
+        except Exception:
+            return 0
         return data
 
     def get_weeks_complete_lesson(self, instance):
