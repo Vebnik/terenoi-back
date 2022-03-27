@@ -34,6 +34,7 @@ class UserRegister(generics.CreateAPIView):
 class VerifyEmail(generics.GenericAPIView):
     """Верификация пользователя по эмейлу"""
     serializer_class = VerifyEmailSerializer
+    permission_classes = [permissions.AllowAny]
     token_param_config = openapi.Parameter(
         'token', in_=openapi.IN_QUERY, description='token', type=openapi.TYPE_STRING
     )

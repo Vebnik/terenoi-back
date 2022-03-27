@@ -7,7 +7,7 @@ from rest_framework import serializers
 
 from authapp.models import User, VoxiAccount
 from authapp.serializers import UserNameSerializer, VoxiAccountSerializer
-from finance.models import StudentBalance, HistoryPaymentStudent, TeacherBalance
+from finance.models import StudentBalance, HistoryPaymentStudent, TeacherBalance, HistoryPaymentTeacher
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
     Schedule, ScheduleSettings
 from lessons.services import current_date
@@ -138,7 +138,6 @@ class UserLessonsSerializer(serializers.ModelSerializer):
             return None
 
 
-
 class HomepageTeacherSerializer(serializers.ModelSerializer):
     month_lessons = serializers.SerializerMethodField()
     student_count = serializers.SerializerMethodField()
@@ -146,10 +145,11 @@ class HomepageTeacherSerializer(serializers.ModelSerializer):
     rate = serializers.SerializerMethodField()
     next_lesson = serializers.SerializerMethodField()
     all_lessons = serializers.SerializerMethodField()
+    payment_date = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('month_lessons', 'all_lessons', 'student_count', 'balance', 'rate', 'next_lesson')
+        fields = ('month_lessons', 'all_lessons', 'student_count', 'balance', 'payment_date', 'rate', 'next_lesson')
 
     def _user(self):
         request = self.context.get('request', None)
@@ -181,6 +181,19 @@ class HomepageTeacherSerializer(serializers.ModelSerializer):
         balance = TeacherBalance.objects.filter(user=instance).first().money_balance
         return balance
 
+    def get_payment_date(self, instance):
+        data = []
+        status = "Выплата"
+        date = HistoryPaymentTeacher.objects.filter(teacher=instance).order_by('-payment_date').first()
+        curr_date = current_date(user=instance, date=date.payment_date)
+        if date.amount > 0:
+            status = 'Зачисление'
+        data.append({
+            'date': curr_date.date(),
+            'status': status
+        })
+        return data
+
     def get_rate(self, instance):
         data = []
         lessons = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.DONE)
@@ -199,12 +212,17 @@ class HomepageTeacherSerializer(serializers.ModelSerializer):
             return None
 
     def get_next_lesson(self, instance):
-        lesson = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.SCHEDULED).order_by('date').first()
-        if not lesson:
-            lesson_done = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.DONE).order_by('-date').first()
-            serializer = UserLessonsSerializer(lesson_done, context={'user': instance})
+        lesson_pr = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.PROGRESS).order_by('date').first()
+        if not lesson_pr:
+            lesson = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.SCHEDULED).order_by('date').first()
+            if not lesson:
+                lesson_done = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.DONE).order_by(
+                    '-date').first()
+                serializer = UserLessonsSerializer(lesson_done, context={'user': instance})
+                return serializer.data
+            serializer = UserLessonsSerializer(lesson, context={'user': instance})
             return serializer.data
-        serializer = UserLessonsSerializer(lesson, context={'user': instance})
+        serializer = UserLessonsSerializer(lesson_pr, context={'user': instance})
         return serializer.data
 
 
@@ -246,12 +264,17 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
         return homework
 
     def get_next_lesson(self, instance):
-        lesson = Lesson.objects.filter(student=instance, lesson_status=Lesson.SCHEDULED).order_by('date').first()
-        if not lesson:
-            lesson_done = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE).order_by('-date').first()
-            serializer = UserLessonsSerializer(lesson_done, context={'user': instance})
+        lesson_pr = Lesson.objects.filter(student=instance, lesson_status=Lesson.PROGRESS).order_by('date').first()
+        if not lesson_pr:
+            lesson = Lesson.objects.filter(student=instance, lesson_status=Lesson.SCHEDULED).order_by('date').first()
+            if not lesson:
+                lesson_done = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE).order_by(
+                    '-date').first()
+                serializer = UserLessonsSerializer(lesson_done, context={'user': instance})
+                return serializer.data
+            serializer = UserLessonsSerializer(lesson, context={'user': instance})
             return serializer.data
-        serializer = UserLessonsSerializer(lesson, context={'user': instance})
+        serializer = UserLessonsSerializer(lesson_pr, context={'user': instance})
         return serializer.data
 
     def get_weeks(self, instance):
@@ -398,7 +421,8 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
             lessons = Lesson.objects.filter(student=instance, subject=subject.subject, lesson_status=Lesson.DONE)
             for lesson in lessons:
                 try:
-                    teacher_eval.append(lesson.teacher_evaluation)
+                    if lesson.teacher_evaluation:
+                        teacher_eval.append(lesson.teacher_evaluation)
                     new_str = lesson.teacher_rate_comment.split('\n')
                     if lesson.subject.name in 'Математика' or lesson.subject.name in 'Физика':
                         count_examples.append(int(new_str[1].strip('Ответ:')))
