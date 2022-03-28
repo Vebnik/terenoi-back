@@ -657,13 +657,13 @@ class VoxiStudentInfoSerializer(serializers.ModelSerializer):
 class TeacherStatusUpdate(serializers.ModelSerializer):
     class Meta:
         model = Lesson
-        fields = ('teacher_status',)
+        fields = ('teacher_status', 'teacher_entry_date')
 
 
 class StudentStatusUpdate(serializers.ModelSerializer):
     class Meta:
         model = Lesson
-        fields = ('student_status',)
+        fields = ('student_status', 'student_entry_date')
 
 
 class StudentsTeacherSerializer(serializers.ModelSerializer):

@@ -7,11 +7,11 @@ from PIL import Image
 from django.conf import settings
 from rest_framework import serializers
 from authapp.models import User, UserStudyLanguage, StudyLanguage
-from authapp.serializers import StudyLanguageSerializer
+from authapp.serializers import StudyLanguageSerializer, DataManagerSerializer
 from lessons.models import Lesson
 from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParents, GlobalUserPurpose, LanguageInterface, \
     Interests, UserInterest, AgeLearning, MathSpecializations, TeacherAgeLearning, TeacherMathSpecializations, \
-    EnglishSpecializations, TeacherEnglishSpecializations, EnglishLevel, TeacherEnglishLevel
+    EnglishSpecializations, TeacherEnglishSpecializations, EnglishLevel, TeacherEnglishLevel, ManagerToUser
 from settings.models import UserCity
 from settings.serializers import CityUserSerializer
 
@@ -342,3 +342,16 @@ class PurposeSerializer(serializers.ModelSerializer):
     class Meta:
         model = GlobalUserPurpose
         fields = ('user', 'subject')
+
+
+class HelpSerializer(serializers.ModelSerializer):
+    manager_data = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('manager_data',)
+
+    def get_manager_data(self, instance):
+        manager = ManagerToUser.objects.filter(user=instance).first().manager
+        serializer = DataManagerSerializer(manager)
+        return serializer.data
