@@ -385,6 +385,17 @@ class LessonUserStatusUpdateView(generics.UpdateAPIView):
         elif self.request.user.is_student:
             return StudentStatusUpdate
 
+    def update(self, request, *args, **kwargs):
+        if self.request.user.is_teacher:
+            lesson = Lesson.objects.filter(pk=int(self.kwargs.get('pk'))).first()
+            lesson.teacher_entry_date = current_date(user=self.request.user, date=datetime.datetime.now())
+            lesson.save()
+        else:
+            lesson = Lesson.objects.filter(pk=int(self.kwargs.get('pk'))).first()
+            lesson.student_entry_date = current_date(user=self.request.user, date=datetime.datetime.now())
+            lesson.save()
+        return super(LessonUserStatusUpdateView, self).update(request, *args, **kwargs)
+
 
 class LessonUpdateView(generics.UpdateAPIView):
     """Обновление данных урока"""

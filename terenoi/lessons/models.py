@@ -73,7 +73,9 @@ class Lesson(models.Model):
     transfer_date = models.DateTimeField(verbose_name='Дата переноса', **NULLABLE)
     transfer_comment = models.TextField(verbose_name='Комментарий к переносу или отмене урока', **NULLABLE)
     teacher_status = models.BooleanField(verbose_name='Статус учителя', default=False)
+    teacher_entry_date = models.DateTimeField(verbose_name='Дата входа на урок учителя', **NULLABLE)
     student_status = models.BooleanField(verbose_name='Статус ученика', default=False)
+    student_entry_date = models.DateTimeField(verbose_name='Дата входа на урок ученика', **NULLABLE)
     lesson_status = models.CharField(verbose_name='Статус урока', max_length=15, choices=LESSON_STATUS_CHOICES,
                                      default=SCHEDULED)
     deadline = models.DateTimeField(verbose_name='Сроки сдачи домашнего задания', **NULLABLE)
@@ -90,7 +92,6 @@ class Lesson(models.Model):
         return f'{self.pk}-{self.teacher}-{self.student}-{self.subject}'
 
     def save(self, *args, **kwargs):
-        # super(Lesson, self).save(*args, **kwargs)
         student = VoxiAccount.objects.filter(user=self.student).first()
         if student is None:
             username = f'Student-{self.student.pk}'

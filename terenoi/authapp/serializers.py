@@ -108,3 +108,9 @@ class StudyLanguageSerializer(serializers.ModelSerializer):
             return True
         else:
             return False
+
+
+class DataManagerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('phone', 'telegram', 'whatsapp')

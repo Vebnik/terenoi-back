@@ -10,7 +10,7 @@ from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParent
     EnglishLevel, TeacherEnglishLevel
 from profileapp.permissions import IsStudent, IsTeacher
 from profileapp.serializers import UpdateUserSerializer, UpdateStudentSerializer, UpdateTeacherSerializer, \
-    ReferralSerializer, UserParentsSerializer, ChangePasswordSerializer, UpdateUserAvatarSerializer
+    ReferralSerializer, UserParentsSerializer, ChangePasswordSerializer, UpdateUserAvatarSerializer, HelpSerializer
 from settings.models import CityTimeZone, UserCity
 
 
@@ -252,3 +252,16 @@ class ChangePasswordView(generics.UpdateAPIView):
             return Response({'message': 'Запрос на изменение пароля отправлен'},
                             status=status.HTTP_200_OK)
         return super(ChangePasswordView, self).update(request, *args, **kwargs)
+
+
+class HelpView(APIView):
+    """Получение контактов менеджера"""
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request):
+        user = self.get_object()
+        serializer = HelpSerializer(user)
+        return Response(serializer.data)

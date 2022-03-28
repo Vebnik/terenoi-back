@@ -49,6 +49,8 @@ class User(AbstractUser):
     avatar = models.ImageField(upload_to='user_avatar/', verbose_name='Avatar', **NULLABLE)
     birth_date = models.DateField(verbose_name='Дата Рождения', **NULLABLE)
     phone = models.CharField(max_length=25, verbose_name='Телефон', **NULLABLE)
+    telegram = models.CharField(max_length=255, verbose_name='Telegram', **NULLABLE)
+    whatsapp = models.CharField(max_length=255, verbose_name='Whatsapp', **NULLABLE)
     bio = models.TextField(verbose_name='О себе', **NULLABLE)
     gender = models.TextField(max_length=10, choices=GENDER_CHOICES, **NULLABLE, verbose_name='Пол')
     time_zone = models.CharField(max_length=32, choices=TIMEZONES, default='Asia/Almaty', verbose_name='Часовой пояс')
