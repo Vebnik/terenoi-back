@@ -416,7 +416,6 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
     def get_efficiency(self, instance):
         subjects = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE).distinct('subject')
         teacher_eval = []
-        count_examples = []
         quality = []
         speaking_list = []
         writing_list = []
@@ -431,13 +430,9 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
                         teacher_eval.append(lesson.teacher_evaluation)
                     new_str = lesson.teacher_rate_comment.split('\n')
                     if lesson.subject.name in 'Математика' or lesson.subject.name in 'Физика':
-                        count_examples.append(int(new_str[1].strip('Ответ:')))
                         quality.append(int(new_str[3].strip('Ответ:')))
                         average_quality = sum(quality) / len(quality)
-                        average_count_examples = sum(count_examples) / len(count_examples)
                         data.append(average_quality * 10)
-                        data.append(average_count_examples * 10)
-
                     else:
                         speaking_list.append(int(new_str[1].strip('Ответ:')))
                         writing_list.append(int(new_str[3].strip('Ответ:')))
@@ -455,6 +450,7 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
                 except Exception:
                     pass
         try:
+
             teacher_eval_average = sum(teacher_eval) / len(teacher_eval)
             data.append(teacher_eval_average * 10)
             avg = sum(data) / len(data)
