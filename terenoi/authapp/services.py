@@ -1,10 +1,23 @@
 import hashlib
+import random
+
 from django.conf import settings
 from django.core.mail import send_mail
 from rest_framework_simplejwt.tokens import RefreshToken
 from voximplant.apiclient import VoximplantAPI, VoximplantException
 import authapp.models
 from authapp.decorators import create_voxi_file
+
+
+def generatePassword():
+    chars = 'abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+    length = 8
+    promo = ''
+    while True:
+        for i in range(length):
+            promo += random.choice(chars)
+        break
+    return promo
 
 
 def send_verify_email(user):
@@ -19,6 +32,13 @@ def send_verify_email(user):
     # }
     body = f'Для подтверждения учетной записи {user.username}  перейдите по ссылке: \n{url}'
     subject = 'Верификация почты'
+    send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
+
+
+def send_generate_data(user, password):
+    body = f'Логин для входа:{user.email}\n  ' \
+           f'Пароль для входа:{password}'
+    subject = 'Данные для входа'
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 

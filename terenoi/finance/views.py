@@ -37,7 +37,25 @@ class StudentHistoryPayment(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        if self.request.query_params.get('subject') and self.request.query_params.get('from'):
+        if self.request.query_params.get('subject') and self.request.query_params.get(
+                'from') and self.request.query_params.get('status'):
+            if self.request.query_params.get('status') == 'Списание':
+                queryset = HistoryPaymentStudent.objects.filter(student=user,
+                                                                subject__name=self.request.query_params.get('subject'),
+                                                                payment_date__range=[
+                                                                    self.request.query_params.get('from'),
+                                                                    self.request.query_params.get(
+                                                                        'to')], debit=True).order_by('-payment_date')
+                return queryset
+            else:
+                queryset = HistoryPaymentStudent.objects.filter(student=user,
+                                                                subject__name=self.request.query_params.get('subject'),
+                                                                payment_date__range=[
+                                                                    self.request.query_params.get('from'),
+                                                                    self.request.query_params.get(
+                                                                        'to')], debit=False).order_by('-payment_date')
+                return queryset
+        elif self.request.query_params.get('subject') and self.request.query_params.get('from'):
             queryset = HistoryPaymentStudent.objects.filter(student=user,
                                                             subject__name=self.request.query_params.get('subject'),
                                                             payment_date__range=[self.request.query_params.get('from'),
@@ -55,6 +73,15 @@ class StudentHistoryPayment(generics.ListAPIView):
                                                                                  self.request.query_params.get(
                                                                                      'to')]).order_by('-payment_date')
             return queryset
+        elif self.request.query_params.get('status'):
+            if self.request.query_params.get('status') == 'Списание':
+                queryset = HistoryPaymentStudent.objects.filter(student=user,
+                                                                debit=True).order_by('-payment_date')
+                return queryset
+            else:
+                queryset = HistoryPaymentStudent.objects.filter(student=user,
+                                                                debit=False).order_by('-payment_date')
+                return queryset
         queryset = HistoryPaymentStudent.objects.filter(student=user).order_by('-payment_date')
         return queryset
 
@@ -65,6 +92,29 @@ class TeacherHistoryPayment(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if self.request.query_params.get('subject') and self.request.query_params.get(
+                'from') and self.request.query_params.get('status'):
+            if self.request.query_params.get('status') == 'Зачисление':
+                queryset = HistoryPaymentTeacher.objects.filter(teacher=user,
+                                                                lesson__subject__name=self.request.query_params.get(
+                                                                    'subject'),
+                                                                payment_date__range=[
+                                                                    self.request.query_params.get('from'),
+                                                                    self.request.query_params.get(
+                                                                        'to')], is_enrollment=True).order_by(
+                    '-payment_date')
+                return queryset
+            else:
+                queryset = HistoryPaymentTeacher.objects.filter(teacher=user,
+                                                                lesson__subject__name=self.request.query_params.get(
+                                                                    'subject'),
+                                                                payment_date__range=[
+                                                                    self.request.query_params.get('from'),
+                                                                    self.request.query_params.get(
+                                                                        'to')], is_enrollment=False).order_by(
+                    '-payment_date')
+                return queryset
+
         if self.request.query_params.get('subject') and self.request.query_params.get('from'):
             queryset = HistoryPaymentTeacher.objects.filter(teacher=user,
                                                             lesson__subject__name=self.request.query_params.get(
@@ -85,6 +135,15 @@ class TeacherHistoryPayment(generics.ListAPIView):
                                                                 self.request.query_params.get(
                                                                     'to')]).order_by('-payment_date')
             return queryset
+        elif self.request.query_params.get('status'):
+            if self.request.query_params.get('status') == 'Зачисление':
+                queryset = HistoryPaymentTeacher.objects.filter(teacher=user,
+                                                                is_enrollment=True).order_by('-payment_date')
+                return queryset
+            else:
+                queryset = HistoryPaymentTeacher.objects.filter(teacher=user,
+                                                                is_enrollment=False).order_by('-payment_date')
+                return queryset
         queryset = HistoryPaymentTeacher.objects.filter(teacher=user).order_by('-payment_date')
         return queryset
 

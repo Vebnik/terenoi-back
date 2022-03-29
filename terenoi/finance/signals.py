@@ -31,4 +31,4 @@ def ref_bonus_teacher(sender, instance, **kwargs):
         ref_promo.save()
         HistoryPaymentTeacher.objects.create(teacher=user,
                                                  payment_date=datetime.datetime.now(),
-                                                 amount=friend_amount, referral=True)
+                                                 amount=friend_amount, referral=True, is_enrollment=True)

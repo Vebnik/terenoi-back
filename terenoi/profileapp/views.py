@@ -245,13 +245,23 @@ class ChangePasswordView(generics.UpdateAPIView):
         return User.objects.get(username=self.request.user)
 
     def update(self, request, *args, **kwargs):
-        manager = ManagerToUser.objects.get(user=self.request.user).manager
-        if self.request.data.get('password'):
-            ManagerRequestsPassword.objects.create(manager=manager, user=self.request.user,
-                                                   new_password=self.request.data.get('password'))
-            return Response({'message': 'Запрос на изменение пароля отправлен'},
-                            status=status.HTTP_200_OK)
-        return super(ChangePasswordView, self).update(request, *args, **kwargs)
+        if self.request.user.is_student:
+            manager = ManagerToUser.objects.get(user=self.request.user).manager
+            if self.request.data.get('password'):
+                ManagerRequestsPassword.objects.create(manager=manager, user=self.request.user,
+                                                       new_password=self.request.data.get('password'))
+                return Response({'message': 'Запрос на изменение пароля отправлен'},
+                                status=status.HTTP_200_OK)
+            return Response({'message': 'Что-то пошло не так,попробуйте еще раз'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            if self.request.data.get('password'):
+                user = self.request.user
+                user.set_password(self.request.data.get('password'))
+                user.save()
+                return Response({'message': 'Пароль успешно изменен'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Что-то пошло не так,попробуйте еще раз'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class HelpView(APIView):

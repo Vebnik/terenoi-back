@@ -59,8 +59,10 @@ class ReferralPromo(models.Model):
 
 
 class ManagerToUser(models.Model):
-    manager = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Менеджр', related_name='terenoi_manger')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='terenoi_user')
+    manager = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Менеджр', related_name='terenoi_manger',
+                                limit_choices_to={'is_staff': True})
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='terenoi_user',
+                             limit_choices_to={'is_staff': False})
 
     class Meta:
         verbose_name = 'Менеджер-Пользователь'
