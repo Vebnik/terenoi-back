@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from authapp.models import User
-from settings.models import CityTimeZone, UserCity
+from settings.models import CityTimeZone, UserCity, GeneralContacts
 
 
 class CitiesSerializer(serializers.ModelSerializer):
@@ -39,3 +39,9 @@ class CityUserSerializer(serializers.ModelSerializer):
         if not city:
             return None
         return city.city
+
+
+class GeneralContactsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GeneralContacts
+        fields = ('phone', 'telegram', 'whatsapp')

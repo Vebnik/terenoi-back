@@ -6,7 +6,7 @@ from authapp.models import User, VoxiAccount, UserStudyLanguage, StudyLanguage
 from finance.models import TeacherBankData
 from profileapp.models import ReferralPromo
 from profileapp.services import generateRefPromo
-from settings.models import UserCity
+from settings.models import UserCity, CityTimeZone
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -37,8 +37,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             ReferralPromo.objects.create(user=user, user_link=promo)
 
         user_city = UserCity.objects.filter(user=user).first()
+        city = CityTimeZone.objects.first()
         if not user_city:
-            UserCity.objects.create(user=user)
+            UserCity.objects.create(user=user, city=city)
 
         if user.is_teacher:
             bank = TeacherBankData.objects.filter(user=user).first()
@@ -82,9 +83,14 @@ class VerifyEmailSerializer(serializers.ModelSerializer):
 
 
 class UserNameSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('first_name', 'last_name')
+        fields = ('first_name', 'last_name', 'avatar')
+
+    def get_avatar(self, instance):
+        return instance.get_avatar()
 
 
 class VoxiAccountSerializer(serializers.ModelSerializer):

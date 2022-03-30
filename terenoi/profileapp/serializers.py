@@ -1,5 +1,6 @@
 import base64
 import os
+import random
 import re
 from io import BytesIO
 
@@ -12,8 +13,8 @@ from lessons.models import Lesson
 from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParents, GlobalUserPurpose, LanguageInterface, \
     Interests, UserInterest, AgeLearning, MathSpecializations, TeacherAgeLearning, TeacherMathSpecializations, \
     EnglishSpecializations, TeacherEnglishSpecializations, EnglishLevel, TeacherEnglishLevel, ManagerToUser
-from settings.models import UserCity
-from settings.serializers import CityUserSerializer
+from settings.models import UserCity, GeneralContacts
+from settings.serializers import CityUserSerializer, GeneralContactsSerializer
 
 
 class UpdateUserSerializer(serializers.ModelSerializer):
@@ -125,10 +126,21 @@ class UpdateUserAvatarSerializer(serializers.ModelSerializer):
             'pk',
             'username',)
 
+    def generateAvatarName(self):
+        chars = 'abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+        length = 4
+        promo = ''
+        while True:
+            for i in range(length):
+                promo += random.choice(chars)
+            break
+        return promo
+
     def to_internal_value(self, data):
         if 'avatar' in data:
-            image_path = f'{settings.MEDIA_ROOT}/user_avatar/{self.instance.username}-avatar.jpeg'
-            image_name = f'{self.instance.username}-avatar.jpeg'
+            salt = self.generateAvatarName()
+            image_path = f'{settings.MEDIA_ROOT}/user_avatar/{self.instance.username}-avatar{salt}.jpeg'
+            image_name = f'{self.instance.username}-avatar{salt}.jpeg'
             if data['avatar']:
                 base64_img = data['avatar']
                 byte_data = base64.b64decode(base64_img)
@@ -360,8 +372,10 @@ class HelpSerializer(serializers.ModelSerializer):
         fields = ('manager_data',)
 
     def get_manager_data(self, instance):
-        manager = ManagerToUser.objects.filter(user=instance).first().manager
+        manager = ManagerToUser.objects.filter(user=instance).first()
         if not manager:
-            return None
-        serializer = DataManagerSerializer(manager)
+            general_data = GeneralContacts.objects.first()
+            serializer = GeneralContactsSerializer(general_data)
+            return serializer.data
+        serializer = DataManagerSerializer(manager.manager)
         return serializer.data

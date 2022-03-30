@@ -2,6 +2,7 @@ from django.contrib import admin
 from authapp.models import User, VoxiAccount, UserStudyLanguage, StudyLanguage
 from authapp.services import generatePassword, send_generate_data
 from profileapp.models import ManagerToUser
+from settings.models import GeneralContacts
 
 
 @admin.register(User)
@@ -36,3 +37,8 @@ class StudyLanguageAdmin(admin.ModelAdmin):
 @admin.register(UserStudyLanguage)
 class UserStudyLanguageAdmin(admin.ModelAdmin):
     list_display = ('user',)
+
+
+@admin.register(GeneralContacts)
+class GeneralContactsAdmin(admin.ModelAdmin):
+    list_display = ('phone', 'telegram', 'whatsapp')

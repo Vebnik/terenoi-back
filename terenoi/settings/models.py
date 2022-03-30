@@ -101,3 +101,21 @@ class WeekDays(models.Model):
     class Meta:
         verbose_name = 'День недели'
         verbose_name_plural = 'Дни недели'
+
+
+class GeneralContacts(models.Model):
+    phone = models.CharField(max_length=25, verbose_name='Телефон', **NULLABLE)
+    telegram = models.CharField(max_length=255, verbose_name='Telegram', **NULLABLE)
+    whatsapp = models.CharField(max_length=255, verbose_name='Whatsapp', **NULLABLE)
+
+    class Meta:
+        verbose_name = 'Общие данные для связи'
+        verbose_name_plural = 'Общие данные для связи'
+
+    def save(self, *args, **kwargs):
+        data = GeneralContacts.objects.filter(phone=self.phone)
+        if not data:
+            super(GeneralContacts, self).save(*args, **kwargs)
+        else:
+            GeneralContacts.objects.get(phone=self.phone).delete()
+            super(GeneralContacts, self).save(*args, **kwargs)
