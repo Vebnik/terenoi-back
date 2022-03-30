@@ -11,11 +11,13 @@ class ReferralSettingsAdmin(admin.ModelAdmin):
 @admin.register(RateTeachers)
 class RateTeachersAdmin(admin.ModelAdmin):
     list_display = ('subject', 'rate')
+    list_filter = ('subject',)
 
 
 @admin.register(DeadlineSettings)
 class DeadlineSettingsAdmin(admin.ModelAdmin):
     list_display = ('subject', 'day_count')
+    list_filter = ('subject',)
 
 
 @admin.register(CityTimeZone)
@@ -26,11 +28,9 @@ class CityTimeZoneAdmin(admin.ModelAdmin):
 @admin.register(UserCity)
 class UserCityAdmin(admin.ModelAdmin):
     list_display = ('user', 'city')
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
 
 
 @admin.register(WeekDays)
 class WeekDaysAdmin(admin.ModelAdmin):
     list_display = ('name', 'number')
-
-
-

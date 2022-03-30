@@ -19,33 +19,41 @@ class SubjectAdmin(admin.ModelAdmin):
 
 
 @admin.register(TeacherSubject)
-class SubjectAdmin(admin.ModelAdmin):
+class TeacherSubjectAdmin(admin.ModelAdmin):
     list_display = ('user', 'subject')
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
 
 
 @admin.register(ReferralPromo)
-class SubjectAdmin(admin.ModelAdmin):
+class ReferralPromoAdmin(admin.ModelAdmin):
     list_display = ('user', 'is_used')
+    list_filter = ('is_used',)
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
 
 
 @admin.register(ManagerToUser)
 class ManagerToUserAdmin(admin.ModelAdmin):
     list_display = ('manager', 'user')
+    search_fields = ['user__username', 'user__first_name', 'user_last_name', 'manager__username',
+                     'manager__first_name', 'manager__last_name']
 
 
 @admin.register(UserParents)
 class UserParentsAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name', 'parent_phone', 'parent_email')
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
 
 
 @admin.register(GlobalUserPurpose)
 class GlobalUserPurposeAdmin(admin.ModelAdmin):
     list_display = ('user', 'subject')
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
 
 
 @admin.register(LanguageInterface)
 class LanguageInterfaceAdmin(admin.ModelAdmin):
     list_display = ('user', 'interface_language')
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
 
 
 @admin.register(Interests)
@@ -56,11 +64,14 @@ class InterestsAdmin(admin.ModelAdmin):
 @admin.register(UserInterest)
 class UserInterestAdmin(admin.ModelAdmin):
     list_display = ('user',)
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
 
 
 @admin.register(ManagerRequestsPassword)
 class ManagerRequestsPasswordAdmin(admin.ModelAdmin):
     list_display = ('manager', 'user', 'is_resolved', 'account_actions')
+    search_fields = ['user__username', 'user__first_name', 'user_last_name', 'manager__username',
+                     'manager__first_name', 'manager__last_name']
     list_filter = ('is_resolved',)
 
     def get_urls(self):
@@ -129,18 +140,22 @@ class EnglishLevelAdmin(admin.ModelAdmin):
 @admin.register(TeacherAgeLearning)
 class TeacherAgeLearningAdmin(admin.ModelAdmin):
     list_display = ('user',)
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
 
 
 @admin.register(TeacherMathSpecializations)
 class TeacherMathSpecializationsAdmin(admin.ModelAdmin):
     list_display = ('user',)
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
 
 
 @admin.register(TeacherEnglishSpecializations)
 class TeacherEnglishSpecializationsAdmin(admin.ModelAdmin):
     list_display = ('user',)
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
 
 
 @admin.register(TeacherEnglishLevel)
 class TeacherEnglishLevelAdmin(admin.ModelAdmin):
     list_display = ('user',)
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']

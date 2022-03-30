@@ -1,3 +1,6 @@
+from pathlib import Path
+
+from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -68,6 +71,13 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+    def get_avatar(self):
+        image_path = f'user_avatar/{self.username}-avatar.jpeg'
+        my_file = Path(f'{settings.MEDIA_ROOT}/{image_path}')
+        if my_file.is_file():
+            return f'{settings.BACK_URL}{settings.MEDIA_URL}{image_path}'
+        return ''
 
     def save(self, *args, **kwargs):
         super(User, self).save(*args, **kwargs)

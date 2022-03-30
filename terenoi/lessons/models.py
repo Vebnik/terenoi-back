@@ -27,6 +27,7 @@ class Schedule(models.Model):
                                 limit_choices_to={'is_student': True})
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     weekday = models.ManyToManyField(WeekDays, verbose_name='Дни недели')
+    is_completed = models.BooleanField(verbose_name='Завершенно', default=False)
 
     def __str__(self):
         return self.title
@@ -122,6 +123,12 @@ class Lesson(models.Model):
             get_record(lesson_id=self.pk, lesson_date=self.date)
             payment_for_lesson(self)
             count = DeadlineSettings.objects.filter(subject=self.subject).first()
+            if self.schedule and not self.schedule.is_completed:
+                schedule_settings = ScheduleSettings.objects.filter(shedule=self.schedule).order_by('-pk').first()
+                if schedule_settings:
+                    if self.date.date() == schedule_settings.last_lesson.date():
+                        self.schedule.is_completed = True
+                        self.schedule.save()
             if self.deadline:
                 pass
             elif count:

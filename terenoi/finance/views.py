@@ -13,6 +13,7 @@ from finance.serializers import StudentBalanceSerializer, HistoryPaymentStudentS
 
 
 class BalanceListView(generics.ListAPIView):
+    """Баланс пользователя"""
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -32,6 +33,7 @@ class BalanceListView(generics.ListAPIView):
 
 
 class StudentHistoryPayment(generics.ListAPIView):
+    """История операций ученика"""
     permission_classes = [IsAuthenticated]
     serializer_class = HistoryPaymentStudentSerializer
 
@@ -87,6 +89,7 @@ class StudentHistoryPayment(generics.ListAPIView):
 
 
 class TeacherHistoryPayment(generics.ListAPIView):
+    """История операций учителя"""
     permission_classes = [IsAuthenticated]
     serializer_class = HistoryPaymentTeacherSerializer
 
@@ -149,6 +152,7 @@ class TeacherHistoryPayment(generics.ListAPIView):
 
 
 class BillUpdateView(generics.UpdateAPIView):
+    """Обновление банковских данных учителя"""
     queryset = TeacherBankData.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = BillSerializer

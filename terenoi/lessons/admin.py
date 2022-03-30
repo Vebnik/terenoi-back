@@ -11,6 +11,9 @@ from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRe
 class LessonAdmin(admin.ModelAdmin):
     list_display = ('pk', 'teacher', 'student', 'date', 'transfer_date', 'schedule', 'lesson_status')
     list_filter = ('lesson_status',)
+    search_fields = ['teacher__username', 'teacher__first_name', 'teacher__last_name', 'student__username',
+                     'student__first_name', 'student__last_name']
+    date_hierarchy = 'date'
 
 
 @admin.register(LessonMaterials)
@@ -39,7 +42,10 @@ class LessonRateHomeworkAdmin(admin.ModelAdmin):
 @admin.register(ManagerRequests)
 class ManagerRequestsAdmin(admin.ModelAdmin):
     list_display = ('lesson', 'manager', 'user', 'type', 'date', 'is_resolved', 'account_actions')
-    list_filter = ('is_resolved',)
+    list_filter = ('is_resolved', 'type')
+    search_fields = ['user__username', 'user__first_name', 'user_last_name', 'manager__username',
+                     'manager__first_name', 'manager__last_name']
+    date_hierarchy = 'date'
 
     def get_urls(self):
         urls = super().get_urls()
@@ -99,7 +105,10 @@ class ScheduleSettingsInline(admin.TabularInline):
 
 @admin.register(Schedule)
 class ScheduleAdmin(admin.ModelAdmin):
-    list_display = ('teacher', 'student', 'title')
+    list_display = ('teacher', 'student', 'title', 'is_completed')
+    list_filter = ('is_completed',)
+    search_fields = ['teacher__username', 'teacher__first_name', 'teacher_last_name', 'student__username',
+                     'student__first_name', 'student__last_name']
 
     inlines = [
         ScheduleSettingsInline,
@@ -110,6 +119,8 @@ class ScheduleAdmin(admin.ModelAdmin):
 class ManagerRequestsRejectTeacherAdmin(admin.ModelAdmin):
     list_display = ('manager', 'student', 'old_teacher', 'is_resolved', 'account_actions')
     list_filter = ('is_resolved',)
+    search_fields = ['student__username', 'student__first_name', 'student__last_name', 'manager__username',
+                     'manager__first_name', 'manager__last_name']
 
     def get_urls(self):
         urls = super().get_urls()

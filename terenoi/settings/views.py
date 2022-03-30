@@ -10,6 +10,7 @@ from settings.serializers import CitiesSerializer
 
 
 class CitiesListView(APIView):
+    """Список городов"""
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
