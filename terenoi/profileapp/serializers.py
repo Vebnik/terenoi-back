@@ -338,6 +338,8 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         fields = ('pk', 'username')
 
 
+
+
 class PurposeSerializer(serializers.ModelSerializer):
     class Meta:
         model = GlobalUserPurpose
@@ -353,5 +355,7 @@ class HelpSerializer(serializers.ModelSerializer):
 
     def get_manager_data(self, instance):
         manager = ManagerToUser.objects.filter(user=instance).first().manager
+        if not manager:
+            return None
         serializer = DataManagerSerializer(manager)
         return serializer.data

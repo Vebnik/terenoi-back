@@ -83,7 +83,7 @@ class HistoryPaymentStudent(models.Model):
                     elif ref_user.from_user.is_teacher:
                         HistoryPaymentTeacher.objects.create(teacher=ref_user.from_user,
                                                              payment_date=datetime.datetime.now(),
-                                                             amount=amount, referral=True)
+                                                             amount=amount, referral=True,is_enrollment=True)
                         ref_user.is_used = True
                         ref_user.save()
                 elif ref_user.from_user_link and not ref_user.is_used:
@@ -97,7 +97,7 @@ class HistoryPaymentStudent(models.Model):
                     elif user.is_teacher:
                         HistoryPaymentTeacher.objects.create(teacher=user, payment_date=datetime.datetime.now(),
                                                              amount=amount,
-                                                             referral=True)
+                                                             referral=True,is_enrollment=True)
                         ref_user.is_used = True
                         ref_user.save()
             if not student_balance.lessons_balance:
@@ -171,7 +171,7 @@ class HistoryPaymentTeacher(models.Model):
                         HistoryPaymentTeacher.objects.create(teacher=ref_user.from_user,
                                                              payment_date=datetime.datetime.now(),
                                                              amount=amount,
-                                                             referral=True)
+                                                             referral=True, is_enrollment=True)
                         ref_user.is_used = True
                         ref_user.save()
                 elif ref_user.from_user_link and not ref_user.is_used:
@@ -185,7 +185,7 @@ class HistoryPaymentTeacher(models.Model):
                     elif user.is_teacher:
                         HistoryPaymentTeacher.objects.create(teacher=user, payment_date=datetime.datetime.now(),
                                                              amount=amount,
-                                                             referral=True)
+                                                             referral=True,is_enrollment=True)
                         ref_user.is_used = True
                         ref_user.save()
             else:

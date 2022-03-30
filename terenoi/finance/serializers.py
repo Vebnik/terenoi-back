@@ -27,6 +27,9 @@ class StudentBalanceSerializer(serializers.ModelSerializer):
         lessons_count = Lesson.objects.filter(student=user).exclude(
             Q(lesson_status=Lesson.RESCHEDULED) & Q(lesson_status=Lesson.CANCEL)).count()
         lessons_count_done = Lesson.objects.filter(student=user, lesson_status=Lesson.DONE).count()
+        lesson = Lesson.objects.filter(student=user).order_by('-date')[:1].first()
+        if not lesson:
+            return 0
         lesson_date = Lesson.objects.filter(student=user).order_by('-date')[:1].first().date
         date = current_date(user=user, date=lesson_date)
         return [lessons_count, lessons_count_done, date.date()]
