@@ -132,10 +132,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_teacher_avatar(self, instance):
-        if instance.teacher.avatar:
-            return instance.teacher.avatar.url
-        else:
-            return None
+        return instance.teacher.get_avatar()
 
 
 class HomepageTeacherSerializer(serializers.ModelSerializer):
@@ -715,10 +712,12 @@ class StudentDetailSerializer(serializers.ModelSerializer):
     student_schedule = serializers.SerializerMethodField()
     lesson_plan = serializers.SerializerMethodField()
     student_homework = serializers.SerializerMethodField()
+    student_lesson_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('student', 'student_classes', 'lesson_plan', 'student_schedule', 'student_homework')
+        fields = (
+            'student', 'student_lesson_count', 'student_classes', 'lesson_plan', 'student_schedule', 'student_homework')
 
     def _student(self):
         student = User.objects.filter(pk=self.context.get('pk')).first()
@@ -727,6 +726,28 @@ class StudentDetailSerializer(serializers.ModelSerializer):
     def get_student(self, instance):
         serializer = UpdateStudentSerializer(self._student())
         return serializer.data
+
+    def get_student_lesson_count(self, instance):
+        try:
+            data = []
+            subjects = Lesson.objects.filter(student=self._student(), teacher=instance).distinct('subject')
+            for sub in subjects:
+                all_lessons = Lesson.objects.filter(student=self._student(), teacher=instance,
+                                                    subject=sub.subject).exclude(lesson_status=Lesson.CANCEL).exclude(
+                    lesson_status=Lesson.RESCHEDULED).count()
+                done_lessons = Lesson.objects.filter(student=self._student(), teacher=instance,
+                                                     lesson_status=Lesson.DONE, subject=sub.subject).count()
+                active_lesson = Lesson.objects.filter(student=self._student(), teacher=instance,
+                                                      lesson_status=Lesson.SCHEDULED, subject=sub.subject).count()
+                data.append({
+                    'subject': sub.subject.name,
+                    'all_lessons': all_lessons,
+                    'done_lessons': done_lessons,
+                    'active_lesson': active_lesson
+                })
+        except Exception:
+            return None
+        return data
 
     def get_student_classes(self, instance):
         data = []

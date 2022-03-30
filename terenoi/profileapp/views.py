@@ -238,6 +238,7 @@ class DeleteParentView(generics.DestroyAPIView):
 
 
 class ChangePasswordView(generics.UpdateAPIView):
+    """Изменение пароля пользователя"""
     permission_classes = [IsAuthenticated]
     serializer_class = ChangePasswordSerializer
 

@@ -41,6 +41,7 @@ class UpdateStudentSerializer(serializers.ModelSerializer):
     language_interface = serializers.SerializerMethodField()
     interests = serializers.SerializerMethodField()
     language = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -113,6 +114,9 @@ class UpdateStudentSerializer(serializers.ModelSerializer):
         serializer = StudyLanguageSerializer(langs, many=True, context={'user': instance})
         return serializer.data
 
+    def get_avatar(self, instance):
+        return instance.get_avatar()
+
 
 class UpdateUserAvatarSerializer(serializers.ModelSerializer):
     class Meta:
@@ -145,6 +149,7 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
     english_special = serializers.SerializerMethodField()
     level = serializers.SerializerMethodField()
     language = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -202,6 +207,9 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
         langs = StudyLanguage.objects.all()
         serializer = StudyLanguageSerializer(langs, many=True, context={'user': instance})
         return serializer.data
+
+    def get_avatar(self, instance):
+        return instance.get_avatar()
 
 
 class EnglishLevelSerializer(serializers.ModelSerializer):
@@ -336,8 +344,6 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('pk', 'username')
-
-
 
 
 class PurposeSerializer(serializers.ModelSerializer):

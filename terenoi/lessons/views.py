@@ -69,6 +69,7 @@ class AllUserClassesListView(generics.ListAPIView):
 
 
 class StudentsListView(APIView):
+    """Данные учиников учителя"""
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
@@ -81,6 +82,7 @@ class StudentsListView(APIView):
 
 
 class TopicUpdateView(generics.UpdateAPIView):
+    """Обновление тем уроков"""
     permission_classes = [IsAuthenticated]
     serializer_class = TopicSerializer
     queryset = Lesson.objects.all()
@@ -100,6 +102,7 @@ class TopicUpdateView(generics.UpdateAPIView):
 
 
 class PurposeUpdateView(generics.UpdateAPIView):
+    """Обновдение цели ученика"""
     permission_classes = [IsAuthenticated]
     serializer_class = PurposeSerializer
     queryset = GlobalUserPurpose.objects.all()
@@ -127,6 +130,7 @@ class PurposeUpdateView(generics.UpdateAPIView):
 
 
 class HomeworksView(APIView):
+    """Домащние работы учеников"""
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
@@ -143,6 +147,7 @@ class HomeworksView(APIView):
 
 
 class StudentsDetailView(APIView):
+    """Данные одного ученика"""
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
@@ -160,6 +165,7 @@ class StudentsDetailView(APIView):
 
 
 class StudentsRejectView(APIView):
+    """Отказ от ученика"""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
@@ -272,6 +278,7 @@ class LessonHomeworksAdd(generics.UpdateAPIView):
 
 
 class HomepageListView(APIView):
+    """Домашняя страница пользователя"""
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
@@ -288,6 +295,7 @@ class HomepageListView(APIView):
 
 
 class LessonRateHomeworksAdd(generics.UpdateAPIView):
+    """Оценка урока"""
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
