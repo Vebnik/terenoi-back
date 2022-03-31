@@ -44,16 +44,20 @@ class Notification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
 
     class Meta:
-        verbose_name = 'Уведомление'
-        verbose_name_plural = 'Уведомления'
+        verbose_name = 'Уведомление по уроку'
+        verbose_name_plural = 'Уведомления по урокам'
 
 
 class PaymentNotification(models.Model):
     PAID = 'PD'
     AWAITING_PAYMENT = 'AP'
+    WITHDRAWALS = 'WD'
+    ENROLLMENT_REF = 'EN_REF'
     CHOICES_NOTIFICATIONS = (
         (PAID, 'Оплачено'),
-        (AWAITING_PAYMENT, 'Ожидает оплаты')
+        (AWAITING_PAYMENT, 'Ожидает оплаты'),
+        (WITHDRAWALS, 'Вывод средств'),
+        (ENROLLMENT_REF, 'Зачисление реферальной программы'),
     )
 
     to_user = models.ForeignKey(User, verbose_name='Уведомлениe пользователя', on_delete=models.CASCADE)
@@ -66,3 +70,74 @@ class PaymentNotification(models.Model):
     class Meta:
         verbose_name = 'Уведомление об оплате'
         verbose_name_plural = 'Уведомления об оплате'
+
+
+class ManagerNotification(models.Model):
+    NEW_USER = 'NU'
+    REQUEST_LESSON_RESCHEDULED = 'REQ_LSN_RESCH'
+    REQUEST_LESSON_CANCEL = 'REQ_LSN_CNL'
+    REQUEST_REJECT_STUDENT = 'REQ_RJC_U'
+    REQUEST_CHANGE_PASS = 'REQ_CHN_PSS'
+    LESSON_RATE_HIGH = 'LESS_RT_HGH'
+    LESSON_RATE_LOW = 'LESS_RT_HGH'
+
+    CHOICES_NOTIFICATIONS = (
+        (NEW_USER, 'Новый пользователь'),
+        (REQUEST_LESSON_RESCHEDULED, 'Запрос на перенос урока'),
+        (REQUEST_LESSON_CANCEL, 'Запрос на отмену урока'),
+        (REQUEST_REJECT_STUDENT, 'Запрос на отказ от ученика'),
+        (REQUEST_CHANGE_PASS, 'Запрос на смену пароля'),
+        (LESSON_RATE_LOW, 'Оценка за урок не удовлетворительная'),
+        (LESSON_RATE_HIGH, 'Оценка за урок высокая')
+    )
+
+    manager = models.ForeignKey(User, verbose_name='Менежер', on_delete=models.CASCADE,
+                                related_name='manager_notification')
+    lesson_id = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
+    to_user = models.ForeignKey(User, verbose_name='Пользователь,который поставил оценку к уроку',
+                                on_delete=models.CASCADE, related_name='user_notification', **NULLABLE)
+    type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
+    is_read = models.BooleanField(default=False, verbose_name='Просмотрено')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Уведомление для менеджера'
+        verbose_name_plural = 'Уведомления для менеджеров'
+
+
+class HomeworkNotification(models.Model):
+    HOMEWORK_ADD = 'HM_ADD'
+    HOMEWORK_CHECK = 'HM_CHK'
+
+    CHOICES_NOTIFICATIONS = (
+        (HOMEWORK_ADD, 'Домашнее задание добавлено'),
+        (HOMEWORK_CHECK, 'Домашнее задание проверено'),
+    )
+    to_user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE)
+    lesson_id = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
+    type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
+    is_read = models.BooleanField(default=False, verbose_name='Просмотрено')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Уведомление по домашнему заданию'
+        verbose_name_plural = 'Уведомления по домашним заданиям'
+
+
+class LessonRateNotification(models.Model):
+    LESSON_RATE_HIGH = 'LESS_RT_HGH'
+    LESSON_RATE_LOW = 'LESS_RT_HGH'
+
+    CHOICES_NOTIFICATIONS = (
+        (LESSON_RATE_HIGH, 'Урок оценен высоко'),
+        (LESSON_RATE_LOW, 'Урок оценен не удовлетворительно'),
+    )
+    to_user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE)
+    lesson_id = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
+    type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
+    is_read = models.BooleanField(default=False, verbose_name='Просмотрено')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Уведомление по оценке урока'
+        verbose_name_plural = 'Уведомления по оценке урока'
