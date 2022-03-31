@@ -83,7 +83,7 @@ class HistoryPaymentStudent(models.Model):
                     elif ref_user.from_user.is_teacher:
                         HistoryPaymentTeacher.objects.create(teacher=ref_user.from_user,
                                                              payment_date=datetime.datetime.now(),
-                                                             amount=amount, referral=True,is_enrollment=True)
+                                                             amount=amount, referral=True, is_enrollment=True)
                         ref_user.is_used = True
                         ref_user.save()
                 elif ref_user.from_user_link and not ref_user.is_used:
@@ -97,7 +97,7 @@ class HistoryPaymentStudent(models.Model):
                     elif user.is_teacher:
                         HistoryPaymentTeacher.objects.create(teacher=user, payment_date=datetime.datetime.now(),
                                                              amount=amount,
-                                                             referral=True,is_enrollment=True)
+                                                             referral=True, is_enrollment=True)
                         ref_user.is_used = True
                         ref_user.save()
             if not student_balance.lessons_balance:
@@ -185,7 +185,7 @@ class HistoryPaymentTeacher(models.Model):
                     elif user.is_teacher:
                         HistoryPaymentTeacher.objects.create(teacher=user, payment_date=datetime.datetime.now(),
                                                              amount=amount,
-                                                             referral=True,is_enrollment=True)
+                                                             referral=True, is_enrollment=True)
                         ref_user.is_used = True
                         ref_user.save()
             else:
@@ -195,6 +195,8 @@ class HistoryPaymentTeacher(models.Model):
                     else:
                         teacher_balance.withdrawal_money += abs(self.amount)
                 teacher_balance.money_balance += self.amount
+                PaymentNotification.objects.create(to_user=self.teacher, payment_date=self.payment_date,
+                                                   type=PaymentNotification.WITHDRAWALS)
         else:
             if not teacher_balance.bonus_money_balance:
                 teacher_balance.bonus_money_balance = self.amount

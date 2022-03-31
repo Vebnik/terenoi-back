@@ -21,6 +21,7 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
     withdrawing_cancel_lesson
+from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification
 from profileapp.models import Subject, ManagerToUser, GlobalUserPurpose
 from profileapp.serializers import PurposeSerializer
 
@@ -143,7 +144,7 @@ class HomeworksView(APIView):
             serializer = HomeworksSerializer(user)
             return Response(serializer.data)
         else:
-            serializer = HomeworksSerializer(user, context={'filter': self.request.query_params.get('filter')})
+            serializer = HomeworksSerializer(user, context={'params': self.request.query_params})
             return Response(serializer.data)
 
 
@@ -161,7 +162,7 @@ class StudentsDetailView(APIView):
             return Response(serializer.data)
         else:
             serializer = StudentDetailSerializer(user,
-                                                 context={'pk': pk, 'filter': self.request.query_params.get('filter')})
+                                                 context={'pk': pk, 'params': self.request.query_params})
             return Response(serializer.data)
 
 
@@ -178,6 +179,7 @@ class StudentsRejectView(APIView):
             subject_name = Subject.objects.filter(name=subject).first()
             ManagerRequestsRejectTeacher.objects.create(manager=manager, student=student, old_teacher=self.request.user,
                                                         subject=subject_name, comment=comment)
+            ManagerNotification.objects.create(manager=manager, type=ManagerNotification.REQUEST_REJECT_STUDENT)
             return Response({'message': 'Запрос на отказ ученика отправлен'}, status=status.HTTP_200_OK)
         except Exception:
             return Response({'message': 'Что-то пошло не так, попробуйте еще раз'}, status=status.HTTP_400_BAD_REQUEST)
@@ -218,6 +220,7 @@ class LessonTransferUpdateView(generics.UpdateAPIView):
         if self.request.data.get('lesson_status') == Lesson.REQUEST_RESCHEDULED:
             request_transfer(self.request.user, lesson, manager, self.request.data.get('transfer_comment'),
                              send_transfer_lesson, self.request.data.get('transfer_date'))
+            ManagerNotification.objects.create(manager=manager, type=ManagerNotification.REQUEST_LESSON_RESCHEDULED)
         elif self.request.data.get('lesson_status') == Lesson.RESCHEDULED:
             transfer = self.request.data.get('transfer')
             if transfer:
@@ -231,6 +234,7 @@ class LessonTransferUpdateView(generics.UpdateAPIView):
             withdrawing_cancel_lesson(lesson, self.request.user)
             request_cancel(self.request.user, lesson, manager, self.request.data.get('transfer_comment'),
                            send_cancel_lesson)
+            ManagerNotification.objects.create(manager=manager, type=ManagerNotification.REQUEST_LESSON_CANCEL)
         elif self.request.data.get('lesson_status') == Lesson.CANCEL:
             transfer = self.request.data.get('transfer')
             if transfer:
@@ -270,12 +274,16 @@ class LessonHomeworksAdd(generics.UpdateAPIView):
     queryset = Lesson.objects.all()
 
     def update(self, request, *args, **kwargs):
+        self.kwargs.get('pk')
+        lesson = self.get_object()
         if self.request.FILES.getlist('homework'):
             for material in self.request.FILES.getlist('homework'):
                 LessonHomework.objects.create(lesson=self.get_object(), homework=material)
         if self.request.data.get('text_homework'):
             text = self.request.data.get('text_homework')
             LessonHomework.objects.create(lesson=self.get_object(), text_homework=text)
+        HomeworkNotification.objects.create(to_user=lesson.teacher, lesson_id=self.kwargs.get('pk'),
+                                            type=HomeworkNotification.HOMEWORK_ADD)
         return super(LessonHomeworksAdd, self).update(request, *args, **kwargs)
 
 
@@ -303,6 +311,7 @@ class LessonRateHomeworksAdd(generics.UpdateAPIView):
     queryset = Lesson.objects.all()
 
     def update(self, request, *args, **kwargs):
+        lesson = self.get_object()
         rate = None
         rate_comment = None
         if self.request.data.get('rate'):
@@ -310,6 +319,8 @@ class LessonRateHomeworksAdd(generics.UpdateAPIView):
         if self.request.data.get('rate_comment'):
             rate_comment = self.request.data.get('rate_comment')
         LessonRateHomework.objects.create(lesson=self.get_object(), rate=rate, rate_comment=rate_comment)
+        HomeworkNotification.objects.create(to_user=lesson.student, lesson_id=self.kwargs.get('pk'),
+                                            type=HomeworkNotification.HOMEWORK_CHECK)
         return super(LessonRateHomeworksAdd, self).update(request, *args, **kwargs)
 
 
@@ -357,9 +368,43 @@ class LessonEvaluationUpdateView(generics.UpdateAPIView):
     queryset = Lesson.objects.all()
 
     def get_serializer_class(self):
+        lesson = self.get_object()
         if self.request.user.is_student:
+            if int(self.request.data.get('student_evaluation')) > 8:
+                manager = ManagerToUser.objects.filter(user=lesson.teacher).first()
+                LessonRateNotification.objects.create(to_user=lesson.teacher, lesson_id=self.kwargs.get('pk'),
+                                                      type=LessonRateNotification.LESSON_RATE_HIGH)
+                if manager:
+                    ManagerNotification.objects.create(manager=manager.manager, to_user=lesson.teacher,
+                                                       lesson_id=self.kwargs.get('pk'),
+                                                       type=ManagerNotification.LESSON_RATE_HIGH)
+            elif int(self.request.data.get('student_evaluation')) <= 3:
+                manager = ManagerToUser.objects.filter(user=lesson.teacher).first()
+                LessonRateNotification.objects.create(to_user=lesson.teacher, lesson_id=self.kwargs.get('pk'),
+                                                      type=LessonRateNotification.LESSON_RATE_LOW)
+                if manager:
+                    ManagerNotification.objects.create(manager=manager.manager, to_user=lesson.teacher,
+                                                       lesson_id=self.kwargs.get('pk'),
+                                                       type=ManagerNotification.LESSON_RATE_LOW)
+
             return LessonStudentEvaluationAddSerializer
         else:
+            if int(self.request.data.get('teacher_evaluation')) > 8:
+                manager = ManagerToUser.objects.filter(user=lesson.student).first()
+                LessonRateNotification.objects.create(to_user=lesson.student, lesson_id=self.kwargs.get('pk'),
+                                                      type=LessonRateNotification.LESSON_RATE_HIGH)
+                if manager:
+                    ManagerNotification.objects.create(manager=manager.manager, to_user=lesson.student,
+                                                       lesson_id=self.kwargs.get('pk'),
+                                                       type=ManagerNotification.LESSON_RATE_HIGH)
+            elif int(self.request.data.get('teacher_evaluation')) <= 3:
+                manager = ManagerToUser.objects.filter(user=lesson.student).first()
+                LessonRateNotification.objects.create(to_user=lesson.student, lesson_id=self.kwargs.get('pk'),
+                                                      type=LessonRateNotification.LESSON_RATE_LOW)
+                if manager:
+                    ManagerNotification.objects.create(manager=manager.manager, to_user=lesson.student,
+                                                       lesson_id=self.kwargs.get('pk'),
+                                                       type=ManagerNotification.LESSON_RATE_LOW)
             return LessonTeacherEvaluationAddSerializer
 
 

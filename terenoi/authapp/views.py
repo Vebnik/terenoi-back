@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from authapp.models import User
 from authapp.serializers import UserRegisterSerializer, VerifyEmailSerializer
 from authapp.services import send_verify_email
+from notifications.models import ManagerNotification
 from profileapp.models import ReferralPromo
 from profileapp.services import generateRefPromo
 
@@ -18,6 +19,7 @@ class UserRegister(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
+        managers = User.objects.filter(is_staff=True)
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid(raise_exception=True):
             return Response({'message': 'Неправильный email или пароль'}, status=status.HTTP_400_BAD_REQUEST)
@@ -25,6 +27,8 @@ class UserRegister(generics.CreateAPIView):
         user_data = serializer.data
         user = User.objects.get(email=user_data['email'])
         send_verify_email(user)
+        for manager in managers:
+            ManagerNotification.objects.create(manager=manager, type=ManagerNotification.NEW_USER)
         return Response({
             "message": "Пользователь зарегистрирован, осталось пройти верификацию почты."},
             status=status.HTTP_201_CREATED
