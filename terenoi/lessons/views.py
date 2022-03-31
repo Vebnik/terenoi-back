@@ -19,7 +19,8 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
     LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer, \
     StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer
-from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date
+from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
+    withdrawing_cancel_lesson
 from profileapp.models import Subject, ManagerToUser, GlobalUserPurpose
 from profileapp.serializers import PurposeSerializer
 
@@ -227,6 +228,7 @@ class LessonTransferUpdateView(generics.UpdateAPIView):
                 return Response({'message': 'Запрос на перенос урока отклонен'},
                                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
         elif self.request.data.get('lesson_status') == Lesson.REQUEST_CANCEL:
+            withdrawing_cancel_lesson(lesson, self.request.user)
             request_cancel(self.request.user, lesson, manager, self.request.data.get('transfer_comment'),
                            send_cancel_lesson)
         elif self.request.data.get('lesson_status') == Lesson.CANCEL:

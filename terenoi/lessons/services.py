@@ -119,4 +119,31 @@ def payment_for_lesson(lesson):
         else:
             finance.models.HistoryPaymentTeacher.objects.create(teacher=lesson.teacher,
                                                                 payment_date=datetime.datetime.now(),
-                                                                lesson=lesson, amount=rate.rate,is_enrollment=True)
+                                                                lesson=lesson, amount=rate.rate, is_enrollment=True)
+
+
+def withdrawing_cancel_lesson(lesson, user):
+    if user.is_student:
+        current_date_lesson = current_date(user=user, date=lesson.date)
+        current_date_user = current_date(user=user, date=datetime.datetime.now())
+        hours = current_date_lesson-current_date_user
+        timedel = datetime.timedelta(hours=4)
+        if hours < timedel:
+            student_lesson = finance.models.HistoryPaymentStudent.objects.filter(lesson=lesson)
+            student_payment = finance.models.HistoryPaymentStudent.objects.filter(student=lesson.student,
+                                                                                  subject=lesson.subject).aggregate(
+                total_amount=Sum('amount'))
+            student_count_lesson = finance.models.HistoryPaymentStudent.objects.filter(student=lesson.student,
+                                                                                       subject=lesson.subject).aggregate(
+                total_count=Sum('lesson_count'))
+            if not student_lesson:
+                if student_count_lesson['total_count']:
+                    if student_count_lesson['total_count'] < 2:
+                        notifications.models.PaymentNotification.objects.create(to_user=lesson.student,
+                                                                                type=notifications.models.PaymentNotification.AWAITING_PAYMENT)
+                    one_lesson_amount = student_payment['total_amount'] / student_count_lesson['total_count']
+                    finance.models.HistoryPaymentStudent.objects.create(student=lesson.student,
+                                                                        payment_date=datetime.datetime.now(),
+                                                                        amount=-one_lesson_amount,
+                                                                        subject=lesson.subject,
+                                                                        lesson_count=-1, lesson=lesson, debit=True)
