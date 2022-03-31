@@ -18,6 +18,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from .yasg import urlpatterns as doc_urls
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +28,7 @@ urlpatterns = [
     path('api/finance/', include('finance.urls', namespace='finance')),
     path('api/settings/', include('settings.urls', namespace='settings')),
     path('api/notifications/', include('notifications.urls', namespace='notifications'))
+    path('', RedirectView.as_view(url='admin/', permanent=False), name='index'),
 
 ]
 
