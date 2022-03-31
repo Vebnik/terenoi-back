@@ -27,7 +27,7 @@ urlpatterns = [
     path('api/lessons/', include('lessons.urls', namespace='lessons')),
     path('api/finance/', include('finance.urls', namespace='finance')),
     path('api/settings/', include('settings.urls', namespace='settings')),
-    path('api/notifications/', include('notifications.urls', namespace='notifications'))
+    path('api/notifications/', include('notifications.urls', namespace='notifications')),
     path('', RedirectView.as_view(url='admin/', permanent=False), name='index'),
 
 ]
