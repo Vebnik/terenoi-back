@@ -216,6 +216,9 @@ CORS_ORIGIN_WHITELIST = [
     'http://slot2b.oscarbot.ru',
     'http://slot2f.oscarbot.ru',
     'http://slot2t.oscarbot.ru'
+    'http://api.terenoi.com'
+    'http://student.terenoi.com'
+    'http://teacher.terenoi.com'
 ]
 
 CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
