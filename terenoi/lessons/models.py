@@ -62,7 +62,7 @@ class Lesson(models.Model):
         (REQUEST_CANCEL, 'Запрос на отмену урока'),
         (CANCEL, 'Урок отменен')
     )
-
+    lesson_number = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='lesson_teacher',
                                 limit_choices_to={'is_teacher': True})
     student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='lesson_student',
@@ -94,10 +94,14 @@ class Lesson(models.Model):
 
     def save(self, *args, **kwargs):
         student = VoxiAccount.objects.filter(user=self.student).first()
+        lesson_count = Lesson.objects.filter(teacher=self.teacher, student=self.student, subject=self.subject)
+        if not lesson_count:
+            lesson_count = 0
         if student is None:
             username = f'Student-{self.student.pk}'
             add_voxiaccount(self.student, username, self.student.username)
         if self.lesson_status == Lesson.SCHEDULED:
+            self.lesson_number = lesson_count.count() + 1
             create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
             questions = Subject.objects.filter(name=self.subject.name).first()

@@ -8,7 +8,7 @@ from lessons.models import ScheduleSettings, Lesson, Schedule
 
 
 @receiver(post_save, sender=ScheduleSettings)
-def add_schedule(sender, instance, **kwargs):
+def add_schedule_settings(sender, instance, **kwargs):
     lesson = Lesson.objects.filter(student=instance.shedule.student, teacher=instance.shedule.teacher,
                                    date=instance.near_lesson)
     if lesson:
@@ -25,6 +25,8 @@ def add_schedule(sender, instance, **kwargs):
         for i, date in enumerate(list(date_list)):
             Lesson.objects.create(student=instance.shedule.student, teacher=instance.shedule.teacher,
                                   subject=instance.shedule.subject, date=date, schedule=instance.shedule)
+            print(i)
+            print(len_date_list - 1)
             if i == len_date_list - 1:
                 instance.last_lesson = date
                 instance.save()

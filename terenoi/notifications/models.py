@@ -115,7 +115,9 @@ class HomeworkNotification(models.Model):
     )
     to_user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE)
     lesson_id = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
+    lesson_date = models.DateTimeField(verbose_name='Дата урока', **NULLABLE)
     type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
+    message = models.CharField(max_length=255, verbose_name='Сообщение', **NULLABLE)
     is_read = models.BooleanField(default=False, verbose_name='Просмотрено')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
 
@@ -134,7 +136,9 @@ class LessonRateNotification(models.Model):
     )
     to_user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE)
     lesson_id = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
+    lesson_date = models.DateTimeField(verbose_name='Дата урока', **NULLABLE)
     type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
+    message = models.CharField(max_length=255, verbose_name='Сообщение', **NULLABLE)
     is_read = models.BooleanField(default=False, verbose_name='Просмотрено')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
 

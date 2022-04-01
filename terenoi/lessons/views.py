@@ -22,8 +22,8 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
     withdrawing_cancel_lesson
 from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification
-from profileapp.models import Subject, ManagerToUser, GlobalUserPurpose
-from profileapp.serializers import PurposeSerializer
+from profileapp.models import Subject, ManagerToUser, GlobalUserPurpose, GlobalPurpose
+from profileapp.serializers import PurposeSerializer, GlobalPurposeSerializer
 
 
 class AllUserLessonsListView(generics.ListAPIView):
@@ -103,6 +103,16 @@ class TopicUpdateView(generics.UpdateAPIView):
             return Response({'message': 'Что-то пошло не так, попробуйте еще раз'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class PurposeView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = GlobalPurposeSerializer
+
+    def get_queryset(self):
+        if self.request.query_params:
+            queryset = GlobalPurpose.objects.filter(subject__name=self.request.query_params.get('subject'))
+            return queryset
+
+
 class PurposeUpdateView(generics.UpdateAPIView):
     """Обновдение цели ученика"""
     permission_classes = [IsAuthenticated]
@@ -115,14 +125,16 @@ class PurposeUpdateView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         try:
             purpose = GlobalUserPurpose.objects.filter(user__pk=int(self.kwargs.get('pk')),
-                                                       subject__name=self.request.data.get('subject')).first()
+                                                       subject__name=self.request.query_params.get('subject'),
+                                                       purpose__pk=self.request.query_params.get('pk')).first()
+            purpose_add = GlobalPurpose.objects.filter(pk=int(self.request.data.get('pk'))).first()
             if not purpose:
                 student = User.objects.filter(pk=int(self.kwargs.get('pk'))).first()
-                subject = Subject.objects.filter(name=self.request.data.get('subject')).first()
                 GlobalUserPurpose.objects.create(user=student,
-                                                 subject=subject, purpose=self.request.data.get('purpose'))
+                                                 subject=purpose_add.subject,
+                                                 purpose=purpose_add)
             else:
-                purpose.purpose = self.request.data.get('purpose')
+                purpose.purpose = purpose_add
                 purpose.save()
             return Response({'message': 'Цель ученика добавлена'}, status=status.HTTP_200_OK)
 

@@ -81,11 +81,24 @@ class UserParents(models.Model):
         verbose_name_plural = 'Родители'
 
 
+class GlobalPurpose(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет')
+    name = models.CharField(max_length=255, verbose_name='Название')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Глобальная цель'
+        verbose_name_plural = 'Глобальные цели'
+
+    def __str__(self):
+        return self.name
+
+
 class GlobalUserPurpose(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь',
                              limit_choices_to={'is_student': True})
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет')
-    purpose = models.CharField(max_length=255, verbose_name='Цель')
+    purpose = models.ForeignKey(GlobalPurpose, on_delete=models.CASCADE, verbose_name='Цель', **NULLABLE)
 
     class Meta:
         verbose_name = 'Цель ученика'

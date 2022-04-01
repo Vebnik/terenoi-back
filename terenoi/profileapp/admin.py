@@ -10,7 +10,7 @@ from authapp.models import User
 from profileapp.models import TeacherSubject, Subject, ReferralPromo, ManagerToUser, UserParents, GlobalUserPurpose, \
     LanguageInterface, Interests, UserInterest, ManagerRequestsPassword, AgeLearning, MathSpecializations, \
     EnglishSpecializations, EnglishLevel, TeacherAgeLearning, TeacherMathSpecializations, TeacherEnglishSpecializations, \
-    TeacherEnglishLevel
+    TeacherEnglishLevel, GlobalPurpose
 
 
 @admin.register(Subject)
@@ -46,7 +46,7 @@ class UserParentsAdmin(admin.ModelAdmin):
 
 @admin.register(GlobalUserPurpose)
 class GlobalUserPurposeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'subject')
+    list_display = ('user', 'subject', 'purpose')
     search_fields = ['user__username', 'user__first_name', 'user__last_name']
 
 
@@ -159,3 +159,8 @@ class TeacherEnglishSpecializationsAdmin(admin.ModelAdmin):
 class TeacherEnglishLevelAdmin(admin.ModelAdmin):
     list_display = ('user',)
     search_fields = ['user__username', 'user__first_name', 'user__last_name']
+
+
+@admin.register(GlobalPurpose)
+class GlobalPurposeAdmin(admin.ModelAdmin):
+    list_display = ('subject', 'name')
