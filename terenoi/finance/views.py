@@ -153,6 +153,11 @@ class TeacherHistoryPayment(generics.ListAPIView):
 
 class BillUpdateView(generics.UpdateAPIView):
     """Обновление банковских данных учителя"""
-    queryset = TeacherBankData.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = BillSerializer
+    queryset = TeacherBankData.objects.all()
+
+    def get_object(self):
+        user = self.request.user
+        bill = TeacherBankData.objects.filter(user=user).first()
+        return bill

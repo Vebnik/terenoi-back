@@ -827,6 +827,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
             for les in lessons:
                 data_lesson.append({
                     'lesson_id': les.pk,
+                    'lesson_count': les.lesson_number,
                     'topic': les.topic
                 })
 
@@ -914,6 +915,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
                             check = True
                         data_lesson.append({
                             'lesson_id': les.pk,
+                            'lesson_count':les.lesson_number,
                             'topic': les.topic,
                             'homework': serializer_homework.data,
                             'rate': serializer_rate.data,
@@ -1078,6 +1080,7 @@ class HomeworksSerializer(serializers.ModelSerializer):
                     data_lesson.append({
                         'student': serializer_student.data,
                         'lesson_id': les.pk,
+                        'lesson_count':les.lesson_number,
                         'topic': les.topic,
                         'homework': serializer_homework.data,
                         'rate': serializer_rate.data,
