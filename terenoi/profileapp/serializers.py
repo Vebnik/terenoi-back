@@ -12,7 +12,8 @@ from authapp.serializers import StudyLanguageSerializer, DataManagerSerializer
 from lessons.models import Lesson
 from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParents, GlobalUserPurpose, LanguageInterface, \
     Interests, UserInterest, AgeLearning, MathSpecializations, TeacherAgeLearning, TeacherMathSpecializations, \
-    EnglishSpecializations, TeacherEnglishSpecializations, EnglishLevel, TeacherEnglishLevel, ManagerToUser
+    EnglishSpecializations, TeacherEnglishSpecializations, EnglishLevel, TeacherEnglishLevel, ManagerToUser, \
+    GlobalPurpose
 from settings.models import UserCity, GeneralContacts
 from settings.serializers import CityUserSerializer, GeneralContactsSerializer
 
@@ -308,14 +309,14 @@ class GlobalUserPurposeSerializer(serializers.ModelSerializer):
     subject_name = serializers.SerializerMethodField()
     lesson_count_all = serializers.SerializerMethodField()
     lesson_count_done = serializers.SerializerMethodField()
+    purpose = serializers.SerializerMethodField()
 
     class Meta:
         model = GlobalUserPurpose
         fields = ('subject_name', 'purpose', 'lesson_count_all', 'lesson_count_done')
 
     def get_subject_name(self, instance):
-        subject = Subject.objects.filter(name=instance.subject.name).first()
-        return subject.name
+        return instance.subject.name
 
     def get_lesson_count_all(self, instance):
         lesson_count = Lesson.objects.filter(student=self.context.get('user'),
@@ -327,6 +328,9 @@ class GlobalUserPurposeSerializer(serializers.ModelSerializer):
         lesson_count = Lesson.objects.filter(student=self.context.get('user'),
                                              subject__name=instance.subject.name, lesson_status=Lesson.DONE).count()
         return lesson_count
+
+    def get_purpose(self, instance):
+        return instance.purpose.name
 
 
 class LanguageInterfaceSerializer(serializers.ModelSerializer):
@@ -358,10 +362,16 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         fields = ('pk', 'username')
 
 
+class GlobalPurposeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GlobalPurpose
+        fields = ('pk', 'name',)
+
+
 class PurposeSerializer(serializers.ModelSerializer):
     class Meta:
         model = GlobalUserPurpose
-        fields = ('user', 'subject')
+        fields = ('user', 'subject', 'purpose')
 
 
 class HelpSerializer(serializers.ModelSerializer):

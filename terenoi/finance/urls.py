@@ -9,5 +9,5 @@ urlpatterns = [
     path('student-history-payments/', StudentHistoryPayment.as_view(), name='student_history_payments'),
     path('teacher-history-payments/', TeacherHistoryPayment.as_view(), name='teacher_history_payments'),
 
-    path('bill/update/<int:pk>/', BillUpdateView.as_view(), name='bill_update'),
+    path('bill/update/', BillUpdateView.as_view(), name='bill_update'),
 ]

@@ -661,16 +661,41 @@ class StudentStatusUpdate(serializers.ModelSerializer):
 
 class StudentsTeacherSerializer(serializers.ModelSerializer):
     lessons_count = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+    start_date = serializers.SerializerMethodField()
+    end_date = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = (
-            'pk', 'avatar', 'username', 'first_name', 'last_name', 'english_level', 'student_class', 'lessons_count')
+            'pk', 'avatar', 'username', 'first_name', 'last_name', 'english_level', 'student_class', 'lessons_count',
+            'start_date', 'end_date')
 
     def get_lessons_count(self, instance):
         lessons_count = Lesson.objects.filter(student=instance, lesson_status=Lesson.SCHEDULED,
                                               subject=self.context.get('subject')).count()
         return lessons_count
+
+    def get_avatar(self, instance):
+        return instance.get_avatar()
+
+    def get_start_date(self, instance):
+        start_date = Lesson.objects.filter(student=instance, subject=self.context.get('subject'), teacher=self.context.get('teacher')).order_by('date').first()
+        if start_date:
+            cur_date = current_date(user=self.context.get('teacher'), date=start_date.date)
+            return cur_date.date()
+        return None
+
+    def get_end_date(self, instance):
+        end_date = Lesson.objects.filter(student=instance, subject=self.context.get('subject'),
+                                           teacher=self.context.get('teacher'), lesson_status=Lesson.SCHEDULED)
+        if not end_date:
+            end_date_inactive = Lesson.objects.filter(student=instance, subject=self.context.get('subject'),
+                                             teacher=self.context.get('teacher'), lesson_status=Lesson.DONE).order_by('-date').first()
+            if end_date_inactive:
+                cur_date = current_date(user=self.context.get('teacher'), date=end_date_inactive.date)
+                return cur_date.date()
+        return None
 
 
 class StudentsSerializer(serializers.ModelSerializer):
@@ -696,8 +721,9 @@ class StudentsSerializer(serializers.ModelSerializer):
                 else:
                     active_list.append(student.student)
 
-            serializer_active = StudentsTeacherSerializer(active_list, many=True, context={'subject': subject.subject})
-            serializer_inactive = StudentsTeacherSerializer(inactive_list, many=True)
+            serializer_active = StudentsTeacherSerializer(active_list, many=True,
+                                                          context={'subject': subject.subject, 'teacher': instance})
+            serializer_inactive = StudentsTeacherSerializer(inactive_list, many=True, context={'subject': subject.subject, 'teacher': instance})
             data.append({
                 'subject': subject.subject.name,
                 'active_students': serializer_active.data,
@@ -730,17 +756,20 @@ class StudentDetailSerializer(serializers.ModelSerializer):
     def get_student_lesson_count(self, instance):
         try:
             data = []
-            subjects = Lesson.objects.filter(student=self._student(), teacher=instance).distinct('subject')
-            for sub in subjects:
+            if self.context.get('params').get('subject'):
+                subject = Subject.objects.filter(name=self.context.get('params').get('subject')).first()
                 all_lessons = Lesson.objects.filter(student=self._student(), teacher=instance,
-                                                    subject=sub.subject).exclude(lesson_status=Lesson.CANCEL).exclude(
+                                                    subject__name=self.context.get('params').get('subject')).exclude(
+                    lesson_status=Lesson.CANCEL).exclude(
                     lesson_status=Lesson.RESCHEDULED).count()
                 done_lessons = Lesson.objects.filter(student=self._student(), teacher=instance,
-                                                     lesson_status=Lesson.DONE, subject=sub.subject).count()
+                                                     lesson_status=Lesson.DONE,
+                                                     subject__name=self.context.get('params').get('subject')).count()
                 active_lesson = Lesson.objects.filter(student=self._student(), teacher=instance,
-                                                      lesson_status=Lesson.SCHEDULED, subject=sub.subject).count()
+                                                      lesson_status=Lesson.SCHEDULED,
+                                                      subject__name=self.context.get('params').get('subject')).count()
                 data.append({
-                    'subject': sub.subject.name,
+                    'subject': subject.name,
                     'all_lessons': all_lessons,
                     'done_lessons': done_lessons,
                     'active_lesson': active_lesson
@@ -751,10 +780,11 @@ class StudentDetailSerializer(serializers.ModelSerializer):
 
     def get_student_classes(self, instance):
         data = []
-        subjects = Lesson.objects.filter(student=self._student(), teacher=instance).distinct('subject')
-        for sub in subjects:
+        if self.context.get('params').get('subject'):
+            subject = Subject.objects.filter(name=self.context.get('params').get('subject')).first()
             data_classes = []
-            lessons_list = Lesson.objects.filter(student=self._student(), teacher=instance, subject=sub.subject).values(
+            lessons_list = Lesson.objects.filter(student=self._student(), teacher=instance,
+                                                 subject__name=self.context.get('params').get('subject')).values(
                 'date').order_by('date')
             date_list = []
             for item in lessons_list:
@@ -765,7 +795,8 @@ class StudentDetailSerializer(serializers.ModelSerializer):
                     date_list.append(current_date(user=instance, date=item.get('date')).date())
 
             for date in date_list:
-                lessons = Lesson.objects.filter(student=self._student(), teacher=instance, subject=sub.subject,
+                lessons = Lesson.objects.filter(student=self._student(), teacher=instance,
+                                                subject__name=self.context.get('params').get('subject'),
                                                 date__date=date)
                 serializer = UserLessonsSerializer(lessons, many=True, context={'user': self._student()})
                 data_classes.append({
@@ -773,31 +804,30 @@ class StudentDetailSerializer(serializers.ModelSerializer):
                     'classes': serializer.data
                 })
             data.append({
-                'subject': sub.subject.name,
+                'subject': subject.name,
                 'classes_data': data_classes
             })
         return data
 
     def get_student_schedule(self, instance):
         data = []
-        subjects = Lesson.objects.filter(student=self._student(), teacher=instance).distinct('subject')
-        for sub in subjects:
+        if self.context.get('params').get('subject'):
+            subject = Subject.objects.filter(name=self.context.get('params').get('subject')).first()
             time = None
             data_wekday = []
-            shedules = Schedule.objects.filter(student=self._student(), teacher=instance, subject=sub.subject)
+            shedules = Schedule.objects.filter(student=self._student(), teacher=instance,
+                                               subject__name=self.context.get('params').get('subject'),
+                                               is_completed=False)
             if shedules:
                 for sh in shedules:
-                    sh_settings = ScheduleSettings.objects.filter(shedule=sh)
-                    if sh_settings:
-                        for sh_sett in sh_settings:
-                            lesson_done = Lesson.objects.filter(schedule=sh, date__date=sh_sett.last_lesson.date(),
-                                                                lesson_status=Lesson.DONE)
-                            if not lesson_done:
-                                time = current_date(user=instance, date=sh_sett.near_lesson).time()
-                                for weekday in sh.weekday.all():
-                                    data_wekday.append(weekday.name)
+                    for weekday in sh.weekday.all():
+                        data_wekday.append(weekday.name)
+                    sh_settings = ScheduleSettings.objects.filter(shedule=sh).order_by('-last_lesson').first()
+                    curr_date = current_date(user=instance, date=sh_settings.last_lesson)
+                    time = curr_date.time()
+
             data.append({
-                'subject': sub.subject.name,
+                'subject': subject.name,
                 'time': time,
                 'weekday': data_wekday
             })
@@ -806,24 +836,29 @@ class StudentDetailSerializer(serializers.ModelSerializer):
 
     def get_lesson_plan(self, instance):
         data = []
-        subjects = Lesson.objects.filter(student=self._student(), teacher=instance).distinct('subject')
-        for sub in subjects:
+        if self.context.get('params').get('subject'):
+            subject = Subject.objects.filter(name=self.context.get('params').get('subject')).first()
             purpose = None
             data_lesson = []
-            student_purpose = GlobalUserPurpose.objects.filter(user=self._student(), subject=sub.subject).first()
+            student_purpose = GlobalUserPurpose.objects.filter(user=self._student(),
+                                                               subject__name=self.context.get('params').get(
+                                                                   'subject')).first()
+            print(student_purpose)
             if student_purpose:
-                purpose = student_purpose.purpose
-            lessons = Lesson.objects.filter(student=self._student(), teacher=instance, subject=sub.subject,
+                purpose = student_purpose.purpose.name
+            lessons = Lesson.objects.filter(student=self._student(),
+                                            subject__name=self.context.get('params').get('subject'),
                                             schedule__isnull=False).exclude(
                 lesson_status=Lesson.CANCEL).exclude(lesson_status=Lesson.RESCHEDULED).order_by('date')
             for les in lessons:
                 data_lesson.append({
                     'lesson_id': les.pk,
+                    'lesson_count': les.lesson_number,
                     'topic': les.topic
                 })
 
             data.append({
-                'subject': sub.subject.name,
+                'subject': subject.name,
                 'purpose': purpose,
                 'lesson_topic': data_lesson
             })
@@ -832,8 +867,8 @@ class StudentDetailSerializer(serializers.ModelSerializer):
     def get_student_homework(self, instance):
         data = []
         lessons = None
-        subjects = Lesson.objects.filter(student=self._student(), teacher=instance).distinct('subject')
-        for sub in subjects:
+        if self.context.get('params').get('subject'):
+            subject = Subject.objects.filter(name=self.context.get('params').get('subject')).first()
             data_lesson = []
             serializer_homework = None
             serializer_rate = None
@@ -841,7 +876,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
                 if self.context.get('params').get('filter') and self.context.get('params').get('check'):
                     if self.context.get('params').get('filter') == 'new':
                         lessons_lst = Lesson.objects.filter(student=self._student(), teacher=instance,
-                                                            subject=sub.subject,
+                                                            subject__name=self.context.get('params').get('subject'),
                                                             lesson_status=Lesson.DONE).order_by('-date')
                         if self.context.get('params').get('check') == 'true':
                             for lsn in lessons_lst:
@@ -855,7 +890,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
                                     lessons.append(lsn)
                     else:
                         lessons_lst = Lesson.objects.filter(student=self._student(), teacher=instance,
-                                                            subject=sub.subject,
+                                                            subject__name=self.context.get('params').get('subject'),
                                                             lesson_status=Lesson.DONE).order_by('date')
                         if self.context.get('params').get('check') == 'true':
                             for lsn in lessons_lst:
@@ -868,7 +903,8 @@ class StudentDetailSerializer(serializers.ModelSerializer):
                                 if not rate:
                                     lessons.append(lsn)
                 elif self.context.get('params').get('check'):
-                    lessons_lst = Lesson.objects.filter(student=self._student(), teacher=instance, subject=sub.subject,
+                    lessons_lst = Lesson.objects.filter(student=self._student(), teacher=instance,
+                                                        subject__name=self.context.get('params').get('subject'),
                                                         lesson_status=Lesson.DONE)
                     if self.context.get('params').get('check') == 'true':
                         for lsn in lessons_lst:
@@ -882,13 +918,16 @@ class StudentDetailSerializer(serializers.ModelSerializer):
                                 lessons.append(lsn)
                 elif self.context.get('params').get('filter'):
                     if self.context.get('params').get('filter') == 'new':
-                        lessons = Lesson.objects.filter(student=self._student(), teacher=instance, subject=sub.subject,
+                        lessons = Lesson.objects.filter(student=self._student(), teacher=instance,
+                                                        subject__name=self.context.get('params').get('subject'),
                                                         lesson_status=Lesson.DONE).order_by('-date')
                     else:
-                        lessons = Lesson.objects.filter(student=self._student(), teacher=instance, subject=sub.subject,
+                        lessons = Lesson.objects.filter(student=self._student(), teacher=instance,
+                                                        subject__name=self.context.get('params').get('subject'),
                                                         lesson_status=Lesson.DONE).order_by('date')
             except Exception:
-                lessons = Lesson.objects.filter(student=self._student(), teacher=instance, subject=sub.subject,
+                lessons = Lesson.objects.filter(student=self._student(), teacher=instance,
+                                                subject__name=self.context.get('params').get('subject'),
                                                 lesson_status=Lesson.DONE)
             if lessons:
                 for les in lessons:
@@ -902,6 +941,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
                             check = True
                         data_lesson.append({
                             'lesson_id': les.pk,
+                            'lesson_count': les.lesson_number,
                             'topic': les.topic,
                             'homework': serializer_homework.data,
                             'rate': serializer_rate.data,
@@ -909,7 +949,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
                             'check': check
                         })
             data.append({
-                'subject': sub.subject.name,
+                'subject': subject.name,
                 'homework_data': data_lesson
             })
         return data
@@ -936,7 +976,7 @@ class HomeworksSerializer(serializers.ModelSerializer):
 
     def get_homeworks(self, instance):
         data_lesson = []
-        lessons = None
+        lessons_list = None
         serializer_homework = None
         serializer_rate = None
         try:
@@ -950,12 +990,12 @@ class HomeworksSerializer(serializers.ModelSerializer):
                         for lsn in lessons_lst:
                             rate = LessonRateHomework.objects.filter(lesson=lsn)
                             if rate:
-                                lessons.append(lsn)
+                                lessons_list.append(lsn)
                     else:
                         for lsn in lessons_lst:
                             rate = LessonRateHomework.objects.filter(lesson=lsn)
                             if not rate:
-                                lessons.append(lsn)
+                                lessons_list.append(lsn)
                 else:
                     lessons_lst = Lesson.objects.filter(teacher=instance,
                                                         subject__name=self.context.get('params').get('subject'),
@@ -964,12 +1004,12 @@ class HomeworksSerializer(serializers.ModelSerializer):
                         for lsn in lessons_lst:
                             rate = LessonRateHomework.objects.filter(lesson=lsn)
                             if rate:
-                                lessons.append(lsn)
+                                lessons_list.append(lsn)
                     else:
                         for lsn in lessons_lst:
                             rate = LessonRateHomework.objects.filter(lesson=lsn)
                             if not rate:
-                                lessons.append(lsn)
+                                lessons_list.append(lsn)
             elif self.context.get('params').get('check') and self.context.get('params').get('subject'):
                 lessons_lst = Lesson.objects.filter(teacher=instance,
                                                     subject__name=self.context.get('params').get('subject'),
@@ -978,12 +1018,12 @@ class HomeworksSerializer(serializers.ModelSerializer):
                     for lsn in lessons_lst:
                         rate = LessonRateHomework.objects.filter(lesson=lsn)
                         if rate:
-                            lessons.append(lsn)
+                            lessons_list.append(lsn)
                 else:
                     for lsn in lessons_lst:
                         rate = LessonRateHomework.objects.filter(lesson=lsn)
                         if not rate:
-                            lessons.append(lsn)
+                            lessons_list.append(lsn)
             elif self.context.get('params').get('check') and self.context.get('params').get('filter'):
                 if self.context.get('params').get('filter') == 'new':
                     lessons_lst = Lesson.objects.filter(teacher=instance,
@@ -992,12 +1032,12 @@ class HomeworksSerializer(serializers.ModelSerializer):
                         for lsn in lessons_lst:
                             rate = LessonRateHomework.objects.filter(lesson=lsn)
                             if rate:
-                                lessons.append(lsn)
+                                lessons_list.append(lsn)
                     else:
                         for lsn in lessons_lst:
                             rate = LessonRateHomework.objects.filter(lesson=lsn)
                             if not rate:
-                                lessons.append(lsn)
+                                lessons_list.append(lsn)
                 else:
                     lessons_lst = Lesson.objects.filter(teacher=instance,
                                                         lesson_status=Lesson.DONE).order_by('date')
@@ -1005,21 +1045,21 @@ class HomeworksSerializer(serializers.ModelSerializer):
                         for lsn in lessons_lst:
                             rate = LessonRateHomework.objects.filter(lesson=lsn)
                             if rate:
-                                lessons.append(lsn)
+                                lessons_list.append(lsn)
                     else:
                         for lsn in lessons_lst:
                             rate = LessonRateHomework.objects.filter(lesson=lsn)
                             if not rate:
-                                lessons.append(lsn)
+                                lessons_list.append(lsn)
             elif self.context.get('params').get('filter') and self.context.get('params').get('subject'):
                 if self.context.get('params').get('filter') == 'new':
-                    lessons = Lesson.objects.filter(teacher=instance,
-                                                    subject__name=self.context.get('params').get('subject'),
-                                                    lesson_status=Lesson.DONE).order_by('-date')
+                    lessons_list = Lesson.objects.filter(teacher=instance,
+                                                         subject__name=self.context.get('params').get('subject'),
+                                                         lesson_status=Lesson.DONE).order_by('-date')
                 else:
-                    lessons = Lesson.objects.filter(teacher=instance,
-                                                    subject__name=self.context.get('params').get('subject'),
-                                                    lesson_status=Lesson.DONE).order_by('date')
+                    lessons_list = Lesson.objects.filter(teacher=instance,
+                                                         subject__name=self.context.get('params').get('subject'),
+                                                         lesson_status=Lesson.DONE).order_by('date')
 
             elif self.context.get('params').get('check'):
                 lessons_lst = Lesson.objects.filter(teacher=instance,
@@ -1028,38 +1068,44 @@ class HomeworksSerializer(serializers.ModelSerializer):
                     for lsn in lessons_lst:
                         rate = LessonRateHomework.objects.filter(lesson=lsn)
                         if rate:
-                            lessons.append(lsn)
+                            lessons_list.append(lsn)
                 else:
                     for lsn in lessons_lst:
                         rate = LessonRateHomework.objects.filter(lesson=lsn)
                         if not rate:
-                            lessons.append(lsn)
+                            lessons_list.append(lsn)
             elif self.context.get('params').get('filter'):
                 if self.context.get('params').get('filter') == 'new':
-                    lessons = Lesson.objects.filter(teacher=instance,
-                                                    lesson_status=Lesson.DONE).order_by('-date')
+                    lessons_list = Lesson.objects.filter(teacher=instance,
+                                                         lesson_status=Lesson.DONE).order_by('-date')
                 else:
-                    lessons = Lesson.objects.filter(teacher=instance,
-                                                    lesson_status=Lesson.DONE).order_by('date')
+                    lessons_list = Lesson.objects.filter(teacher=instance,
+                                                         lesson_status=Lesson.DONE).order_by('date')
             elif self.context.get('params').get('subject'):
-                lessons = Lesson.objects.filter(teacher=instance,
-                                                subject__name=self.context.get('params').get('subject'),
-                                                lesson_status=Lesson.DONE)
+                lessons_list = Lesson.objects.filter(teacher=instance,
+                                                     subject__name=self.context.get('params').get('subject'),
+                                                     lesson_status=Lesson.DONE)
         except Exception:
-            lessons = Lesson.objects.filter(teacher=instance,
-                                            lesson_status=Lesson.DONE)
-        if lessons:
-            for les in lessons:
+            lessons_list = Lesson.objects.filter(teacher=instance,
+                                                 lesson_status=Lesson.DONE)
+            print(lessons_list)
+
+        if lessons_list:
+            for les in lessons_list:
+                student_data = []
                 check = False
                 homeworks = LessonHomework.objects.filter(lesson=les)
                 serializer_homework = LessonHomeworkSerializer(homeworks, many=True)
+                serializer_student = UserNameSerializer(les.student)
                 if serializer_homework.data:
                     rate = LessonRateHomework.objects.filter(lesson=les)
                     serializer_rate = LessonRateHomeworkSerializer(rate, many=True)
                     if serializer_rate.data:
                         check = True
                     data_lesson.append({
+                        'student': serializer_student.data,
                         'lesson_id': les.pk,
+                        'lesson_count': les.lesson_number,
                         'topic': les.topic,
                         'homework': serializer_homework.data,
                         'rate': serializer_rate.data,

@@ -87,7 +87,7 @@ class UserNameSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'avatar')
+        fields = ('first_name', 'last_name', 'avatar', 'student_class')
 
     def get_avatar(self, instance):
         return instance.get_avatar()

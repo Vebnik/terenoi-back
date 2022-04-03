@@ -5,7 +5,8 @@ from lessons.views import AllUserLessonsListView, UserLessonRetrieveView, VoxiTe
     LessonUpdateView, LessonMaterialsAdd, LessonHomeworksAdd, LessonMaterialsRetrieveView, LessonHomeworksRetrieveView, \
     LessonEvaluationRetrieveView, LessonEvaluationUpdateView, CreateVoxiCallData, LessonTransferUpdateView, \
     LessonEvaluationQuestionsRetrieveView, LessonRateHomeworksAdd, LessonRateHomeworkRetrieveView, HomepageListView, \
-    StudentsListView, StudentsRejectView, StudentsDetailView, HomeworksView, TopicUpdateView, PurposeUpdateView
+    StudentsListView, StudentsRejectView, StudentsDetailView, HomeworksView, TopicUpdateView, PurposeUpdateView, \
+    PurposeView
 
 app_name = 'lessons'
 
@@ -19,6 +20,7 @@ urlpatterns = [
     path('students/', StudentsListView.as_view(), name='students'),
     path('students/<int:pk>/', StudentsDetailView.as_view(), name='students_detail'),
     path('students/<int:pk>/update/topic/', TopicUpdateView.as_view(), name='students_update_topic'),
+    path('students/<int:pk>/purpose/', PurposeView.as_view(), name='students_purpose'),
     path('students/<int:pk>/update/purpose/', PurposeUpdateView.as_view(), name='students_update_purpose'),
     path('homeworks/', HomeworksView.as_view(), name='homeworks'),
     path('reject-student/<int:pk>/', StudentsRejectView.as_view(), name='reject_student'),

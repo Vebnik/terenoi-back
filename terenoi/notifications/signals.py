@@ -6,8 +6,9 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from authapp.services import send_notifications
+from lessons.models import Lesson
 from lessons.services import current_date
-from notifications.models import Notification, PaymentNotification
+from notifications.models import Notification, PaymentNotification, HomeworkNotification, LessonRateNotification
 
 
 @receiver(post_save, sender=Notification)
@@ -71,6 +72,51 @@ def payment_notifications_handler(sender, instance, **kwargs):
             created_at = current_date(instance.to_user, instance.created_at)
             data = {"user": instance.to_user.username, "created_at": created_at,
                     "payment_date": payment_date,
+                    "type": instance.type, "is_read": instance.is_read}
+            async_to_sync(channel_layer.group_send)(
+                f'{instance.to_user.username}_group', {
+                    'type': 'send_notification',
+                    'value': json.dumps(data, cls=DjangoJSONEncoder)
+                }
+            )
+        else:
+            pass
+
+
+@receiver(post_save, sender=HomeworkNotification)
+def homework_notifications_handler(sender, instance, **kwargs):
+    if not instance.is_read:
+        lesson = Lesson.objects.filter(pk=instance.lesson_id).first()
+        if instance.to_user.is_online:
+            channel_layer = get_channel_layer()
+            created_at = current_date(instance.to_user, instance.created_at)
+            data = {"user": instance.to_user.username, "created_at": created_at,
+                    "type": instance.type, "is_read": instance.is_read}
+            async_to_sync(channel_layer.group_send)(
+                f'{instance.to_user.username}_group', {
+                    'type': 'send_notification',
+                    'value': json.dumps(data, cls=DjangoJSONEncoder)
+                }
+            )
+        else:
+            if instance.type == HomeworkNotification.HOMEWORK_ADD:
+                subject = 'Домашнее задание добавлено'
+                body = f'Домашнее задание добавлено'
+                send_notifications(instance.to_user, subject, body)
+            elif instance.type == HomeworkNotification.HOMEWORK_CHECK:
+                subject = 'Домащнее задание проверено'
+                body = f'Домащнее задание проверено'
+                send_notifications(instance.to_user, subject, body)
+
+
+@receiver(post_save, sender=LessonRateNotification)
+def homework_notifications_handler(sender, instance, **kwargs):
+    if not instance.is_read:
+        lesson = Lesson.objects.filter(pk=instance.lesson_id).first()
+        if instance.to_user.is_online:
+            channel_layer = get_channel_layer()
+            created_at = current_date(instance.to_user, instance.created_at)
+            data = {"user": instance.to_user.username, "created_at": created_at,
                     "type": instance.type, "is_read": instance.is_read}
             async_to_sync(channel_layer.group_send)(
                 f'{instance.to_user.username}_group', {
