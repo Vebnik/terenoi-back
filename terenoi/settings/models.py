@@ -94,6 +94,7 @@ class UserCity(models.Model):
 class WeekDays(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название')
     number = models.PositiveSmallIntegerField(**NULLABLE, verbose_name='Номер дня')
+    american_number = models.PositiveSmallIntegerField(**NULLABLE, verbose_name='Номер дня(технический)')
 
     def __str__(self):
         return self.name

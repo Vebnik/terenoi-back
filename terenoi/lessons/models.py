@@ -142,6 +142,18 @@ class Lesson(models.Model):
         super(Lesson, self).save(*args, **kwargs)
 
 
+class TeacherWorkHours(models.Model):
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель',
+                                limit_choices_to={'is_teacher': True})
+    weekday = models.ManyToManyField(WeekDays, verbose_name='Дни недели')
+    start_time = models.TimeField(**NULLABLE, verbose_name='Начало работы')
+    end_time = models.TimeField(**NULLABLE, verbose_name='Конец работы')
+
+    class Meta:
+        verbose_name = 'Рабочие часы учителя'
+        verbose_name_plural = 'Рабочие часы учителя'
+
+
 class LessonMaterials(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
     material = models.FileField(upload_to='materials-for-lesson/', verbose_name='Материалы к уроку', **NULLABLE)

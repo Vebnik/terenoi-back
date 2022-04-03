@@ -9,7 +9,7 @@ from authapp.models import User, VoxiAccount
 from authapp.serializers import UserNameSerializer, VoxiAccountSerializer
 from finance.models import StudentBalance, HistoryPaymentStudent, TeacherBalance, HistoryPaymentTeacher
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
-    Schedule, ScheduleSettings
+    Schedule, ScheduleSettings, TeacherWorkHours
 from lessons.services import current_date
 from profileapp.models import TeacherSubject, Subject, GlobalUserPurpose
 from profileapp.serializers import SubjectSerializer, UpdateStudentSerializer
@@ -562,6 +562,27 @@ class UserLessonsCreateSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
+class TeacherScheduleCreateSerializer(serializers.ModelSerializer):
+    schedule = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TeacherWorkHours
+        fields = ('pk', 'schedule')
+
+    def get_schedule(self, instance):
+        data = []
+        week_list = []
+        for days in instance.weekday.all():
+            week_list.append(days.american_number)
+
+        data.append({
+            'daysOfWeek': week_list,
+            'startTime': instance.start_time,
+            'endTime': instance.end_time
+        })
+        return data
+
+
 class LessonMaterialsSerializer(serializers.ModelSerializer):
     class Meta:
         model = LessonMaterials
@@ -680,7 +701,8 @@ class StudentsTeacherSerializer(serializers.ModelSerializer):
         return instance.get_avatar()
 
     def get_start_date(self, instance):
-        start_date = Lesson.objects.filter(student=instance, subject=self.context.get('subject'), teacher=self.context.get('teacher')).order_by('date').first()
+        start_date = Lesson.objects.filter(student=instance, subject=self.context.get('subject'),
+                                           teacher=self.context.get('teacher')).order_by('date').first()
         if start_date:
             cur_date = current_date(user=self.context.get('teacher'), date=start_date.date)
             return cur_date.date()
@@ -688,10 +710,11 @@ class StudentsTeacherSerializer(serializers.ModelSerializer):
 
     def get_end_date(self, instance):
         end_date = Lesson.objects.filter(student=instance, subject=self.context.get('subject'),
-                                           teacher=self.context.get('teacher'), lesson_status=Lesson.SCHEDULED)
+                                         teacher=self.context.get('teacher'), lesson_status=Lesson.SCHEDULED)
         if not end_date:
             end_date_inactive = Lesson.objects.filter(student=instance, subject=self.context.get('subject'),
-                                             teacher=self.context.get('teacher'), lesson_status=Lesson.DONE).order_by('-date').first()
+                                                      teacher=self.context.get('teacher'),
+                                                      lesson_status=Lesson.DONE).order_by('-date').first()
             if end_date_inactive:
                 cur_date = current_date(user=self.context.get('teacher'), date=end_date_inactive.date)
                 return cur_date.date()
@@ -723,7 +746,8 @@ class StudentsSerializer(serializers.ModelSerializer):
 
             serializer_active = StudentsTeacherSerializer(active_list, many=True,
                                                           context={'subject': subject.subject, 'teacher': instance})
-            serializer_inactive = StudentsTeacherSerializer(inactive_list, many=True, context={'subject': subject.subject, 'teacher': instance})
+            serializer_inactive = StudentsTeacherSerializer(inactive_list, many=True,
+                                                            context={'subject': subject.subject, 'teacher': instance})
             data.append({
                 'subject': subject.subject.name,
                 'active_students': serializer_active.data,

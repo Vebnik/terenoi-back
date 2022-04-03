@@ -12,18 +12,19 @@ from authapp.models import User, VoxiAccount
 from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson, \
     send_cancel_lesson
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
-    ManagerRequests, ManagerRequestsRejectTeacher
+    ManagerRequests, ManagerRequestsRejectTeacher, TeacherWorkHours
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
     LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer, \
-    StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer
+    StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer, TeacherScheduleCreateSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
     withdrawing_cancel_lesson
 from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification
 from profileapp.models import Subject, ManagerToUser, GlobalUserPurpose, GlobalPurpose
 from profileapp.serializers import PurposeSerializer, GlobalPurposeSerializer
+from settings.models import WeekDays
 
 
 class AllUserLessonsListView(generics.ListAPIView):
@@ -334,6 +335,72 @@ class LessonRateHomeworksAdd(generics.UpdateAPIView):
         HomeworkNotification.objects.create(to_user=lesson.student, lesson_id=self.kwargs.get('pk'),
                                             type=HomeworkNotification.HOMEWORK_CHECK)
         return super(LessonRateHomeworksAdd, self).update(request, *args, **kwargs)
+
+
+class TeacherScheduleCreateView(generics.CreateAPIView):
+    """Создание урока"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = TeacherScheduleCreateSerializer
+    queryset = TeacherWorkHours.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        try:
+            for req in self.request.data:
+                if req.get('daysOfWeek'):
+                    t = TeacherWorkHours.objects.create(teacher=self.request.user,
+                                                        start_time=req.get('startTime'),
+                                                        end_time=req.get('endTime'))
+                    for days in req.get('daysOfWeek'):
+                        weekday = WeekDays.objects.filter(american_number=int(days)).first()
+                        t.weekday.add(weekday)
+            return Response({'message': 'Рабочие часы добавлены'},
+                            status=status.HTTP_200_OK)
+        except Exception:
+            return Response({'message': 'Что-то пошло не так, попробуйте еще раз'},
+                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class TeacherScheduleListView(generics.ListAPIView):
+    """Список рабочих часов учителя"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = TeacherScheduleCreateSerializer
+
+    def get_queryset(self):
+        queryset = TeacherWorkHours.objects.filter(teacher=self.request.user)
+        return queryset
+
+
+class TeacherScheduleUpdateView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TeacherScheduleCreateSerializer
+
+    def get_object(self):
+        schedule = TeacherWorkHours.objects.filter(pk=self.request.data.get('pk')).first()
+        return schedule
+
+    def update(self, request, *args, **kwargs):
+        try:
+            obj = self.get_object()
+            if self.request.data.get('schedule'):
+                schedule = self.request.data.get('schedule')[0]
+                if schedule.get('daysOfWeek'):
+                    obj.weekday.clear()
+                    for days in schedule.get('daysOfWeek'):
+                        weekday = WeekDays.objects.filter(american_number=int(days)).first()
+                        obj.weekday.add(weekday)
+                        obj.save()
+                if schedule.get('startTime'):
+                    obj.start_time = schedule.get('startTime')
+                    obj.save()
+                if schedule.get('endTime'):
+                    obj.end_time = schedule.get('endTime')
+                    obj.save()
+            return Response({'message': 'Данные изменены'},
+                            status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({'message': 'Что-то пошло не так, попробуйте еще раз'},
+                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class LessonMaterialsRetrieveView(generics.RetrieveAPIView):
