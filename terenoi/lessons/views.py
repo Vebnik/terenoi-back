@@ -12,7 +12,7 @@ from authapp.models import User, VoxiAccount
 from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson, \
     send_cancel_lesson
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
-    ManagerRequests, ManagerRequestsRejectTeacher, TeacherWorkHours
+    ManagerRequests, ManagerRequestsRejectTeacher, TeacherWorkHours, TeacherWorkHoursSettings
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
@@ -345,17 +345,21 @@ class TeacherScheduleCreateView(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            for req in self.request.data:
-                if req.get('daysOfWeek'):
-                    t = TeacherWorkHours.objects.create(teacher=self.request.user,
-                                                        start_time=req.get('startTime'),
-                                                        end_time=req.get('endTime'))
-                    for days in req.get('daysOfWeek'):
-                        weekday = WeekDays.objects.filter(american_number=int(days)).first()
-                        t.weekday.add(weekday)
-            return Response({'message': 'Рабочие часы добавлены'},
-                            status=status.HTTP_200_OK)
-        except Exception:
+            if self.request.data:
+                teacher_hours = TeacherWorkHours.objects.filter(teacher=self.request.user).first()
+                if teacher_hours:
+                    pass
+                else:
+                    teacher_hours = TeacherWorkHours.objects.create(teacher=self.request.user)
+                for req in self.request.data:
+                    if req.get('daysOfWeek'):
+                        for days in req.get('daysOfWeek'):
+                            weekday = WeekDays.objects.filter(american_number=int(days)).first()
+                            TeacherWorkHoursSettings.objects.create(teacher_work_hours=teacher_hours, weekday=weekday, start_time=req.get('startTime'),end_time=req.get('endTime'))
+
+                return Response({'message': 'Рабочие часы добавлены'},
+                                status=status.HTTP_200_OK)
+        except Exception as e:
             return Response({'message': 'Что-то пошло не так, попробуйте еще раз'},
                             status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -366,7 +370,8 @@ class TeacherScheduleListView(generics.ListAPIView):
     serializer_class = TeacherScheduleCreateSerializer
 
     def get_queryset(self):
-        queryset = TeacherWorkHours.objects.filter(teacher=self.request.user)
+        th_work = TeacherWorkHours.objects.filter(teacher=self.request.user).first()
+        queryset = TeacherWorkHoursSettings.objects.filter(teacher_work_hours=th_work)
         return queryset
 
 

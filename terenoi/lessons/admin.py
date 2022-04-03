@@ -4,7 +4,8 @@ from django.urls import reverse, path
 from django.utils.html import format_html
 
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
-    ManagerRequests, Schedule, ScheduleSettings, ManagerRequestsRejectTeacher, TeacherWorkHours
+    ManagerRequests, Schedule, ScheduleSettings, ManagerRequestsRejectTeacher, TeacherWorkHours, \
+    TeacherWorkHoursSettings
 
 
 @admin.register(Lesson)
@@ -169,8 +170,14 @@ class ManagerRequestsRejectTeacherAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 
+class TeacherWorkHoursSettingsInline(admin.TabularInline):
+    model = TeacherWorkHoursSettings
+
+
 @admin.register(TeacherWorkHours)
 class TeacherWorkHoursAdmin(admin.ModelAdmin):
-    list_display = ('teacher', 'start_time', 'end_time')
-    list_filter = ('weekday',)
+    list_display = ('teacher',)
     search_fields = ['teacher__username', 'teacher__first_name', 'teacher_last_name']
+    inlines = [
+        TeacherWorkHoursSettingsInline,
+    ]
