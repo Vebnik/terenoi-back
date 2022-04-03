@@ -6,7 +6,7 @@ from lessons.views import AllUserLessonsListView, UserLessonRetrieveView, VoxiTe
     LessonEvaluationRetrieveView, LessonEvaluationUpdateView, CreateVoxiCallData, LessonTransferUpdateView, \
     LessonEvaluationQuestionsRetrieveView, LessonRateHomeworksAdd, LessonRateHomeworkRetrieveView, HomepageListView, \
     StudentsListView, StudentsRejectView, StudentsDetailView, HomeworksView, TopicUpdateView, PurposeUpdateView, \
-    PurposeView
+    PurposeView, TeacherScheduleCreateView, TeacherScheduleListView, TeacherScheduleUpdateView
 
 app_name = 'lessons'
 
@@ -35,6 +35,10 @@ urlpatterns = [
     path('homeworks/<int:pk>/', LessonHomeworksRetrieveView.as_view(), name='lesson_homeworks'),
     path('rate/add/<int:pk>/', LessonRateHomeworksAdd.as_view(), name='rate_homework_add'),
     path('rate/<int:pk>/', LessonRateHomeworkRetrieveView.as_view(), name='homework_rate'),
+
+    path('teacher-schedule/add/', TeacherScheduleCreateView.as_view(), name='teacher_schedule_add'),
+    path('teacher-schedule/', TeacherScheduleListView.as_view(), name='teacher_schedule'),
+    path('teacher-schedule/update/', TeacherScheduleUpdateView.as_view(), name='teacher_schedule_update'),
 
     path('evaluation/<int:pk>/', LessonEvaluationRetrieveView.as_view(), name='lesson_evaluation'),
     path('evaluation-questions/<int:pk>/', LessonEvaluationQuestionsRetrieveView.as_view(),
