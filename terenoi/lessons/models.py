@@ -145,13 +145,23 @@ class Lesson(models.Model):
 class TeacherWorkHours(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель',
                                 limit_choices_to={'is_teacher': True})
-    weekday = models.ManyToManyField(WeekDays, verbose_name='Дни недели')
-    start_time = models.TimeField(**NULLABLE, verbose_name='Начало работы')
-    end_time = models.TimeField(**NULLABLE, verbose_name='Конец работы')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания', **NULLABLE)
 
     class Meta:
         verbose_name = 'Рабочие часы учителя'
         verbose_name_plural = 'Рабочие часы учителя'
+
+
+class TeacherWorkHoursSettings(models.Model):
+    teacher_work_hours = models.ForeignKey(TeacherWorkHours, **NULLABLE, on_delete=models.CASCADE,
+                                           verbose_name='Рабочие часы учителя')
+    weekday = models.ForeignKey(WeekDays, on_delete=models.CASCADE, verbose_name='День недели', **NULLABLE)
+    start_time = models.TimeField(verbose_name='Начало работы', **NULLABLE)
+    end_time = models.TimeField(verbose_name='Конец работы', **NULLABLE)
+
+    class Meta:
+        verbose_name = 'Настройки рабочих часов учителя'
+        verbose_name_plural = 'Настройки рабочих часов учителя'
 
 
 class LessonMaterials(models.Model):

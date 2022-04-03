@@ -9,7 +9,7 @@ from authapp.models import User, VoxiAccount
 from authapp.serializers import UserNameSerializer, VoxiAccountSerializer
 from finance.models import StudentBalance, HistoryPaymentStudent, TeacherBalance, HistoryPaymentTeacher
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
-    Schedule, ScheduleSettings, TeacherWorkHours
+    Schedule, ScheduleSettings, TeacherWorkHours, TeacherWorkHoursSettings
 from lessons.services import current_date
 from profileapp.models import TeacherSubject, Subject, GlobalUserPurpose
 from profileapp.serializers import SubjectSerializer, UpdateStudentSerializer
@@ -563,24 +563,34 @@ class UserLessonsCreateSerializer(serializers.ModelSerializer):
 
 
 class TeacherScheduleCreateSerializer(serializers.ModelSerializer):
-    schedule = serializers.SerializerMethodField()
+    daysOfWeek = serializers.SerializerMethodField()
+    startTime = serializers.SerializerMethodField()
+    endTime = serializers.SerializerMethodField()
 
     class Meta:
-        model = TeacherWorkHours
-        fields = ('pk', 'schedule')
+        model = TeacherWorkHoursSettings
+        fields = ('daysOfWeek', 'startTime', 'endTime')
 
-    def get_schedule(self, instance):
-        data = []
-        week_list = []
-        for days in instance.weekday.all():
-            week_list.append(days.american_number)
-
-        data.append({
-            'daysOfWeek': week_list,
-            'startTime': instance.start_time,
-            'endTime': instance.end_time
-        })
+    def get_daysOfWeek(self, instance):
+        data = [instance.weekday.american_number]
         return data
+
+    def get_startTime(self, instance):
+        return instance.start_time
+
+    def get_endTime(self, instance):
+        return instance.end_time
+
+    # def get_schedule(self, instance):
+    #     data = []
+    #     week_list = [instance.weekday.american_number]
+    #
+    #     data.append({
+    #         'daysOfWeek': week_list,
+    #         'startTime': instance.start_time,
+    #         'endTime': instance.end_time
+    #     })
+    #     return data
 
 
 class LessonMaterialsSerializer(serializers.ModelSerializer):
