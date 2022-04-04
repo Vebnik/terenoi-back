@@ -18,5 +18,8 @@ class Command(BaseCommand):
         for prp in purposes:
             subject_name = prp['subject']
             subject_item = Subject.objects.filter(name=subject_name).first()
-            prp['subject'] = subject_item
-            GlobalPurpose.objects.create(**prp)
+            if subject_item is None:
+                print(prp['subject'])
+            else:
+                prp['subject'] = subject_item
+                GlobalPurpose.objects.create(**prp)
