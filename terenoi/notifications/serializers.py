@@ -7,11 +7,13 @@ from notifications.models import Notification
 class UserNotificationsSerializer(serializers.ModelSerializer):
     current_created_at = serializers.SerializerMethodField()
     current_lesson_date = serializers.SerializerMethodField()
+    current_payment_date = serializers.SerializerMethodField()
 
     class Meta:
         model = Notification
         fields = (
-        'pk', 'to_user', 'lesson_id', 'message', 'current_lesson_date', 'type', 'is_read', 'current_created_at')
+            'pk', 'to_user', 'lesson_id', 'message', 'current_lesson_date', 'current_payment_date', 'type', 'is_read',
+            'current_created_at')
 
     def _user(self):
         request = self.context.get('request', None)
@@ -28,6 +30,13 @@ class UserNotificationsSerializer(serializers.ModelSerializer):
         user = self._user()
         if instance.lesson_date:
             date = current_date(user, instance.lesson_date)
+            return date
+        return None
+
+    def get_current_payment_date(self, instance):
+        user = self._user()
+        if instance.payment_date:
+            date = current_date(user, instance.payment_date)
             return date
         return None
 
