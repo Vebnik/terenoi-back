@@ -330,7 +330,10 @@ class GlobalUserPurposeSerializer(serializers.ModelSerializer):
         return lesson_count
 
     def get_purpose(self, instance):
-        return instance.purpose.name
+        try:
+            return instance.purpose.name
+        except Exception:
+            return None
 
 
 class LanguageInterfaceSerializer(serializers.ModelSerializer):

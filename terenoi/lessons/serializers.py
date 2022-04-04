@@ -13,6 +13,7 @@ from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRe
 from lessons.services import current_date
 from profileapp.models import TeacherSubject, Subject, GlobalUserPurpose
 from profileapp.serializers import SubjectSerializer, UpdateStudentSerializer
+from settings.models import WeekDays
 
 
 class UserClassesSerializer(serializers.ModelSerializer):
@@ -581,16 +582,36 @@ class TeacherScheduleCreateSerializer(serializers.ModelSerializer):
     def get_endTime(self, instance):
         return instance.end_time
 
-    # def get_schedule(self, instance):
-    #     data = []
-    #     week_list = [instance.weekday.american_number]
-    #
-    #     data.append({
-    #         'daysOfWeek': week_list,
-    #         'startTime': instance.start_time,
-    #         'endTime': instance.end_time
-    #     })
-    #     return data
+
+class TeacherScheduleDetailSerializer(serializers.ModelSerializer):
+    daysOfWeek = serializers.SerializerMethodField()
+    periods = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TeacherWorkHoursSettings
+        fields = ('daysOfWeek', 'periods')
+
+    def _user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return None
+
+    def get_daysOfWeek(self, instance):
+        data = [instance.weekday.american_number]
+        return data
+
+    def get_periods(self, instance):
+        data = []
+        th_work = TeacherWorkHours.objects.filter(teacher=self._user()).first()
+        weekday = WeekDays.objects.filter(american_number=instance.weekday.american_number).first()
+        queryset = TeacherWorkHoursSettings.objects.filter(teacher_work_hours=th_work, weekday=weekday)
+        for qr in queryset:
+            data.append({
+                'startTime': qr.start_time,
+                'endTime': qr.end_time
+            })
+        return data
 
 
 class LessonMaterialsSerializer(serializers.ModelSerializer):

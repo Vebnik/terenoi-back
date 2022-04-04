@@ -14,7 +14,20 @@ from lessons.services import current_date
 NULLABLE = {'blank': True, 'null': True}
 
 
-class Notification(models.Model):
+class AbstractNotification(models.Model):
+    to_user = models.ForeignKey(User, verbose_name='Уведомлениe пользователя', on_delete=models.CASCADE)
+    lesson_id = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
+    lesson_date = models.DateTimeField(verbose_name='Дата урока', **NULLABLE)
+    payment_date = models.DateTimeField(verbose_name='Дата оплаты', **NULLABLE)
+    message = models.CharField(max_length=255, verbose_name='Сообщение', **NULLABLE)
+    is_read = models.BooleanField(default=False, verbose_name='Просмотрено')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        abstract = True
+
+
+class Notification(AbstractNotification):
     LESSON_SCHEDULED = 'LSN_SCH'
     LESSON_COMING_SOON = 'LSN_CMN'
     LESSON_PROGRESS = 'LSN_PRG'
@@ -35,20 +48,14 @@ class Notification(models.Model):
         (LESSON_CANCEL, 'Урок отменен')
     )
 
-    to_user = models.ForeignKey(User, verbose_name='Уведомлениe пользователя', on_delete=models.CASCADE)
-    lesson_id = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
-    lesson_date = models.DateTimeField(verbose_name='Дата урока', **NULLABLE)
     type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
-    message = models.CharField(max_length=255, verbose_name='Сообщение', **NULLABLE)
-    is_read = models.BooleanField(default=False, verbose_name='Просмотрено')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
 
     class Meta:
         verbose_name = 'Уведомление по уроку'
         verbose_name_plural = 'Уведомления по урокам'
 
 
-class PaymentNotification(models.Model):
+class PaymentNotification(AbstractNotification):
     PAID = 'PD'
     AWAITING_PAYMENT = 'AP'
     WITHDRAWALS = 'WD'
@@ -59,13 +66,7 @@ class PaymentNotification(models.Model):
         (WITHDRAWALS, 'Вывод средств'),
         (ENROLLMENT_REF, 'Зачисление реферальной программы'),
     )
-
-    to_user = models.ForeignKey(User, verbose_name='Уведомлениe пользователя', on_delete=models.CASCADE)
-    payment_date = models.DateTimeField(verbose_name='Дата оплаты', **NULLABLE)
-    message = models.CharField(max_length=255, verbose_name='Сообщение', **NULLABLE)
     type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
-    is_read = models.BooleanField(default=False, verbose_name='Просмотрено')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
 
     class Meta:
         verbose_name = 'Уведомление об оплате'
@@ -105,7 +106,7 @@ class ManagerNotification(models.Model):
         verbose_name_plural = 'Уведомления для менеджеров'
 
 
-class HomeworkNotification(models.Model):
+class HomeworkNotification(AbstractNotification):
     HOMEWORK_ADD = 'HM_ADD'
     HOMEWORK_CHECK = 'HM_CHK'
 
@@ -113,20 +114,14 @@ class HomeworkNotification(models.Model):
         (HOMEWORK_ADD, 'Домашнее задание добавлено'),
         (HOMEWORK_CHECK, 'Домашнее задание проверено'),
     )
-    to_user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE)
-    lesson_id = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
-    lesson_date = models.DateTimeField(verbose_name='Дата урока', **NULLABLE)
     type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
-    message = models.CharField(max_length=255, verbose_name='Сообщение', **NULLABLE)
-    is_read = models.BooleanField(default=False, verbose_name='Просмотрено')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
 
     class Meta:
         verbose_name = 'Уведомление по домашнему заданию'
         verbose_name_plural = 'Уведомления по домашним заданиям'
 
 
-class LessonRateNotification(models.Model):
+class LessonRateNotification(AbstractNotification):
     LESSON_RATE_HIGH = 'LESS_RT_HGH'
     LESSON_RATE_LOW = 'LESS_RT_HGH'
 
@@ -134,13 +129,7 @@ class LessonRateNotification(models.Model):
         (LESSON_RATE_HIGH, 'Урок оценен высоко'),
         (LESSON_RATE_LOW, 'Урок оценен не удовлетворительно'),
     )
-    to_user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE)
-    lesson_id = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
-    lesson_date = models.DateTimeField(verbose_name='Дата урока', **NULLABLE)
     type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
-    message = models.CharField(max_length=255, verbose_name='Сообщение', **NULLABLE)
-    is_read = models.BooleanField(default=False, verbose_name='Просмотрено')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
 
     class Meta:
         verbose_name = 'Уведомление по оценке урока'

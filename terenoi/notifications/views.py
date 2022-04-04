@@ -4,7 +4,7 @@ from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from notifications.models import Notification, HomeworkNotification, LessonRateNotification
+from notifications.models import Notification, HomeworkNotification, LessonRateNotification, PaymentNotification
 from notifications.serializers import UserNotificationsSerializer, UserNotificationsUpdate, UserNotificationsAllUpdate
 
 
@@ -23,8 +23,9 @@ class UserNotificationListView(generics.ListAPIView):
         user = self.request.user
         queryset_homework = HomeworkNotification.objects.filter((Q(to_user=user) & Q(is_read=False))).select_related()
         queryset_rate = LessonRateNotification.objects.filter((Q(to_user=user) & Q(is_read=False))).select_related()
+        queryset_payment = PaymentNotification.objects.filter((Q(to_user=user) & Q(is_read=False))).select_related()
         queryset = Notification.objects.filter((Q(to_user=user) & Q(is_read=False))).select_related()
-        queryset_all = queryset.union(queryset_homework, queryset_rate).order_by('-created_at')
+        queryset_all = queryset.union(queryset_homework, queryset_rate, queryset_payment).order_by('-created_at')
         return queryset_all
 
 
@@ -38,8 +39,9 @@ class UserAllNotificationListView(generics.ListAPIView):
         user = self.request.user
         queryset_homework = HomeworkNotification.objects.filter((Q(to_user=user) & Q(is_read=False))).select_related()
         queryset_rate = LessonRateNotification.objects.filter((Q(to_user=user) & Q(is_read=False))).select_related()
-        queryset = Notification.objects.filter(to_user=user).select_related()
-        queryset_all = queryset.union(queryset_homework, queryset_rate).order_by('-created_at')
+        queryset_payment = PaymentNotification.objects.filter((Q(to_user=user) & Q(is_read=False))).select_related()
+        queryset = Notification.objects.filter(Q(to_user=user) & Q(is_read=False)).select_related()
+        queryset_all = queryset.union(queryset_homework, queryset_rate, queryset_payment).order_by('-created_at')
         return queryset_all
 
 

@@ -18,7 +18,8 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
     LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer, \
-    StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer, TeacherScheduleCreateSerializer
+    StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer, TeacherScheduleCreateSerializer, \
+    TeacherScheduleDetailSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
     withdrawing_cancel_lesson
 from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification
@@ -374,36 +375,39 @@ class TeacherScheduleListView(generics.ListAPIView):
         queryset = TeacherWorkHoursSettings.objects.filter(teacher_work_hours=th_work)
         return queryset
 
+class TeacherScheduleDetailListView(generics.ListAPIView):
+    """Список рабочих часов учителя"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = TeacherScheduleDetailSerializer
+
+    def get_queryset(self):
+        th_work = TeacherWorkHours.objects.filter(teacher=self.request.user).first()
+        queryset = TeacherWorkHoursSettings.objects.filter(teacher_work_hours=th_work).distinct('weekday')
+        return queryset
+
 
 class TeacherScheduleUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = TeacherScheduleCreateSerializer
 
     def get_object(self):
-        schedule = TeacherWorkHours.objects.filter(pk=self.request.data.get('pk')).first()
+        schedule = TeacherWorkHours.objects.filter(teacher=self.request.user).first()
         return schedule
 
     def update(self, request, *args, **kwargs):
         try:
-            obj = self.get_object()
-            if self.request.data.get('schedule'):
-                schedule = self.request.data.get('schedule')[0]
-                if schedule.get('daysOfWeek'):
-                    obj.weekday.clear()
-                    for days in schedule.get('daysOfWeek'):
+            TeacherWorkHoursSettings.objects.filter(teacher_work_hours=self.get_object()).delete()
+            for req in self.request.data:
+                if req.get('daysOfWeek'):
+                    for days in req.get('daysOfWeek'):
                         weekday = WeekDays.objects.filter(american_number=int(days)).first()
-                        obj.weekday.add(weekday)
-                        obj.save()
-                if schedule.get('startTime'):
-                    obj.start_time = schedule.get('startTime')
-                    obj.save()
-                if schedule.get('endTime'):
-                    obj.end_time = schedule.get('endTime')
-                    obj.save()
+                        TeacherWorkHoursSettings.objects.create(teacher_work_hours=self.get_object(), weekday=weekday,
+                                                                start_time=req.get('startTime'),
+                                                                end_time=req.get('endTime'))
+
             return Response({'message': 'Данные изменены'},
                             status=status.HTTP_200_OK)
         except Exception as e:
-            print(e)
             return Response({'message': 'Что-то пошло не так, попробуйте еще раз'},
                             status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
