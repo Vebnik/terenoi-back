@@ -127,8 +127,8 @@ class PurposeUpdateView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         try:
             purpose = GlobalUserPurpose.objects.filter(user__pk=int(self.kwargs.get('pk')),
-                                                       subject__name=self.request.query_params.get('subject'),
-                                                       purpose__pk=self.request.query_params.get('pk')).first()
+                                                       subject__name=self.request.query_params.get('subject')).first()
+            print(purpose)
             purpose_add = GlobalPurpose.objects.filter(pk=int(self.request.data.get('pk'))).first()
             if not purpose:
                 student = User.objects.filter(pk=int(self.kwargs.get('pk'))).first()
@@ -136,6 +136,7 @@ class PurposeUpdateView(generics.UpdateAPIView):
                                                  subject=purpose_add.subject,
                                                  purpose=purpose_add)
             else:
+                print('fff')
                 purpose.purpose = purpose_add
                 purpose.save()
             return Response({'message': 'Цель ученика добавлена'}, status=status.HTTP_200_OK)
