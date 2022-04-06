@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from authapp.models import User, UserStudyLanguage, StudyLanguage
+from authapp.serializers import ProfileStudentDetailSerializer, ProfileTeacherDetailSerializer
 from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParents, UserInterest, Interests, \
     LanguageInterface, ManagerToUser, ManagerRequestsPassword, TeacherAgeLearning, AgeLearning, \
     TeacherMathSpecializations, MathSpecializations, EnglishSpecializations, TeacherEnglishSpecializations, \
@@ -215,6 +216,21 @@ class ProfileView(APIView):
         else:
             serializer = UpdateStudentSerializer(user)
             return Response(serializer.data)
+
+
+class ProfileDetailRetrieveView(generics.RetrieveAPIView):
+    """Получение основных данных пользователя"""
+    permission_classes = [IsAuthenticated]
+    queryset = User.objects.all()
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get_serializer_class(self):
+        if self.get_object().is_student:
+            return ProfileStudentDetailSerializer
+        else:
+            return ProfileTeacherDetailSerializer
 
 
 class ReferralView(APIView):

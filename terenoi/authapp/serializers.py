@@ -93,6 +93,29 @@ class UserNameSerializer(serializers.ModelSerializer):
         return instance.get_avatar()
 
 
+class ProfileStudentDetailSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'avatar', 'is_student')
+
+    def get_avatar(self, instance):
+        return instance.get_avatar()
+
+
+class ProfileTeacherDetailSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'avatar', 'is_teacher')
+
+    def get_avatar(self, instance):
+        print(instance.get_avatar())
+        return instance.get_avatar()
+
+
 class VoxiAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = VoxiAccount
