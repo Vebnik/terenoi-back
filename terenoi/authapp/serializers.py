@@ -22,6 +22,10 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         re_password = attrs['re_password']
         if password != re_password:
             raise serializers.ValidationError("Пароли не совпадают!")
+        email = attrs['email']
+        user_emails = User.objects.filter(email=email)
+        if user_emails:
+            raise serializers.ValidationError("Такой эмейл уже существует")
         return attrs
 
     def save(self):
