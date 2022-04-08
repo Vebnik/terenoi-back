@@ -123,7 +123,7 @@ class HomeworkNotification(AbstractNotification):
 
 class LessonRateNotification(AbstractNotification):
     LESSON_RATE_HIGH = 'LESS_RT_HGH'
-    LESSON_RATE_LOW = 'LESS_RT_HGH'
+    LESSON_RATE_LOW = 'LESS_RT_LOW'
 
     CHOICES_NOTIFICATIONS = (
         (LESSON_RATE_HIGH, 'Урок оценен высоко'),
