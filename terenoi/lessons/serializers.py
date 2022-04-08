@@ -753,13 +753,23 @@ class StudentsTeacherSerializer(serializers.ModelSerializer):
 
 
 class StudentsActiveTeacherSerializer(serializers.ModelSerializer):
+    subjects = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = (
-            'pk', 'avatar', 'first_name', 'last_name', 'student_class')
+            'pk', 'avatar', 'first_name', 'last_name', 'student_class', 'subjects')
 
     def get_avatar(self, instance):
         return instance.get_avatar()
+
+    def get_subjects(self, instance):
+        data = []
+        teacher = self.context.get('teacher')
+        subjects = Lesson.objects.filter(student=instance, teacher=teacher).distinct('subject')
+        for sub in subjects:
+            data.append(sub.subject.name)
+        return data
 
 
 class StudentsSerializer(serializers.ModelSerializer):
@@ -814,7 +824,7 @@ class StudentsActiveSerializer(serializers.ModelSerializer):
             if inactive:
                 active_list.append(student.student)
 
-        serializer_active = StudentsActiveTeacherSerializer(active_list, many=True)
+        serializer_active = StudentsActiveTeacherSerializer(active_list, many=True, context={'teacher': instance})
 
         # subjects = Lesson.objects.filter(teacher=instance).distinct('subject')
         # for subject in subjects:
