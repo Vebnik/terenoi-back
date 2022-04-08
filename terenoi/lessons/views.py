@@ -415,11 +415,14 @@ class TeacherScheduleUpdateView(generics.UpdateAPIView):
                 if req.get('daysOfWeek'):
                     for days in req.get('daysOfWeek'):
                         for period in req.get('periods'):
-                            weekday = WeekDays.objects.filter(american_number=int(days)).first()
-                            TeacherWorkHoursSettings.objects.create(teacher_work_hours=self.get_object(),
-                                                                    weekday=weekday,
-                                                                    start_time=period.get('startTime'),
-                                                                    end_time=period.get('endTime'))
+                            if period.get('startTime') == '' or period.get('endTime') == '':
+                                pass
+                            else:
+                                weekday = WeekDays.objects.filter(american_number=int(days)).first()
+                                TeacherWorkHoursSettings.objects.create(teacher_work_hours=self.get_object(),
+                                                                        weekday=weekday,
+                                                                        start_time=period.get('startTime'),
+                                                                        end_time=period.get('endTime'))
 
             return Response({'message': 'Данные изменены'},
                             status=status.HTTP_200_OK)
