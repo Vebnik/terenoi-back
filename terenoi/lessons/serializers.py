@@ -603,7 +603,11 @@ class TeacherScheduleDetailSerializer(serializers.ModelSerializer):
 
     def get_periods(self, instance):
         data = []
-        th_work = TeacherWorkHours.objects.filter(teacher=self._user()).first()
+        if not self._user():
+            user = self.context.get('teacher')
+        else:
+            user = self._user()
+        th_work = TeacherWorkHours.objects.filter(teacher=user).first()
         weekday = WeekDays.objects.filter(american_number=instance.weekday.american_number).first()
         queryset = TeacherWorkHoursSettings.objects.filter(teacher_work_hours=th_work, weekday=weekday)
         for qr in queryset:
@@ -611,6 +615,26 @@ class TeacherScheduleDetailSerializer(serializers.ModelSerializer):
                 'startTime': qr.start_time,
                 'endTime': qr.end_time
             })
+        return data
+
+
+class TeacherScheduleNoneDetailSerializer(serializers.ModelSerializer):
+    daysOfWeek = serializers.SerializerMethodField()
+    periods = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WeekDays
+        fields = ('daysOfWeek', 'periods')
+
+    def get_daysOfWeek(self, instance):
+        data = [instance.american_number]
+        return data
+
+    def get_periods(self, instance):
+        data = [{
+            'startTime': '',
+            'endTime': ''
+        }]
         return data
 
 

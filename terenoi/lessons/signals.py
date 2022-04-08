@@ -9,9 +9,15 @@ from lessons.models import ScheduleSettings, Lesson, Schedule
 
 @receiver(post_save, sender=ScheduleSettings)
 def add_schedule_settings(sender, instance, **kwargs):
+    print(instance.shedule.student)
+    print(instance.shedule.teacher)
+    print(instance.near_lesson)
     lesson = Lesson.objects.filter(student=instance.shedule.student, teacher=instance.shedule.teacher,
                                    date=instance.near_lesson)
-    if lesson:
+
+    lesson_last = Lesson.objects.filter(student=instance.shedule.student, teacher=instance.shedule.teacher,
+                                   date=instance.last_lesson)
+    if lesson or lesson_last:
         pass
     else:
         number_list = []
@@ -25,8 +31,6 @@ def add_schedule_settings(sender, instance, **kwargs):
         for i, date in enumerate(list(date_list)):
             Lesson.objects.create(student=instance.shedule.student, teacher=instance.shedule.teacher,
                                   subject=instance.shedule.subject, date=date, schedule=instance.shedule)
-            print(i)
-            print(len_date_list - 1)
             if i == len_date_list - 1:
                 instance.last_lesson = date
                 instance.save()

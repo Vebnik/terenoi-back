@@ -2,6 +2,7 @@ import datetime
 from unicodedata import decimal
 
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, AllowAny
@@ -19,7 +20,7 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
     LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer, \
     StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer, TeacherScheduleCreateSerializer, \
-    TeacherScheduleDetailSerializer, StudentsActiveSerializer
+    TeacherScheduleDetailSerializer, StudentsActiveSerializer, TeacherScheduleNoneDetailSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
     withdrawing_cancel_lesson
 from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification
@@ -366,10 +367,17 @@ class TeacherScheduleCreateView(generics.CreateAPIView):
                 for req in self.request.data:
                     if req.get('daysOfWeek'):
                         for days in req.get('daysOfWeek'):
-                            weekday = WeekDays.objects.filter(american_number=int(days)).first()
-                            TeacherWorkHoursSettings.objects.create(teacher_work_hours=teacher_hours, weekday=weekday,
-                                                                    start_time=req.get('startTime'),
-                                                                    end_time=req.get('endTime'))
+                            for period in req.get('periods'):
+                                if period.get('startTime') == '' or period.get('endTime') == '':
+                                    weekday = WeekDays.objects.filter(american_number=int(days)).first()
+                                    TeacherWorkHoursSettings.objects.create(teacher_work_hours=teacher_hours,
+                                                                            weekday=weekday)
+                                else:
+                                    weekday = WeekDays.objects.filter(american_number=int(days)).first()
+                                    TeacherWorkHoursSettings.objects.create(teacher_work_hours=teacher_hours,
+                                                                            weekday=weekday,
+                                                                            start_time=period.get('startTime'),
+                                                                            end_time=period.get('endTime'))
 
                 return Response({'message': 'Рабочие часы добавлены'},
                                 status=status.HTTP_200_OK)
@@ -392,12 +400,21 @@ class TeacherScheduleListView(generics.ListAPIView):
 class TeacherScheduleDetailListView(generics.ListAPIView):
     """Список рабочих часов учителя"""
     permission_classes = [IsAuthenticated]
-    serializer_class = TeacherScheduleDetailSerializer
 
     def get_queryset(self):
         th_work = TeacherWorkHours.objects.filter(teacher=self.request.user).first()
         queryset = TeacherWorkHoursSettings.objects.filter(teacher_work_hours=th_work).distinct('weekday')
         return queryset
+
+    def get(self, request, *args, **kwargs):
+        if not self.get_queryset():
+            weekdays = WeekDays.objects.all()
+            serializer = TeacherScheduleNoneDetailSerializer(weekdays, many=True)
+            return JsonResponse(serializer.data, safe=False)
+        else:
+            serializer = TeacherScheduleDetailSerializer(self.get_queryset(), many=True,
+                                                         context={'teacher': self.request.user})
+            return JsonResponse(serializer.data, safe=False)
 
 
 class TeacherScheduleUpdateView(generics.UpdateAPIView):
@@ -416,7 +433,9 @@ class TeacherScheduleUpdateView(generics.UpdateAPIView):
                     for days in req.get('daysOfWeek'):
                         for period in req.get('periods'):
                             if period.get('startTime') == '' or period.get('endTime') == '':
-                                pass
+                                weekday = WeekDays.objects.filter(american_number=int(days)).first()
+                                TeacherWorkHoursSettings.objects.create(teacher_work_hours=self.get_object(),
+                                                                        weekday=weekday)
                             else:
                                 weekday = WeekDays.objects.filter(american_number=int(days)).first()
                                 TeacherWorkHoursSettings.objects.create(teacher_work_hours=self.get_object(),
