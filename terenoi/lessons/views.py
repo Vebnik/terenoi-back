@@ -19,7 +19,7 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
     LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer, \
     StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer, TeacherScheduleCreateSerializer, \
-    TeacherScheduleDetailSerializer
+    TeacherScheduleDetailSerializer, StudentsActiveSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
     withdrawing_cancel_lesson
 from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification
@@ -82,6 +82,18 @@ class StudentsListView(APIView):
     def get(self, request):
         user = self.get_object()
         serializer = StudentsSerializer(user)
+        return Response(serializer.data)
+
+
+class StudentsActiveListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request):
+        user = self.get_object()
+        serializer = StudentsActiveSerializer(user)
         return Response(serializer.data)
 
 
@@ -355,7 +367,9 @@ class TeacherScheduleCreateView(generics.CreateAPIView):
                     if req.get('daysOfWeek'):
                         for days in req.get('daysOfWeek'):
                             weekday = WeekDays.objects.filter(american_number=int(days)).first()
-                            TeacherWorkHoursSettings.objects.create(teacher_work_hours=teacher_hours, weekday=weekday, start_time=req.get('startTime'),end_time=req.get('endTime'))
+                            TeacherWorkHoursSettings.objects.create(teacher_work_hours=teacher_hours, weekday=weekday,
+                                                                    start_time=req.get('startTime'),
+                                                                    end_time=req.get('endTime'))
 
                 return Response({'message': 'Рабочие часы добавлены'},
                                 status=status.HTTP_200_OK)
@@ -373,6 +387,7 @@ class TeacherScheduleListView(generics.ListAPIView):
         th_work = TeacherWorkHours.objects.filter(teacher=self.request.user).first()
         queryset = TeacherWorkHoursSettings.objects.filter(teacher_work_hours=th_work)
         return queryset
+
 
 class TeacherScheduleDetailListView(generics.ListAPIView):
     """Список рабочих часов учителя"""
@@ -401,7 +416,8 @@ class TeacherScheduleUpdateView(generics.UpdateAPIView):
                     for days in req.get('daysOfWeek'):
                         for period in req.get('periods'):
                             weekday = WeekDays.objects.filter(american_number=int(days)).first()
-                            TeacherWorkHoursSettings.objects.create(teacher_work_hours=self.get_object(), weekday=weekday,
+                            TeacherWorkHoursSettings.objects.create(teacher_work_hours=self.get_object(),
+                                                                    weekday=weekday,
                                                                     start_time=period.get('startTime'),
                                                                     end_time=period.get('endTime'))
 

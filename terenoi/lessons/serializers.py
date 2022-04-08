@@ -752,6 +752,16 @@ class StudentsTeacherSerializer(serializers.ModelSerializer):
         return None
 
 
+class StudentsActiveTeacherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'pk', 'avatar', 'first_name', 'last_name', 'student_class')
+
+    def get_avatar(self, instance):
+        return instance.get_avatar()
+
+
 class StudentsSerializer(serializers.ModelSerializer):
     students = serializers.SerializerMethodField()
 
@@ -785,6 +795,50 @@ class StudentsSerializer(serializers.ModelSerializer):
                 'inactive_students': serializer_inactive.data
             })
         return data
+
+
+class StudentsActiveSerializer(serializers.ModelSerializer):
+    students = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('students',)
+
+    def get_students(self, instance):
+        data = []
+        all_students = Lesson.objects.filter(teacher=instance).distinct('student')
+        active_list = []
+        for student in all_students:
+            inactive = Lesson.objects.filter(teacher=instance, student=student.student,
+                                             lesson_status=Lesson.SCHEDULED).first()
+            if inactive:
+                active_list.append(student.student)
+
+        serializer_active = StudentsActiveTeacherSerializer(active_list, many=True)
+
+        # subjects = Lesson.objects.filter(teacher=instance).distinct('subject')
+        # for subject in subjects:
+        #     print(subject.subject.name)
+        #     inactive_list = []
+        #     active_list = []
+        #     all_students = Lesson.objects.filter(teacher=instance, subject=subject.subject).distinct('student')
+        #     for student in all_students:
+        #         inactive = Lesson.objects.filter(teacher=instance, subject=subject.subject, student=student.student,
+        #                                          lesson_status=Lesson.SCHEDULED).first()
+        #         if not inactive:
+        #            pass
+        #         else:
+        #             active_list.append(student.student)
+        #
+        #     serializer_active = StudentsTeacherSerializer(active_list, many=True,
+        #                                                   context={'subject': subject.subject, 'teacher': instance})
+        #     serializer_inactive = StudentsTeacherSerializer(inactive_list, many=True,
+        #                                                     context={'subject': subject.subject, 'teacher': instance})
+        #     data.append({
+        #         'subject': subject.subject.name,
+        #         'active_students': serializer_active.data,
+        #     })
+        return serializer_active.data
 
 
 class StudentDetailSerializer(serializers.ModelSerializer):
