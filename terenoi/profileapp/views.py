@@ -141,7 +141,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                             user_eng.special.add(eng_l)
                             user_eng.save()
                         else:
-                            instance = TeacherMathSpecializations.objects.create(user=self.request.user)
+                            instance = TeacherEnglishSpecializations.objects.create(user=self.request.user)
                             instance.special.add(eng_l)
                     else:
                         if user_eng:
@@ -180,7 +180,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
                             user_lang.save()
 
 
-        except AttributeError:
+        except AttributeError as e:
             return super(ProfileUpdateView, self).update(request, *args, **kwargs)
         return super(ProfileUpdateView, self).update(request, *args, **kwargs)
 
