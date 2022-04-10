@@ -583,6 +583,12 @@ class TeacherScheduleCreateSerializer(serializers.ModelSerializer):
         return instance.end_time
 
 
+class TeacherRecruitingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('is_recruiting',)
+
+
 class TeacherScheduleDetailSerializer(serializers.ModelSerializer):
     daysOfWeek = serializers.SerializerMethodField()
     periods = serializers.SerializerMethodField()

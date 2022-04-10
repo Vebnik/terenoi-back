@@ -20,7 +20,8 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
     LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer, \
     StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer, TeacherScheduleCreateSerializer, \
-    TeacherScheduleDetailSerializer, StudentsActiveSerializer, TeacherScheduleNoneDetailSerializer
+    TeacherScheduleDetailSerializer, StudentsActiveSerializer, TeacherScheduleNoneDetailSerializer, \
+    TeacherRecruitingSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
     withdrawing_cancel_lesson
 from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification
@@ -448,6 +449,24 @@ class TeacherScheduleUpdateView(generics.UpdateAPIView):
         except Exception as e:
             return Response({'message': 'Что-то пошло не так, попробуйте еще раз'},
                             status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class TeacherRecruitingListView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TeacherRecruitingSerializer
+
+    def get_object(self):
+        user = User.objects.get(username=self.request.user)
+        return user
+
+
+class TeacherRecruitingUpdateView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TeacherRecruitingSerializer
+
+    def get_object(self):
+        user = User.objects.get(username=self.request.user)
+        return user
 
 
 class LessonMaterialsRetrieveView(generics.RetrieveAPIView):
