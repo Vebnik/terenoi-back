@@ -163,6 +163,7 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
     level = serializers.SerializerMethodField()
     language = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
+    language_interface = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -182,6 +183,7 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
             'math_special',
             'english_special',
             'level',
+            'language_interface',
             'is_teacher',
             'subjects',
         )
@@ -223,6 +225,11 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
 
     def get_avatar(self, instance):
         return instance.get_avatar()
+
+    def get_language_interface(self, instance):
+        language_interface = LanguageInterface.objects.filter(user=instance).first()
+        serializer = LanguageInterfaceSerializer(language_interface)
+        return serializer.data
 
 
 class EnglishLevelSerializer(serializers.ModelSerializer):
