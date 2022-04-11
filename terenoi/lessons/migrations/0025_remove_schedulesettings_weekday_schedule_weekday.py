@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('settings', '0010_fill_weekdays'),
+        ('settings', '0009_weekdays'),
         ('lessons', '0024_rename_near_meet_schedulesettings_near_lesson_and_more'),
     ]
 
