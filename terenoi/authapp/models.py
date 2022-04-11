@@ -64,6 +64,7 @@ class User(AbstractUser):
     english_level = models.CharField(max_length=50, choices=LEVEL_CHOICES, default=BEGINNER,
                                      verbose_name='Уровень английского у ученика')
     student_class = models.CharField(max_length=50, verbose_name='Класс ученика', **NULLABLE)
+    is_recruiting = models.BooleanField(default=False, verbose_name='Набор открыт')
     is_pass_generation = models.BooleanField(default=False, verbose_name='Сгенерировать пароль')
     is_verified = models.BooleanField(default=False, verbose_name='Верефицирован')
     is_online = models.BooleanField(default=False, verbose_name='Онлайн')

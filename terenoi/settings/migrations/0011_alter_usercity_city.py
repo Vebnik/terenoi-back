@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('settings', '0010_fill_weekdays'),
+        ('settings', '0009_weekdays'),
     ]
 
     operations = [
