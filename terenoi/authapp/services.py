@@ -3,6 +3,7 @@ import random
 
 from django.conf import settings
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from rest_framework_simplejwt.tokens import RefreshToken
 from voximplant.apiclient import VoximplantAPI, VoximplantException
 import authapp.models
@@ -23,62 +24,127 @@ def generatePassword():
 def send_verify_email(user):
     token = RefreshToken.for_user(user).access_token
     relative_link = 'verify-email/'
+    small_url = f'{settings.BASE_URL}/{relative_link}'
     url = f'{settings.BASE_URL}/{relative_link}?token={token}'
-    # context = {
-    #     'static_url': settings.BACK_URL + settings.STATIC_URL,
-    #     'front_url': settings.FRONT_URL,
-    #     'url': url,
-    #     'user': user,
-    # }
-    body = f'Для подтверждения учетной записи {user.username}  перейдите по ссылке: \n{url}'
+    context = {
+        'static_url': settings.BACK_URL + settings.STATIC_URL,
+        'front_url': settings.FRONT_URL,
+        'url': url,
+        'user': user,
+        'email': settings.EMAIL_HOST_USER,
+        'small_url': small_url
+    }
+    body = render_to_string('emails/mail-verify-email.html', context)
     subject = 'Верификация почты'
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
 def send_generate_data(user, password):
-    body = f'Логин для входа:{user.email}\n  ' \
-           f'Пароль для входа:{password}'
+    context = {
+        'static_url': settings.BACK_URL + settings.STATIC_URL,
+        'front_url': settings.FRONT_URL,
+        'user': user,
+        'password': password
+    }
+    body = render_to_string('emails/generate_new_data.html', context)
     subject = 'Данные для входа'
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
-def send_notifications(user, subject, body):
+def send_notifications(user, subject, text, lesson_date=None):
+    context = {
+        'static_url': settings.BACK_URL + settings.STATIC_URL,
+        'front_url': settings.FRONT_URL,
+        'user': user,
+        'body': text,
+        'title': subject,
+        'lesson_date': lesson_date
+    }
+    body = render_to_string('emails/notification_email.html', context)
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
 def send_transfer_lesson(user, lesson):
-    body = f'Пользователь {user.username} хочет перенести урок {lesson}'
+    text = f'Пользователь {user.first_name} {user.last_name} хочет перенести урок {lesson.pk}'
     subject = 'Перенос урока'
+    context = {
+        'static_url': settings.BACK_URL + settings.STATIC_URL,
+        'front_url': settings.FRONT_URL,
+        'user': user,
+        'body': text,
+        'title': subject,
+    }
+    body = render_to_string('emails/transfer_email.html', context)
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
 def send_cancel_lesson(user, lesson):
-    body = f'Пользователь {user.username} хочет отменить урок {lesson}'
+    text = f'Пользователь {user.first_name} {user.last_name} хочет отменить урок {lesson.pk}'
     subject = 'Отмена урока'
+    context = {
+        'static_url': settings.BACK_URL + settings.STATIC_URL,
+        'front_url': settings.FRONT_URL,
+        'user': user,
+        'body': text,
+        'title': subject,
+    }
+    body = render_to_string('emails/transfer_email.html', context)
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
 def send_accept_transfer_lesson(user, lesson):
-    body = f'Пользователь {user.username} подтвердил перенос урока {lesson}'
+    text = f'Пользователь {user.first_name} {user.last_name} подтвердил перенос урока {lesson.pk}'
     subject = 'Подтверждение переноса'
+    context = {
+        'static_url': settings.BACK_URL + settings.STATIC_URL,
+        'front_url': settings.FRONT_URL,
+        'user': user,
+        'body': text,
+        'title': subject,
+    }
+    body = render_to_string('emails/transfer_email.html', context)
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
 def send_accept_cancel_lesson(user, lesson):
-    body = f'Пользователь {user.username} подтвердил отмену урока {lesson}'
+    text = f'Пользователь {user.first_name} {user.last_name} подтвердил отмену урока {lesson.pk}'
     subject = 'Подтверждение отмены'
+    context = {
+        'static_url': settings.BACK_URL + settings.STATIC_URL,
+        'front_url': settings.FRONT_URL,
+        'user': user,
+        'body': text,
+        'title': subject,
+    }
+    body = render_to_string('emails/transfer_email.html', context)
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
 def send_reject_transfer_lesson(user, lesson):
-    body = f'Пользователь {user.username}  отклонил перенос урока {lesson}'
+    text = f'Пользователь {user.username}  отклонил перенос урока {lesson.pk}'
     subject = 'Отклонение переноса'
+    context = {
+        'static_url': settings.BACK_URL + settings.STATIC_URL,
+        'front_url': settings.FRONT_URL,
+        'user': user,
+        'body': text,
+        'title': subject,
+    }
+    body = render_to_string('emails/transfer_email.html', context)
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 
 def send_reject_cancel_lesson(user, lesson):
-    body = f'Пользователь {user.username}  отклонил отмену урока {lesson}'
+    text = f'Пользователь {user.username}  отклонил отмену урока {lesson.pk}'
     subject = 'Отклонение отмены'
+    context = {
+        'static_url': settings.BACK_URL + settings.STATIC_URL,
+        'front_url': settings.FRONT_URL,
+        'user': user,
+        'body': text,
+        'title': subject,
+    }
+    body = render_to_string('emails/transfer_email.html', context)
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
 
 

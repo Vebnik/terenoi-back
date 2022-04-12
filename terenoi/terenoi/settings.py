@@ -71,7 +71,7 @@ ROOT_URLCONF = 'terenoi.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -202,12 +202,6 @@ BASE_URL = os.getenv('BASE_URL')
 BACK_URL = os.getenv('BACK_URL')
 FRONT_URL = os.getenv('FRONT_URL')
 
-if ENV_TYPE == 'local':
-    STATICFILES_DIRS = (
-        BASE_DIR / 'static',
-    )
-else:
-    STATIC_ROOT = BASE_DIR / 'static'
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True

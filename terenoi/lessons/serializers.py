@@ -13,7 +13,7 @@ from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRe
 from lessons.services import current_date
 from profileapp.models import TeacherSubject, Subject, GlobalUserPurpose
 from profileapp.serializers import SubjectSerializer, UpdateStudentSerializer
-from settings.models import WeekDays
+from settings.models import WeekDays, DeadlineSettings
 
 
 class UserClassesSerializer(serializers.ModelSerializer):
@@ -76,13 +76,14 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     homeworks = serializers.SerializerMethodField()
     record_link = serializers.SerializerMethodField()
     rate = serializers.SerializerMethodField()
+    deadline_days = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
         fields = (
             'pk', 'teacher', 'teacher_avatar', 'student', 'topic', 'subject', 'materials', 'deadline', 'homeworks',
             'current_date',
-            'teacher_status', 'student_status', 'lesson_status', 'record_link', 'rate')
+            'teacher_status', 'student_status', 'lesson_status', 'record_link', 'rate', 'deadline_days')
 
     def _user(self):
         request = self.context.get('request', None)
@@ -134,6 +135,16 @@ class UserLessonsSerializer(serializers.ModelSerializer):
 
     def get_teacher_avatar(self, instance):
         return instance.teacher.get_avatar()
+
+    def get_deadline_days(self, instance):
+        if not instance.deadline:
+            days = DeadlineSettings.objects.filter(subject=instance.subject).first().day_count
+            return days
+        elif instance.deadline:
+            days = instance.deadline.date() - instance.date.date()
+            return days.days
+        else:
+            return None
 
 
 class HomepageTeacherSerializer(serializers.ModelSerializer):
