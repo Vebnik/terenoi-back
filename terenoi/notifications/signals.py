@@ -28,26 +28,27 @@ def notifications_handler(sender, instance, **kwargs):
                 }
             )
         else:
+            lesson = Lesson.objects.filter(pk=instance.lesson_id).first()
             if instance.type == Notification.LESSON_SCHEDULED:
                 subject = 'Урок назначен'
-                body = f'Урок назначен на {lesson_date}'
-                send_notifications(instance.to_user, subject, body)
+                body = f'Урок назначен на '
+                send_notifications(instance.to_user, subject, body, lesson_date)
             elif instance.type == Notification.LESSON_COMING_SOON:
                 subject = 'Урок скоро состоится'
-                body = f'Урок состоится в  {lesson_date}'
-                send_notifications(instance.to_user, subject, body)
+                body = f'Урок состоится в '
+                send_notifications(instance.to_user, subject, body, lesson_date)
             elif instance.type == Notification.LESSON_PROGRESS:
                 subject = 'Урок начинается'
-                body = f'Урок начнется  в {lesson_date}'
-                send_notifications(instance.to_user, subject, body)
+                body = f'Урок начнется  в '
+                send_notifications(instance.to_user, subject, body, lesson_date)
             elif instance.type == Notification.LESSON_CANCEL:
                 subject = 'Урок отменен'
-                body = f'Урок отменен'
-                send_notifications(instance.to_user, subject, body)
+                body = f'Урок отменен '
+                send_notifications(instance.to_user, subject, body, lesson_date)
             elif instance.type == Notification.LESSON_REQUEST_RESCHEDULED:
                 if instance.to_user.is_teacher:
                     subject = 'Запрос на перенос урока'
-                    body = f'Ученик хочет перенести урок'
+                    body = f'Ученик {lesson.student.first_name} {lesson.student.last_name} хочет перенести урок {lesson.lesson_number}'
                     send_notifications(instance.to_user, subject, body)
             elif instance.type == Notification.LESSON_RESCHEDULED:
                 subject = 'Урок перенесен'
@@ -56,7 +57,7 @@ def notifications_handler(sender, instance, **kwargs):
             elif instance.type == Notification.LESSON_REQUEST_CANCEL:
                 if instance.to_user.is_teacher:
                     subject = 'Запрос на отмену урока'
-                    body = f'Ученик хочет отменить урок'
+                    body = f'Ученик {lesson.student.first_name} {lesson.student.last_name} хочет отменить урок {lesson.lesson_number}'
                     send_notifications(instance.to_user, subject, body)
 
 
@@ -104,8 +105,8 @@ def homework_notifications_handler(sender, instance, **kwargs):
                 body = f'Домашнее задание добавлено'
                 send_notifications(instance.to_user, subject, body)
             elif instance.type == HomeworkNotification.HOMEWORK_CHECK:
-                subject = 'Домащнее задание проверено'
-                body = f'Домащнее задание проверено'
+                subject = 'Домашнее задание проверено'
+                body = f'Домашнее задание проверено'
                 send_notifications(instance.to_user, subject, body)
 
 
