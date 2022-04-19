@@ -1,13 +1,16 @@
 import hashlib
 import random
 
+import requests
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from rest_framework_simplejwt.tokens import RefreshToken
 from voximplant.apiclient import VoximplantAPI, VoximplantException
-import authapp.models
+import authapp
+import settings as set_app
 from authapp.decorators import create_voxi_file
+import profileapp
 
 
 def generatePassword():
@@ -174,3 +177,126 @@ def add_voxiaccount(user, username, display_name):
     authapp.models.VoxiAccount.objects.create(user=user, voxi_username=username, voxi_display_name=display_name,
                                               voxi_password=password)
     create_voxi_account(username=username, display_name=display_name, password=password)
+
+
+def auth_alfa_account():
+    data = {
+        'email': settings.ALFA_EMAIL,
+        'api_key': settings.ALFA_API_KEY
+    }
+    url = f'{settings.ALFA_HOST_NAME}v2api/auth/login'
+    response = requests.post(url=url, json=data)
+    token = response.json().get('token')
+    return token
+
+
+def get_students_alfa(token):
+    headers = {
+        'X-ALFACRM-TOKEN': token
+    }
+    data = {
+        'study_status_id': 1
+    }
+    url = f'{settings.ALFA_HOST_NAME}v2api/{1}/customer/index'
+    response = requests.post(url=url, headers=headers, json=data)
+    student_list = response.json().get('items')
+    for student in student_list:
+        alfa_student = authapp.models.User.objects.filter(alfa_id=student.get("id"))
+        if alfa_student:
+            pass
+        else:
+            username = f'student_alfa_{student.get("id")}'
+            name = student.get('name').split(' ')[:2]
+            alfa_id = student.get("id")
+            first_name = name[1]
+            last_name = name[0]
+            student_phone = None
+            phones = student.get('phone')
+            b_date = student.get('b_date').split(' ')[0]
+            if phones:
+                for index, phone in enumerate(phones):
+                    if index == 0:
+                        student_phone = phone
+                        phones.remove(student_phone)
+                user = authapp.models.User.objects.create_user(username=username, first_name=first_name,
+                                                               last_name=last_name,
+                                                               phone=student_phone, password='qwe123rty456',
+                                                               birth_date=b_date,
+                                                               is_crm=True, alfa_id=alfa_id)
+            else:
+                user = authapp.models.User.objects.create_user(username=username, first_name=first_name,
+                                                               last_name=last_name,
+                                                               password='qwe123rty456',
+                                                               birth_date=b_date,
+                                                               is_crm=True, alfa_id=alfa_id)
+            if phones:
+                for phone in phones:
+                    profileapp.models.UserParents.objects.create(user=user, parent_phone=phone)
+
+
+def auth_amo_account():
+    refresh_token = set_app.models.AmoCRMToken.objects.all()
+    amo_token = str(settings.AMO_TOKEN)
+    if not refresh_token:
+        data = {
+            "client_id": settings.AMO_ID,
+            "client_secret": settings.AMO_SECRET_KEY,
+            "grant_type": "authorization_code",
+            "code": amo_token,
+            "redirect_uri": settings.AMO_URL
+        }
+        res = requests.post(f'{settings.AMO_HOST_NAME}oauth2/access_token', data=data)
+        set_app.models.AmoCRMToken.objects.create(refresh_token=res.json().get('refresh_token'))
+        return res.json().get('access_token')
+    else:
+        ref_token = set_app.models.AmoCRMToken.objects.all().first().refresh_token
+        data = {
+            "client_id": settings.AMO_ID,
+            "client_secret": settings.AMO_SECRET_KEY,
+            "grant_type": "refresh_token",
+            "refresh_token": ref_token,
+            "redirect_uri": settings.AMO_URL
+        }
+        res = requests.post(f'{settings.AMO_HOST_NAME}oauth2/access_token', data=data)
+        set_app.models.AmoCRMToken.objects.create(refresh_token=res.json().get('refresh_token'))
+        return res.json().get('access_token')
+
+        # headers = {
+        #     'Authorization': f'Bearer {token}'
+        # }
+        # res_1 = requests.get('https://sorulai.amocrm.ru/api/v4/leads', headers=headers)
+        # print(res_1.json())
+
+
+def get_amo_leads(token):
+    headers = {
+        'Authorization': f'Bearer {token}'
+    }
+    data = {
+        'with': {
+            'contacts': True
+        }
+    }
+    res = requests.get(f'{settings.AMO_HOST_NAME}api/v4/leads', headers=headers, params=data)
+    print('leads')
+    print(res.json())
+
+
+def add_func_customer(token):
+    headers = {
+        'Authorization': f'Bearer {token}'
+    }
+    data = {
+        "mode": "segments",
+        "is_enabled": True
+    }
+    res = requests.patch(f'{settings.AMO_HOST_NAME}api/v4/customers/mode', headers=headers, json=data)
+
+
+def get_amo_customers(token):
+    headers = {
+        'Authorization': f'Bearer {token}'
+    }
+    res = requests.get(f'{settings.AMO_HOST_NAME}api/v4/customers', headers=headers)
+    print('customers')
+    print(res.json())

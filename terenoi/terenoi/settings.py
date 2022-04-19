@@ -202,7 +202,6 @@ BASE_URL = os.getenv('BASE_URL')
 BACK_URL = os.getenv('BACK_URL')
 FRONT_URL = os.getenv('FRONT_URL')
 
-
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = [
@@ -246,3 +245,13 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+ALFA_EMAIL = os.getenv('ALFA_EMAIL')
+ALFA_API_KEY = os.getenv('ALFA_API_KEY')
+ALFA_HOST_NAME = os.getenv('ALFA_HOST_NAME')
+
+AMO_ID = os.getenv('AMO_ID')
+AMO_SECRET_KEY = os.getenv('AMO_SECRET_KEY')
+AMO_TOKEN = os.getenv('AMO_TOKEN')
+AMO_URL = os.getenv('AMO_URL')
+AMO_HOST_NAME = os.getenv('AMO_HOST_NAME')

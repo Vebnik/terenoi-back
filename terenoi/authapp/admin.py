@@ -1,17 +1,37 @@
 from django.contrib import admin
 from django import forms
+from django.http import HttpResponseRedirect
+from django.urls import path
 
 from authapp.models import User, VoxiAccount, UserStudyLanguage, StudyLanguage
-from authapp.services import generatePassword, send_generate_data
+from authapp.services import generatePassword, send_generate_data, auth_alfa_account, get_students_alfa, \
+    auth_amo_account, get_amo_leads, get_amo_customers, add_func_customer
 from profileapp.models import ManagerToUser
 from settings.models import GeneralContacts
 
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
+    change_list_template = "admin/model_change_list.html"
     list_display = ('username', 'email', 'is_staff', 'is_active', 'last_login', 'is_teacher', 'is_student')
-    list_filter = ('is_staff', 'is_teacher', 'is_student')
+    list_filter = ('is_staff', 'is_teacher', 'is_student', 'is_crm')
     search_fields = ['username', 'first_name', 'last_name']
+
+    def get_urls(self):
+        urls = super(UserAdmin, self).get_urls()
+        custom_urls = [
+            path('import/', self.process_import, name='process_import'), ]
+        return custom_urls + urls
+
+    def process_import(self, request):
+        token = auth_alfa_account()
+        get_students_alfa(token)
+        amo_token = auth_amo_account()
+        get_amo_leads(amo_token)
+        add_func_customer(amo_token)
+        get_amo_customers(amo_token)
+
+        return HttpResponseRedirect("../")
 
     def get_changeform_initial_data(self, request):
         return {'password': 111111111}

@@ -72,7 +72,7 @@ class ManagerToUser(models.Model):
 class UserParents(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь',
                              limit_choices_to={'is_student': True})
-    full_name = models.CharField(verbose_name='ФИО Родителя', max_length=255)
+    full_name = models.CharField(verbose_name='ФИО Родителя', max_length=255, **NULLABLE)
     parent_phone = models.CharField(max_length=25, verbose_name='Телефон родителя', **NULLABLE)
     parent_email = models.CharField(max_length=100, verbose_name='Email родителя', **NULLABLE)
 

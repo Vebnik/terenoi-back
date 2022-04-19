@@ -120,3 +120,19 @@ class GeneralContacts(models.Model):
         else:
             GeneralContacts.objects.get(phone=self.phone).delete()
             super(GeneralContacts, self).save(*args, **kwargs)
+
+
+class AmoCRMToken(models.Model):
+    refresh_token = models.TextField(verbose_name='Токен для доступа', **NULLABLE)
+
+    class Meta:
+        verbose_name = 'Токены дооступа к AmoCRM'
+        verbose_name_plural = 'Токен дооступа к AmoCRM'
+
+    def save(self, *args, **kwargs):
+        data = AmoCRMToken.objects.all()
+        if not data:
+            super(AmoCRMToken, self).save(*args, **kwargs)
+        else:
+            AmoCRMToken.objects.all().delete()
+            super(AmoCRMToken, self).save(*args, **kwargs)
