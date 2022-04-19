@@ -138,8 +138,10 @@ class UserLessonsSerializer(serializers.ModelSerializer):
 
     def get_deadline_days(self, instance):
         if not instance.deadline:
-            days = DeadlineSettings.objects.filter(subject=instance.subject).first().day_count
-            return days
+            days = DeadlineSettings.objects.filter(subject=instance.subject).first()
+            if not days:
+                return None
+            return days.day_count
         elif instance.deadline:
             days = instance.deadline.date() - instance.date.date()
             return days.days

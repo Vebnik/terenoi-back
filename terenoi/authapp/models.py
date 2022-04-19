@@ -64,10 +64,12 @@ class User(AbstractUser):
     english_level = models.CharField(max_length=50, choices=LEVEL_CHOICES, default=BEGINNER,
                                      verbose_name='Уровень английского у ученика')
     student_class = models.CharField(max_length=50, verbose_name='Класс ученика', **NULLABLE)
+    alfa_id = models.BigIntegerField(verbose_name='Номер пользователя из alfa/amo crm',**NULLABLE)
     is_recruiting = models.BooleanField(default=False, verbose_name='Набор открыт')
     is_pass_generation = models.BooleanField(default=False, verbose_name='Сгенерировать пароль')
     is_verified = models.BooleanField(default=False, verbose_name='Верефицирован')
     is_online = models.BooleanField(default=False, verbose_name='Онлайн')
+    is_crm = models.BooleanField(default=False, verbose_name='Из alfa/amo crm')
 
     class Meta:
         verbose_name = 'Пользователь'
