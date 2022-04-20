@@ -51,24 +51,17 @@ class UserAllNotificationsUpdateView(generics.UpdateAPIView):
     serializer_class = UserNotificationsAllUpdate
     queryset = Notification.objects.all()
 
-    def patch(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         queryset_homework = HomeworkNotification.objects.filter(
             (Q(to_user=request.user) & Q(is_read=False))).select_related()
         queryset_rate = LessonRateNotification.objects.filter(
             (Q(to_user=request.user) & Q(is_read=False))).select_related()
-        queryset = Notification.objects.filter(to_user=request.user).select_related()
-        queryset_all = queryset.union(queryset_homework, queryset_rate)
-        queryset_all.update(is_read=True)
-        return Response(status=status.HTTP_200_OK)
-
-    def put(self, request, *args, **kwargs):
-        queryset_homework = HomeworkNotification.objects.filter(
-            (Q(to_user=request.user) & Q(is_read=False))).select_related()
-        queryset_rate = LessonRateNotification.objects.filter(
-            (Q(to_user=request.user) & Q(is_read=False))).select_related()
-        queryset = Notification.objects.filter(to_user=request.user).select_related()
-        queryset_all = queryset.union(queryset_homework, queryset_rate)
-        queryset_all.update(is_read=True)
+        queryset_payment = PaymentNotification.objects.filter((Q(to_user=request.user) & Q(is_read=False))).select_related()
+        queryset = Notification.objects.filter(Q(to_user=request.user) & Q(is_read=False)).select_related()
+        queryset_homework.update(is_read=True)
+        queryset_rate.update(is_read=True)
+        queryset_payment.update(is_read=True)
+        queryset.update(is_read=True)
         return Response(status=status.HTTP_200_OK)
 
 
