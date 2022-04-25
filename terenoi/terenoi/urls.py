@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/finance/', include('finance.urls', namespace='finance')),
     path('api/settings/', include('settings.urls', namespace='settings')),
     path('api/notifications/', include('notifications.urls', namespace='notifications')),
+    path('api/amocrm/', include('AmoCRM.urls', namespace='amo')),
     path('', RedirectView.as_view(url='admin/', permanent=False), name='index'),
 
 ]

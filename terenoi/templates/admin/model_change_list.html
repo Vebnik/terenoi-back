@@ -2,7 +2,15 @@
 {% block object-tools %}
   <form action="import/" method="POST">
     {% csrf_token %}
-    <input type="submit" value="Импорт" />
+    <input type="submit" value="Импорт учеников из Alfa" />
+  </form>
+     <form action="import-leads/" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="Импорт сделок" />
+  </form>
+     <form action="import-customers/" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="Импорт покупателей" />
   </form>
     {{ block.super }}
 {% endblock %}
