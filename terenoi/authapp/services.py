@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import random
 
@@ -9,11 +10,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from voximplant.apiclient import VoximplantAPI, VoximplantException
 import authapp
 import settings as set_app
+import AmoCRM
 from authapp.decorators import create_voxi_file
 import profileapp
 
 
-def generatePassword():
+def generate_password():
     chars = 'abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
     length = 8
     promo = ''
@@ -211,6 +213,7 @@ def get_students_alfa(token):
             first_name = name[1]
             last_name = name[0]
             student_phone = None
+            parent = student.get('legal_name')
             phones = student.get('phone')
             b_date = student.get('b_date').split(' ')[0]
             if phones:
@@ -229,9 +232,15 @@ def get_students_alfa(token):
                                                                password='qwe123rty456',
                                                                birth_date=b_date,
                                                                is_crm=True, alfa_id=alfa_id)
+
             if phones:
+                count = 0
                 for phone in phones:
-                    profileapp.models.UserParents.objects.create(user=user, parent_phone=phone)
+                    if parent and count == 0:
+                        profileapp.models.UserParents.objects.create(user=user, parent_phone=phone, full_name=parent)
+                        count += 1
+                    else:
+                        profileapp.models.UserParents.objects.create(user=user, parent_phone=phone)
 
 
 def auth_amo_account():
@@ -261,12 +270,6 @@ def auth_amo_account():
         set_app.models.AmoCRMToken.objects.create(refresh_token=res.json().get('refresh_token'))
         return res.json().get('access_token')
 
-        # headers = {
-        #     'Authorization': f'Bearer {token}'
-        # }
-        # res_1 = requests.get('https://sorulai.amocrm.ru/api/v4/leads', headers=headers)
-        # print(res_1.json())
-
 
 def get_amo_leads(token):
     headers = {
@@ -278,8 +281,67 @@ def get_amo_leads(token):
         }
     }
     res = requests.get(f'{settings.AMO_HOST_NAME}api/v4/leads', headers=headers, params=data)
-    print('leads')
-    print(res.json())
+    while True:
+        try:
+            leads = res.json().get('_embedded').get('leads')
+            for i in leads:
+                close_lead = i.get('closed_at')
+                if not close_lead:
+                    client = None
+                    try:
+                        id_contacst = i.get('_embedded').get('contacts')[0].get('id')
+                        if id_contacst:
+                            import time
+                            time.sleep(1)
+                            res_contacts = requests.get(f'{settings.AMO_HOST_NAME}api/v4/contacts/{id_contacst}',
+                                                        headers=headers)
+                            data_contacts = res_contacts.json()
+                            client = AmoCRM.models.Clients.objects.filter(amo_id=int(data_contacts.get('id')))
+                            if not client:
+                                custom_field = data_contacts.get('custom_fields_values')
+                                if custom_field:
+                                    for j in custom_field:
+                                        if j.get('field_name') == 'Телефон':
+                                            phone = j.get('values')[0].get('value')
+                                            if phone:
+                                                client = AmoCRM.models.Clients.objects.create(
+                                                    amo_id=data_contacts.get('id'),
+                                                    name=data_contacts.get('name'),
+                                                    first_name=data_contacts.get('first_name'),
+                                                    last_name=data_contacts.get('last_name'),
+                                                    phone=phone)
+                                else:
+                                    client = AmoCRM.models.Clients.objects.create(amo_id=data_contacts.get('id'),
+                                                                                  name=data_contacts.get('name'),
+                                                                                  first_name=data_contacts.get(
+                                                                                      'first_name'),
+                                                                                  last_name=data_contacts.get('last_name'))
+                    except Exception:
+                        pass
+
+                    lead = AmoCRM.models.Leads.objects.filter(amo_id=int(i.get('id')))
+                    if not lead:
+                        funnel_status = AmoCRM.models.FunnelStatus.objects.filter(
+                            id_amo_funnel_status=int(i.get('status_id'))).first()
+                        funnel = AmoCRM.models.Funnel.objects.filter(id_amo_funnel=int(i.get('pipeline_id'))).first()
+                        ts = int(i.get('created_at'))
+                        create = datetime.datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+                        ks = int(i.get('updated_at'))
+                        update = datetime.datetime.utcfromtimestamp(ks).strftime('%Y-%m-%d %H:%M:%S')
+                        AmoCRM.models.Leads.objects.create(amo_id=int(i.get('id')), name=i.get('name'),
+                                                           price=int(i.get('price')),
+                                                           funnel=funnel,
+                                                           funnel_status=funnel_status, created_at=create,
+                                                           updated_at=update,
+                                                           client=client)
+            next_page = res.json().get('_links').get('next').get('href')
+            if next_page:
+                res = requests.get(f'{next_page}', headers=headers, params=data)
+            else:
+                break
+        except Exception:
+            break
+
 
 
 def add_func_customer(token):
@@ -287,7 +349,7 @@ def add_func_customer(token):
         'Authorization': f'Bearer {token}'
     }
     data = {
-        "mode": "segments",
+        "mode": "periodicity",
         "is_enabled": True
     }
     res = requests.patch(f'{settings.AMO_HOST_NAME}api/v4/customers/mode', headers=headers, json=data)
@@ -297,6 +359,109 @@ def get_amo_customers(token):
     headers = {
         'Authorization': f'Bearer {token}'
     }
-    res = requests.get(f'{settings.AMO_HOST_NAME}api/v4/customers', headers=headers)
-    print('customers')
-    print(res.json())
+    data = {
+        'with': {
+            'contacts': True
+        }
+    }
+    res = requests.get(f'{settings.AMO_HOST_NAME}api/v4/customers', headers=headers, params=data)
+    while True:
+        try:
+            customers = res.json().get('_embedded').get('customers')
+            for customer in customers:
+                customer_custom_fields = customer.get('custom_fields_values')
+                user = None
+                client = None
+                if customer_custom_fields:
+                    for i in customer_custom_fields:
+                        if i.get('field_name') == 'Имя ученика':
+                            student_name_json = i.get('values')[0].get('value')
+                            try:
+                                student_first_name = student_name_json.split()[:2][1]
+                                student_last_name = student_name_json.split()[:2][0]
+                                user = authapp.models.User.objects.filter(first_name=student_first_name,
+                                                                          last_name=student_last_name).first()
+                            except Exception:
+                                pass
+
+                cust = AmoCRM.models.Customers.objects.filter(amo_id=customer.get('id'))
+                if not cust:
+                    next_date = datetime.datetime.utcfromtimestamp(int(customer.get('next_date'))).strftime(
+                        '%Y-%m-%d %H:%M:%S')
+                    create = datetime.datetime.utcfromtimestamp(int(customer.get('created_at'))).strftime(
+                        '%Y-%m-%d %H:%M:%S')
+                    update = datetime.datetime.utcfromtimestamp(int(customer.get('updated_at'))).strftime(
+                        '%Y-%m-%d %H:%M:%S')
+                    status = AmoCRM.models.CustomerStatus.objects.filter(id_amo=customer.get('status_id')).first()
+                    try:
+                        client = AmoCRM.models.Clients.objects.filter(
+                            amo_id=customer.get('_embedded').get('contacts')[0].get('id')).first()
+                        if not client:
+                            id = customer.get('_embedded').get('contacts')[0].get('id')
+                            import time
+                            time.sleep(1)
+                            res_contacts = requests.get(f'{settings.AMO_HOST_NAME}api/v4/contacts/{id}',
+                                                        headers=headers)
+                            data_contacts = res_contacts.json()
+                            custom_field = data_contacts.get('custom_fields_values')
+                            phone = None
+                            if custom_field:
+                                for j in custom_field:
+                                    if j.get('field_name') == 'Телефон':
+                                        phone = j.get('values')[0].get('value')
+                            client = AmoCRM.models.Clients.objects.create(
+                                amo_id=data_contacts.get('id'),
+                                name=data_contacts.get('name'),
+                                first_name=data_contacts.get('first_name'),
+                                last_name=data_contacts.get('last_name'),
+                                phone=phone)
+
+                    except Exception:
+                        pass
+
+                    AmoCRM.models.Customers.objects.create(amo_id=customer.get('id'), name=customer.get('name'),
+                                                           price=customer.get('next_price'), next_date=next_date,
+                                                           status=status,
+                                                           created_at=create, updated_at=update, client=client,
+                                                           user=user)
+
+            next_page = res.json().get('_links').get('next').get('href')
+            if next_page:
+                res = requests.get(f'{next_page}', headers=headers, params=data)
+            else:
+                break
+        except Exception:
+            break
+
+
+def get_funnel(token):
+    headers = {
+        'Authorization': f'Bearer {token}'
+    }
+    res = requests.get(f'{settings.AMO_HOST_NAME}api/v4/leads/pipelines', headers=headers)
+    response = res.json().get('_embedded').get('pipelines')
+
+    for item in response:
+        funnel = AmoCRM.models.Funnel.objects.filter(id_amo_funnel=item.get('id'))
+        if not funnel:
+            funnel = AmoCRM.models.Funnel.objects.create(id_amo_funnel=item.get('id'), name=item.get('name'),
+                                                         is_main=item.get('is_main'))
+            for i in item.items():
+                if i[0] == '_embedded':
+                    statuses = i[1].get('statuses')
+                    for status in statuses:
+                        AmoCRM.models.FunnelStatus.objects.create(id_amo_funnel_status=status.get('id'),
+                                                                  name=status.get('name'),
+                                                                  funnel=funnel)
+
+
+def get_customer_status(token):
+    headers = {
+        'Authorization': f'Bearer {token}'
+    }
+    res = requests.get(f'{settings.AMO_HOST_NAME}api/v4/customers/statuses', headers=headers)
+    response = res.json().get('_embedded').get('statuses')
+    for item in response:
+        status = AmoCRM.models.CustomerStatus.objects.filter(id_amo=item.get('id'))
+        if not status:
+            AmoCRM.models.CustomerStatus.objects.create(id_amo=item.get('id'), name=item.get('name'))

@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     'lessons',
     'notifications',
     'profileapp',
-    'settings'
+    'settings',
+    'AmoCRM'
 ]
 
 MIDDLEWARE = [
