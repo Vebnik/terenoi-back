@@ -181,6 +181,48 @@ def add_voxiaccount(user, username, display_name):
     create_voxi_account(username=username, display_name=display_name, password=password)
 
 
+def slugify(string):
+    letters = {
+        "а": "a",
+        "б": "b",
+        "в": "v",
+        "г": "g",
+        "д": "d",
+        "е": "e",
+        "ё": "e",
+        "ж": "j",
+        "з": "z",
+        "и": "i",
+        "й": "y",
+        "к": "k",
+        "л": "l",
+        "м": "m",
+        "н": "n",
+        "о": "o",
+        "п": "p",
+        "р": "r",
+        "с": "s",
+        "т": "t",
+        "у": "u",
+        "ф": "f",
+        "х": "h",
+        "ц": "ts",
+        "ч": "ch",
+        "ш": "sh",
+        "щ": "sch",
+        "ъ": "y",
+        "ы": "yi",
+        "ь": "",
+        "э": "e",
+        "ю": "yu",
+        "я": "ya"
+    }
+    for letter in string:
+        if letter in letters:
+            string = string.replace(letter, letters[letter])
+    return string
+
+
 def auth_alfa_account():
     data = {
         'email': settings.ALFA_EMAIL,
@@ -207,8 +249,13 @@ def get_students_alfa(token):
         if alfa_student:
             pass
         else:
-            username = f'student_alfa_{student.get("id")}'
+            print(student)
             name = student.get('name').split(' ')[:2]
+            name_list = []
+            for item in name:
+                k = slugify(item.lower())
+                name_list.append(k)
+            username = f'{name_list[1][0]}.{name_list[0]}'
             alfa_id = student.get("id")
             first_name = name[1]
             last_name = name[0]
@@ -296,7 +343,7 @@ def get_amo_leads(token):
                             res_contacts = requests.get(f'{settings.AMO_HOST_NAME}api/v4/contacts/{id_contacst}',
                                                         headers=headers)
                             data_contacts = res_contacts.json()
-                            client = AmoCRM.models.Clients.objects.filter(amo_id=int(data_contacts.get('id')))
+                            client = AmoCRM.models.Clients.objects.filter(amo_id=int(data_contacts.get('id'))).first()
                             if not client:
                                 custom_field = data_contacts.get('custom_fields_values')
                                 if custom_field:
@@ -307,15 +354,11 @@ def get_amo_leads(token):
                                                 client = AmoCRM.models.Clients.objects.create(
                                                     amo_id=data_contacts.get('id'),
                                                     name=data_contacts.get('name'),
-                                                    first_name=data_contacts.get('first_name'),
-                                                    last_name=data_contacts.get('last_name'),
                                                     phone=phone)
                                 else:
                                     client = AmoCRM.models.Clients.objects.create(amo_id=data_contacts.get('id'),
-                                                                                  name=data_contacts.get('name'),
-                                                                                  first_name=data_contacts.get(
-                                                                                      'first_name'),
-                                                                                  last_name=data_contacts.get('last_name'))
+                                                                                  name=data_contacts.get('name')
+                                                                                  )
                     except Exception:
                         pass
 
@@ -341,7 +384,6 @@ def get_amo_leads(token):
                 break
         except Exception:
             break
-
 
 
 def add_func_customer(token):
@@ -412,8 +454,6 @@ def get_amo_customers(token):
                             client = AmoCRM.models.Clients.objects.create(
                                 amo_id=data_contacts.get('id'),
                                 name=data_contacts.get('name'),
-                                first_name=data_contacts.get('first_name'),
-                                last_name=data_contacts.get('last_name'),
                                 phone=phone)
 
                     except Exception:
