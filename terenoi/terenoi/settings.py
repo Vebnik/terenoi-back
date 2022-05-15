@@ -256,3 +256,10 @@ AMO_SECRET_KEY = os.getenv('AMO_SECRET_KEY')
 AMO_TOKEN = os.getenv('AMO_TOKEN')
 AMO_URL = os.getenv('AMO_URL')
 AMO_HOST_NAME = os.getenv('AMO_HOST_NAME')
+
+CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
