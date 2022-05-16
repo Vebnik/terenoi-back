@@ -249,7 +249,6 @@ def get_students_alfa(token):
         if alfa_student:
             pass
         else:
-            print(student)
             name = student.get('name').split(' ')[:2]
             name_list = []
             for item in name:
@@ -292,28 +291,29 @@ def get_students_alfa(token):
 
 def auth_amo_account():
     refresh_token = set_app.models.AmoCRMToken.objects.all()
-    amo_token = str(settings.AMO_TOKEN)
+    # amo_token = str(settings.AMO_TOKEN)
     if not refresh_token:
         data = {
             "client_id": settings.AMO_ID,
             "client_secret": settings.AMO_SECRET_KEY,
             "grant_type": "authorization_code",
-            "code": amo_token,
+            "code": settings.AMO_TOKEN,
             "redirect_uri": settings.AMO_URL
         }
-        res = requests.post(f'{settings.AMO_HOST_NAME}oauth2/access_token', data=data)
-        set_app.models.AmoCRMToken.objects.create(refresh_token=res.json().get('refresh_token'))
+        res = requests.post(f'{settings.AMO_HOST_NAME}oauth2/access_token', json=data)
+        if res.json().get('refresh_token'):
+            set_app.models.AmoCRMToken.objects.create(refresh_token=res.json().get('refresh_token'))
         return res.json().get('access_token')
     else:
         ref_token = set_app.models.AmoCRMToken.objects.all().first().refresh_token
         data = {
             "client_id": settings.AMO_ID,
-            "client_secret": settings.AMO_SECRET_KEY,
+            "client_secret":  settings.AMO_SECRET_KEY,
             "grant_type": "refresh_token",
             "refresh_token": ref_token,
             "redirect_uri": settings.AMO_URL
         }
-        res = requests.post(f'{settings.AMO_HOST_NAME}oauth2/access_token', data=data)
+        res = requests.post(f'{settings.AMO_HOST_NAME}oauth2/access_token', json=data)
         set_app.models.AmoCRMToken.objects.create(refresh_token=res.json().get('refresh_token'))
         return res.json().get('access_token')
 
@@ -478,6 +478,8 @@ def get_funnel(token):
     headers = {
         'Authorization': f'Bearer {token}'
     }
+    print(token)
+
     res = requests.get(f'{settings.AMO_HOST_NAME}api/v4/leads/pipelines', headers=headers)
     response = res.json().get('_embedded').get('pipelines')
 
