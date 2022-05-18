@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from sentry_sdk import capture_message
 
 import authapp
 from AmoCRM.models import Leads, Funnel, FunnelStatus, Clients, Customers, CustomerStatus
@@ -21,6 +22,7 @@ class WebHooksLeads(APIView):
     permission_classes = [AllowAny, ]
 
     def post(self, request):
+        capture_message(self.request.data)
         if self.request.data:
             res = self.request.data
             amo_token = auth_amo_account()
@@ -105,6 +107,7 @@ class WebHooksClients(APIView):
     permission_classes = [AllowAny, ]
 
     def post(self, request):
+        capture_message(self.request.data)
         if self.request.data:
             res = self.request.data
             if res.get('contacts[update][0][id]'):
@@ -155,6 +158,7 @@ class WebHooksCustomers(APIView):
     permission_classes = [AllowAny, ]
 
     def post(self, request):
+        capture_message(self.request.data)
         if self.request.data:
             res = self.request.data
             amo_token = auth_amo_account()
