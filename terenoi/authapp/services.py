@@ -245,6 +245,7 @@ def get_students_alfa(token):
     }
     url = f'{settings.ALFA_HOST_NAME}v2api/{1}/customer/index'
     response = requests.post(url=url, headers=headers, json=data)
+    capture_message(response.json())
     try:
         student_list = response.json().get('items')
         for student in student_list:
@@ -286,7 +287,8 @@ def get_students_alfa(token):
                     count = 0
                     for phone in phones:
                         if parent and count == 0:
-                            profileapp.models.UserParents.objects.create(user=user, parent_phone=phone, full_name=parent)
+                            profileapp.models.UserParents.objects.create(user=user, parent_phone=phone,
+                                                                         full_name=parent)
                             count += 1
                         else:
                             profileapp.models.UserParents.objects.create(user=user, parent_phone=phone)
@@ -312,7 +314,7 @@ def auth_amo_account():
         ref_token = set_app.models.AmoCRMToken.objects.all().first().refresh_token
         data = {
             "client_id": settings.AMO_ID,
-            "client_secret":  settings.AMO_SECRET_KEY,
+            "client_secret": settings.AMO_SECRET_KEY,
             "grant_type": "refresh_token",
             "refresh_token": ref_token,
             "redirect_uri": settings.AMO_URL
@@ -332,6 +334,7 @@ def get_amo_leads(token):
         }
     }
     res = requests.get(f'{settings.AMO_HOST_NAME}api/v4/leads', headers=headers, params=data)
+    capture_message(res.json())
     while True:
         try:
             leads = res.json().get('_embedded').get('leads')
@@ -412,6 +415,7 @@ def get_amo_customers(token):
         }
     }
     res = requests.get(f'{settings.AMO_HOST_NAME}api/v4/customers', headers=headers, params=data)
+    capture_message(res.json())
     while True:
         try:
             customers = res.json().get('_embedded').get('customers')
