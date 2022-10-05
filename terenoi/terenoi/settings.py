@@ -13,6 +13,8 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -256,3 +258,25 @@ AMO_SECRET_KEY = os.getenv('AMO_SECRET_KEY')
 AMO_TOKEN = os.getenv('AMO_TOKEN')
 AMO_URL = os.getenv('AMO_URL')
 AMO_HOST_NAME = os.getenv('AMO_HOST_NAME')
+
+CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+sentry_sdk.init(
+    dsn="https://ae06c089f302478b852d008751890207@o1252290.ingest.sentry.io/6418360",
+    integrations=[DjangoIntegration()],
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True,
+    environment=ENV_TYPE
+)

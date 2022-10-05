@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from rest_framework_simplejwt.tokens import RefreshToken
+from sentry_sdk import capture_message, capture_exception
 from voximplant.apiclient import VoximplantAPI, VoximplantException
 import authapp
 import settings as set_app
@@ -231,6 +232,7 @@ def auth_alfa_account():
     url = f'{settings.ALFA_HOST_NAME}v2api/auth/login'
     response = requests.post(url=url, json=data)
     token = response.json().get('token')
+    capture_message(token)
     return token
 
 
@@ -243,66 +245,70 @@ def get_students_alfa(token):
     }
     url = f'{settings.ALFA_HOST_NAME}v2api/{1}/customer/index'
     response = requests.post(url=url, headers=headers, json=data)
-    student_list = response.json().get('items')
-    for student in student_list:
-        alfa_student = authapp.models.User.objects.filter(alfa_id=student.get("id"))
-        if alfa_student:
-            pass
-        else:
-            print(student)
-            name = student.get('name').split(' ')[:2]
-            name_list = []
-            for item in name:
-                k = slugify(item.lower())
-                name_list.append(k)
-            username = f'{name_list[1][0]}.{name_list[0]}'
-            alfa_id = student.get("id")
-            first_name = name[1]
-            last_name = name[0]
-            student_phone = None
-            parent = student.get('legal_name')
-            phones = student.get('phone')
-            b_date = student.get('b_date').split(' ')[0]
-            if phones:
-                for index, phone in enumerate(phones):
-                    if index == 0:
-                        student_phone = phone
-                        phones.remove(student_phone)
-                user = authapp.models.User.objects.create_user(username=username, first_name=first_name,
-                                                               last_name=last_name,
-                                                               phone=student_phone, password='qwe123rty456',
-                                                               birth_date=b_date,
-                                                               is_crm=True, alfa_id=alfa_id)
+    capture_message(response.json())
+    try:
+        student_list = response.json().get('items')
+        for student in student_list:
+            alfa_student = authapp.models.User.objects.filter(alfa_id=student.get("id"))
+            if alfa_student:
+                pass
             else:
-                user = authapp.models.User.objects.create_user(username=username, first_name=first_name,
-                                                               last_name=last_name,
-                                                               password='qwe123rty456',
-                                                               birth_date=b_date,
-                                                               is_crm=True, alfa_id=alfa_id)
+                name = student.get('name').split(' ')[:2]
+                name_list = []
+                for item in name:
+                    k = slugify(item.lower())
+                    name_list.append(k)
+                username = f'{name_list[1][0]}.{name_list[0]}'
+                alfa_id = student.get("id")
+                first_name = name[1]
+                last_name = name[0]
+                student_phone = None
+                parent = student.get('legal_name')
+                phones = student.get('phone')
+                b_date = student.get('b_date').split(' ')[0]
+                if phones:
+                    for index, phone in enumerate(phones):
+                        if index == 0:
+                            student_phone = phone
+                            phones.remove(student_phone)
+                    user = authapp.models.User.objects.create_user(username=username, first_name=first_name,
+                                                                   last_name=last_name,
+                                                                   phone=student_phone, password='qwe123rty456',
+                                                                   birth_date=b_date,
+                                                                   is_crm=True, alfa_id=alfa_id)
+                else:
+                    user = authapp.models.User.objects.create_user(username=username, first_name=first_name,
+                                                                   last_name=last_name,
+                                                                   password='qwe123rty456',
+                                                                   birth_date=b_date,
+                                                                   is_crm=True, alfa_id=alfa_id)
 
-            if phones:
-                count = 0
-                for phone in phones:
-                    if parent and count == 0:
-                        profileapp.models.UserParents.objects.create(user=user, parent_phone=phone, full_name=parent)
-                        count += 1
-                    else:
-                        profileapp.models.UserParents.objects.create(user=user, parent_phone=phone)
+                if phones:
+                    count = 0
+                    for phone in phones:
+                        if parent and count == 0:
+                            profileapp.models.UserParents.objects.create(user=user, parent_phone=phone,
+                                                                         full_name=parent)
+                            count += 1
+                        else:
+                            profileapp.models.UserParents.objects.create(user=user, parent_phone=phone)
+    except Exception as e:
+        capture_exception(e)
 
 
 def auth_amo_account():
     refresh_token = set_app.models.AmoCRMToken.objects.all()
-    amo_token = str(settings.AMO_TOKEN)
     if not refresh_token:
         data = {
             "client_id": settings.AMO_ID,
             "client_secret": settings.AMO_SECRET_KEY,
             "grant_type": "authorization_code",
-            "code": amo_token,
+            "code": settings.AMO_TOKEN,
             "redirect_uri": settings.AMO_URL
         }
-        res = requests.post(f'{settings.AMO_HOST_NAME}oauth2/access_token', data=data)
-        set_app.models.AmoCRMToken.objects.create(refresh_token=res.json().get('refresh_token'))
+        res = requests.post(f'{settings.AMO_HOST_NAME}oauth2/access_token', json=data)
+        if res.json().get('refresh_token'):
+            set_app.models.AmoCRMToken.objects.create(refresh_token=res.json().get('refresh_token'))
         return res.json().get('access_token')
     else:
         ref_token = set_app.models.AmoCRMToken.objects.all().first().refresh_token
@@ -313,7 +319,7 @@ def auth_amo_account():
             "refresh_token": ref_token,
             "redirect_uri": settings.AMO_URL
         }
-        res = requests.post(f'{settings.AMO_HOST_NAME}oauth2/access_token', data=data)
+        res = requests.post(f'{settings.AMO_HOST_NAME}oauth2/access_token', json=data)
         set_app.models.AmoCRMToken.objects.create(refresh_token=res.json().get('refresh_token'))
         return res.json().get('access_token')
 
@@ -328,6 +334,7 @@ def get_amo_leads(token):
         }
     }
     res = requests.get(f'{settings.AMO_HOST_NAME}api/v4/leads', headers=headers, params=data)
+    capture_message(res.json())
     while True:
         try:
             leads = res.json().get('_embedded').get('leads')
@@ -359,7 +366,8 @@ def get_amo_leads(token):
                                     client = AmoCRM.models.Clients.objects.create(amo_id=data_contacts.get('id'),
                                                                                   name=data_contacts.get('name')
                                                                                   )
-                    except Exception:
+                    except Exception as e:
+                        capture_exception(e)
                         pass
 
                     lead = AmoCRM.models.Leads.objects.filter(amo_id=int(i.get('id')))
@@ -407,6 +415,7 @@ def get_amo_customers(token):
         }
     }
     res = requests.get(f'{settings.AMO_HOST_NAME}api/v4/customers', headers=headers, params=data)
+    capture_message(res.json())
     while True:
         try:
             customers = res.json().get('_embedded').get('customers')
@@ -423,8 +432,8 @@ def get_amo_customers(token):
                                 student_last_name = student_name_json.split()[:2][0]
                                 user = authapp.models.User.objects.filter(first_name=student_first_name,
                                                                           last_name=student_last_name).first()
-                            except Exception:
-                                pass
+                            except Exception as e:
+                                capture_exception(e)
 
                 cust = AmoCRM.models.Customers.objects.filter(amo_id=customer.get('id'))
                 if not cust:
@@ -456,7 +465,8 @@ def get_amo_customers(token):
                                 name=data_contacts.get('name'),
                                 phone=phone)
 
-                    except Exception:
+                    except Exception as e:
+                        capture_exception(e)
                         pass
 
                     AmoCRM.models.Customers.objects.create(amo_id=customer.get('id'), name=customer.get('name'),
@@ -470,7 +480,8 @@ def get_amo_customers(token):
                 res = requests.get(f'{next_page}', headers=headers, params=data)
             else:
                 break
-        except Exception:
+        except Exception as e:
+            capture_exception(e)
             break
 
 
