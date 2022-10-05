@@ -9,7 +9,7 @@ services:
     ports:
       - 8073:8000
     env_file:
-      - ./.env
+      - ./terenoi/.env
     depends_on:
       - db
   db:
