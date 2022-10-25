@@ -6,7 +6,7 @@ Deploy to stage:
     script:
         - cp $ENV_STAGE ./terenoi/.env
         - bash deploy.sh
-        - ln -s /home/gitlab-runner/media/ /home/gitlab-runner/builds/yZkCceDK/0/oscarbot/ternoi_back/terenoi/
+        - ln -s /home/gitlab-runner/media/ /home/gitlab-runner/projects/just-to-study/back/
     only:
         - develop
     tags:
