@@ -1,0 +1,12 @@
+[Unit]
+Description=backend daemon
+After=network.target
+
+[Service]
+User=gitlab-runner
+Group=www-data
+WorkingDirectory=/home/gitlab-runner/projects/back/
+ExecStart=/home/gitlab-runner/projects/back/env/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/gitlab-runner/projects/back/backend.sock terenoi.wsgi
+
+[Install]
+WantedBy=multi-user.target
