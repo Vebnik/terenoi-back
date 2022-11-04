@@ -1,15 +1,6 @@
-import json
-
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 from django.contrib.sessions.models import Session
-from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from authapp.models import User
-from authapp.services import send_notifications
-from lessons.services import current_date
 
 NULLABLE = {'blank': True, 'null': True}
 

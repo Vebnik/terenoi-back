@@ -1,22 +1,23 @@
 import datetime
-from unicodedata import decimal
+import http
 
 from django.db.models import Q
 from django.http import JsonResponse
-from django.shortcuts import render
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from authapp.models import User, VoxiAccount
+from django.views.generic import TemplateView
+
+from authapp.models import User, Webinar, PruffmeAccount
 from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson, \
     send_cancel_lesson
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
-    ManagerRequests, ManagerRequestsRejectTeacher, TeacherWorkHours, TeacherWorkHoursSettings
+    ManagerRequestsRejectTeacher, TeacherWorkHours, TeacherWorkHoursSettings
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
-    UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsSerializer, \
-    LessonMaterialsDetail, LessonHomeworksDetail, LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
+    UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsDetail, LessonHomeworksDetail, \
+    LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
     LessonTeacherEvaluationAddSerializer, LessonTransferSerializer, LessonEvaluationQuestionsSerializer, \
     LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer, \
     StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer, TeacherScheduleCreateSerializer, \
@@ -617,3 +618,47 @@ class CreateVoxiCallData(APIView):
             return Response({'message': 'Данные добавлены'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': 'Данные не добавлены'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class LessonTemplateView(TemplateView):
+    template_name = 'lessons/lesson.html'
+
+    def get_context_data(self, **kwargs):
+        # get current user
+        context_data = super().get_context_data(**kwargs)
+        current_webinar = Webinar.objects.all().order_by('-id').first()
+        current_pruffme_account = PruffmeAccount.objects.filter(webinar=current_webinar).order_by('-id').first()
+        context_data['webinar_hash'] = current_webinar.hash
+        context_data['participant_name'] = current_pruffme_account.name
+        context_data['participant_session'] = current_pruffme_account.session
+        print(current_webinar.__dict__)
+        return context_data
+
+
+class LessonLinkGetter(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, *args, **kwargs):
+        lesson_id = self.kwargs.get('lesson_id')
+        current_webinar = Webinar.objects.filter(lesson_id=lesson_id).first()
+        if current_webinar:
+            current_pruffme_account = PruffmeAccount.objects.filter(
+                webinar=current_webinar,
+                user_id=self.request.user.pk
+            ).first()
+            if current_pruffme_account:
+                return Response(
+                    data={
+                        'url': f'https://pruffme.com/webinar/?id={current_webinar.hash}#session={current_pruffme_account.session}',
+                        'stop_id': 'just-to-study-lesson-done'
+                    },
+                    status=http.HTTPStatus.OK
+                )
+        return Response(
+            data={},
+            status=http.HTTPStatus.FORBIDDEN
+        )
+
+
+class LessonDoneTemplateView(TemplateView):
+    template_name = 'lessons/done.html'

@@ -1,10 +1,10 @@
 from pathlib import Path
 
+import pytz
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-import pytz
 
 from authapp.services import add_voxiaccount
 
@@ -64,7 +64,7 @@ class User(AbstractUser):
     english_level = models.CharField(max_length=50, choices=LEVEL_CHOICES, default=BEGINNER,
                                      verbose_name='Уровень английского у ученика')
     student_class = models.CharField(max_length=50, verbose_name='Класс ученика', **NULLABLE)
-    alfa_id = models.BigIntegerField(verbose_name='Номер пользователя из alfa/amo crm',**NULLABLE)
+    alfa_id = models.BigIntegerField(verbose_name='Номер пользователя из alfa/amo crm', **NULLABLE)
     is_recruiting = models.BooleanField(default=False, verbose_name='Набор открыт')
     is_pass_generation = models.BooleanField(default=False, verbose_name='Сгенерировать пароль')
     is_verified = models.BooleanField(default=False, verbose_name='Верефицирован')
@@ -86,12 +86,24 @@ class User(AbstractUser):
         if 'pbkdf2_sha256' not in self.password:
             password = make_password(self.password)
             self.password = password
-        if self.is_teacher:
-            voxi_user = VoxiAccount.objects.filter(user=self).first()
-            if voxi_user is None:
-                username = f'Teacher-{self.pk}'
-                add_voxiaccount(self, username, self.username)
+        # if self.is_teacher:
+            # voxi_user = VoxiAccount.objects.filter(user=self).first()
+            # if voxi_user is None:
+            #     username = f'Teacher-{self.pk}'
+            #     add_voxiaccount(self, username, self.username)
         super(User, self).save(*args, **kwargs)
+
+    def create_participant(self, webinar, participant_data, role):
+        participant = participant_data.get('participant')
+        PruffmeAccount.objects.create(
+            webinar=webinar,
+            user=self,
+            ext_id=participant.get('id'),
+            hash=participant.get('hash'),
+            webinar_hash=participant.get('webinarHash'),
+            session=participant_data.get('session'),
+            role=role
+        )
 
 
 class UserStudyLanguage(models.Model):
@@ -113,3 +125,36 @@ class VoxiAccount(models.Model):
     class Meta:
         verbose_name = 'Voxiplant Аккаунт'
         verbose_name_plural = 'Voxiplant Аккаунты'
+
+
+class Webinar(models.Model):
+    lesson = models.ForeignKey('lessons.Lesson', on_delete=models.CASCADE, **NULLABLE)
+
+    name = models.CharField(**NULLABLE, max_length=150, verbose_name='Автоматическое название')
+
+    ext_id = models.IntegerField(**NULLABLE)
+    hash = models.CharField(**NULLABLE, max_length=255, verbose_name='Хэш')
+    login = models.CharField(**NULLABLE, max_length=255, verbose_name='Хэш')
+    landing = models.CharField(**NULLABLE, max_length=255, verbose_name='Хэш')
+
+    start_date = models.DateTimeField(**NULLABLE, verbose_name='Время и дата начала урока')
+
+    def save_info(self, webinar_response):
+        webinar_data = webinar_response.get('webinar')
+        if webinar_data:
+            self.ext_id = webinar_data.get('id')
+            self.hash = webinar_data.get('hash')
+            self.login = webinar_data.get('login')
+            self.landing = webinar_data.get('landing')
+            self.save()
+
+
+class PruffmeAccount(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    ext_id = models.IntegerField(**NULLABLE)
+    hash = models.CharField(**NULLABLE, max_length=255)
+    webinar_hash = models.CharField(**NULLABLE, max_length=255)
+    name = models.CharField(**NULLABLE, max_length=255)
+    session = models.CharField(**NULLABLE, max_length=255)
+    webinar = models.ForeignKey(Webinar, on_delete=models.CASCADE, **NULLABLE)
+    role = models.CharField(**NULLABLE, max_length=255)

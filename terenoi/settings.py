@@ -266,17 +266,21 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
-sentry_sdk.init(
-    dsn="https://ae06c089f302478b852d008751890207@o1252290.ingest.sentry.io/6418360",
-    integrations=[DjangoIntegration()],
+if ENV_TYPE != 'local':
+    sentry_sdk.init(
+        dsn="https://ae06c089f302478b852d008751890207@o1252290.ingest.sentry.io/6418360",
+        integrations=[DjangoIntegration()],
 
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    # We recommend adjusting this value in production.
-    traces_sample_rate=1.0,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=1.0,
 
-    # If you wish to associate users to errors (assuming you are using
-    # django.contrib.auth) you may enable sending PII data.
-    send_default_pii=True,
-    environment=ENV_TYPE
-)
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=True,
+        environment=ENV_TYPE
+    )
+
+PRUFFME_API_USER = os.getenv('PRUFFME_API_USER')
+PRUFFME_API_SECRET = os.getenv('PRUFFME_API_SECRET')

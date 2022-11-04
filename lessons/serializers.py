@@ -1,17 +1,15 @@
 import datetime
 
 from dateutil.rrule import rrule, DAILY
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.db.models import Sum, Q
 from rest_framework import serializers
 
 from authapp.models import User, VoxiAccount
 from authapp.serializers import UserNameSerializer, VoxiAccountSerializer
-from finance.models import StudentBalance, HistoryPaymentStudent, TeacherBalance, HistoryPaymentTeacher
+from finance.models import TeacherBalance, HistoryPaymentTeacher
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
     Schedule, ScheduleSettings, TeacherWorkHours, TeacherWorkHoursSettings
 from lessons.services import current_date
-from profileapp.models import TeacherSubject, Subject, GlobalUserPurpose
+from profileapp.models import Subject, GlobalUserPurpose
 from profileapp.serializers import SubjectSerializer, UpdateStudentSerializer
 from settings.models import WeekDays, DeadlineSettings
 

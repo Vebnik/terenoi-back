@@ -1,16 +1,11 @@
 import datetime
-import calendar
 
-import pytz
-from dateutil.rrule import rrule, DAILY, WEEKLY
-from django.conf import settings
 from django.db import models
-from django.db.models import Sum
 
-import finance
 from authapp.models import User, VoxiAccount
-from authapp.services import add_voxiaccount
 from lessons.services import get_record, payment_for_lesson
+
+from lessons.services.webinar import create_new_webinar
 from notifications.models import Notification
 from notifications.services import create_lesson_notifications
 from profileapp.models import TeacherSubject, Subject
@@ -93,11 +88,14 @@ class Lesson(models.Model):
         return f'{self.pk}-{self.teacher}-{self.student}-{self.subject}'
 
     def save(self, *args, **kwargs):
-        student = VoxiAccount.objects.filter(user=self.student).first()
+        need_to_create_webinar = False
+        if self.pk is None:
+            need_to_create_webinar = True
+        # student = VoxiAccount.objects.filter(user=self.student).first()
         lesson_count = Lesson.objects.filter(teacher=self.teacher, student=self.student, subject=self.subject)
-        if student is None:
-            username = f'Student-{self.student.pk}'
-            add_voxiaccount(self.student, username, self.student.username)
+        # if student is None:
+        #     username = f'Student-{self.student.pk}'
+        #     add_voxiaccount(self.student, username, self.student.username)
         if self.lesson_status == Lesson.SCHEDULED:
             if not lesson_count:
                 lesson_count = 0
@@ -141,7 +139,10 @@ class Lesson(models.Model):
                 days = datetime.timedelta(days=count.day_count)
                 deadline = self.date + days
                 self.deadline = deadline
+
         super(Lesson, self).save(*args, **kwargs)
+        if need_to_create_webinar:
+            create_new_webinar(self)
 
 
 class TeacherWorkHours(models.Model):

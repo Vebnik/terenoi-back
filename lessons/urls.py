@@ -7,7 +7,8 @@ from lessons.views import AllUserLessonsListView, UserLessonRetrieveView, VoxiTe
     LessonEvaluationQuestionsRetrieveView, LessonRateHomeworksAdd, LessonRateHomeworkRetrieveView, HomepageListView, \
     StudentsListView, StudentsRejectView, StudentsDetailView, HomeworksView, TopicUpdateView, PurposeUpdateView, \
     PurposeView, TeacherScheduleCreateView, TeacherScheduleListView, TeacherScheduleUpdateView, \
-    TeacherScheduleDetailListView, StudentsActiveListView, TeacherRecruitingListView, TeacherRecruitingUpdateView
+    TeacherScheduleDetailListView, StudentsActiveListView, TeacherRecruitingListView, TeacherRecruitingUpdateView, \
+    LessonTemplateView, LessonDoneTemplateView, LessonLinkGetter
 
 app_name = 'lessons'
 
@@ -54,5 +55,9 @@ urlpatterns = [
     path('voxi-teacher-info/<int:pk>/', VoxiTeacherInfoRetrieveView.as_view(), name='voxi_teacher'),
     path('voxi-student-info/<int:pk>/', VoxiStudentInfoRetrieveView.as_view(), name='voxi_student'),
     path('user-status/update/<int:pk>/', LessonUserStatusUpdateView.as_view(), name='user_status_update'),
-    path('voxi-call-data/', CreateVoxiCallData.as_view(), name='voxi_call_data')
+    path('voxi-call-data/', CreateVoxiCallData.as_view(), name='voxi_call_data'),
+
+    path('pruffme/page/', LessonTemplateView.as_view(), name='pruffme_page'),
+    path('pruffme/done/', LessonDoneTemplateView.as_view(), name='pruffme_done_page'),
+    path('pruffme/link/<lesson_id>/', LessonLinkGetter.as_view(), name='pruffme_get_link'),
 ]
