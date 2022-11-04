@@ -12,6 +12,8 @@
     <button id="lesson-done-button">Завершить</button>
 </body>
 <script>
-    location.href = 'https://back.jtstudy.kz/api/lessons/pruffme/done/'
+    if(location.href !== 'https://back.jtstudy.kz/api/lessons/pruffme/done/'){
+        location.href = 'https://back.jtstudy.kz/api/lessons/pruffme/done/'
+    }
 </script>
 </html>
