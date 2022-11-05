@@ -65,3 +65,22 @@ class PruffMe:
         }
 
         return self._send_request('create-participant', content)
+
+    def get_webinar_record(self, webinar):
+        content = {
+            'webinar': '2addcc9e33d6f9a2bec5dd45f410d293', #webinar.hash,
+            'limit': 10,
+            'offset': 0
+        }
+
+        result = self._send_request('webinar-records', content)
+        current_record = ''
+        current_record_length = 0
+        if 'result' in result and len(result.get('result')) > 0:
+            result = result.get('result')[0]
+            for child in result.get('children'):
+                if int(child.get('duration')) > current_record_length:
+                    current_record = child.get('url')
+                    current_record_length = int(child.get('duration'))
+
+        return current_record

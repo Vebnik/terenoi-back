@@ -1,5 +1,5 @@
-from authapp.models import Webinar
-from authapp.services.pruffme import PruffMe
+from authapp.models import Webinar, PruffmeAccount, WebinarRecord
+from lessons.services.pruffme import PruffMe
 
 
 def create_new_webinar(lesson):
@@ -33,3 +33,14 @@ def create_new_webinar(lesson):
         ),
         'moderator'
     )
+
+
+def get_webinar_records(webinar_list):
+    pruffme = PruffMe()
+    for webinar in webinar_list:
+        webinar_record = pruffme.get_webinar_record(webinar)
+        if len(webinar_record) > 0:
+            WebinarRecord.objects.create(
+                webinar=webinar,
+                record=webinar_record
+            )

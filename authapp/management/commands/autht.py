@@ -1,7 +1,7 @@
 from django.core.management import BaseCommand
 
-from authapp.models import User, Webinar
-from authapp.services.pruffme import PruffMe
+from authapp.models import User
+from lessons.services.pruffme import PruffMe
 
 
 class Command(BaseCommand):
@@ -19,11 +19,13 @@ class Command(BaseCommand):
         # webinar_response = pruff_me.create_webinar(webinar)
         # webinar.save_info(webinar_response)
         # webinar.refresh_from_db()
-        webinar = Webinar.objects.all().order_by('-id').first()
-        user.create_participant(
-            webinar,
-            pruff_me.create_student(
-                webinar,
-                user
-            )
-        )
+        # webinar = Webinar.objects.all().order_by('-id').first()
+        # user.create_participant(
+        #     webinar,
+        #     pruff_me.create_student(
+        #         webinar,
+        #         user
+        #     )
+        # )
+
+        print(pruff_me.get_webinar_record(object))

@@ -149,6 +149,11 @@ class Webinar(models.Model):
             self.save()
 
 
+class WebinarRecord(models.Model):
+    webinar = models.ForeignKey(Webinar, on_delete=models.CASCADE, **NULLABLE)
+    record = models.CharField(**NULLABLE, max_length=255)
+
+
 class PruffmeAccount(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
     ext_id = models.IntegerField(**NULLABLE)

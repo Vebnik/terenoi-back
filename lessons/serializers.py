@@ -3,12 +3,13 @@ import datetime
 from dateutil.rrule import rrule, DAILY
 from rest_framework import serializers
 
-from authapp.models import User, VoxiAccount
+from authapp.models import User, VoxiAccount, Webinar, WebinarRecord
 from authapp.serializers import UserNameSerializer, VoxiAccountSerializer
 from finance.models import TeacherBalance, HistoryPaymentTeacher
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
     Schedule, ScheduleSettings, TeacherWorkHours, TeacherWorkHoursSettings
 from lessons.services import current_date
+from lessons.services.webinar import get_webinar_records
 from profileapp.models import Subject, GlobalUserPurpose
 from profileapp.serializers import SubjectSerializer, UpdateStudentSerializer
 from settings.models import WeekDays, DeadlineSettings
@@ -127,7 +128,9 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_record_link(self, instance):
-        record_data = VoximplantRecordLesson.objects.filter(lesson=instance)
+        if not WebinarRecord.objects.filter(webinar__in=list(instance.webinar_set.all())).exists():
+            get_webinar_records(instance.webinar_set.all())
+        record_data = WebinarRecord.objects.filter(webinar__in=list(instance.webinar_set.all()))
         serializer = RecordSerializer(record_data, many=True)
         return serializer.data
 
@@ -470,7 +473,7 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
 
 class RecordSerializer(serializers.ModelSerializer):
     class Meta:
-        model = VoximplantRecordLesson
+        model = WebinarRecord
         fields = ('record',)
 
 
