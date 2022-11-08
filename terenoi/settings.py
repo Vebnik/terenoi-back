@@ -209,12 +209,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = [
     'http://localhost',
-    'http://slot2b.oscarbot.ru',
-    'http://slot2f.oscarbot.ru',
-    'http://slot2t.oscarbot.ru',
-    'http://api.terenoi.com',
-    'http://student.terenoi.com',
-    'http://teacher.terenoi.com',
+    'http://back.jtstudy.kz',
+    'http://student.jtstudy.kz',
+    'http://teacher.jtstudy.kz',
 ]
 
 CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
