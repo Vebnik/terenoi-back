@@ -209,9 +209,10 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = [
     'http://localhost',
-    'http://back.jtstudy.kz',
-    'http://student.jtstudy.kz',
-    'http://teacher.jtstudy.kz',
+    'https://back.jtstudy.kz',
+    'https://student.jtstudy.kz',
+    'https://teacher.jtstudy.kz',
+    'https://pruffme.com',
 ]
 
 CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
