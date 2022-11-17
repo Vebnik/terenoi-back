@@ -261,24 +261,24 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
     def get_balance(self, instance):
         # balance = HistoryPaymentStudent.objects.filter(student=instance, debit=False, referral=False).aggregate(
         #     total_count=Sum('lesson_count'))
-        lesson_count = Lesson.objects.filter(student=instance).exclude(lesson_status=Lesson.CANCEL).exclude(
+        lesson_count = Lesson.objects.filter(students=instance).exclude(lesson_status=Lesson.CANCEL).exclude(
             lesson_status=Lesson.RESCHEDULED).count()
         return lesson_count
 
     def get_lesson_completed(self, instance):
-        lessons = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE).count()
+        lessons = Lesson.objects.filter(students=instance, lesson_status=Lesson.DONE).count()
         return lessons
 
     def get_homework_completed(self, instance):
-        homework = LessonHomework.objects.filter(lesson__student=instance).distinct('lesson').count()
+        homework = LessonHomework.objects.filter(lesson__students=instance).distinct('lesson').count()
         return homework
 
     def get_next_lesson(self, instance):
-        lesson_pr = Lesson.objects.filter(student=instance, lesson_status=Lesson.PROGRESS).order_by('date').first()
+        lesson_pr = Lesson.objects.filter(students=instance, lesson_status=Lesson.PROGRESS).order_by('date').first()
         if not lesson_pr:
-            lesson = Lesson.objects.filter(student=instance, lesson_status=Lesson.SCHEDULED).order_by('date').first()
+            lesson = Lesson.objects.filter(students=instance, lesson_status=Lesson.SCHEDULED).order_by('date').first()
             if not lesson:
-                lesson_done = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE).order_by(
+                lesson_done = Lesson.objects.filter(students=instance, lesson_status=Lesson.DONE).order_by(
                     '-date').first()
                 serializer = UserLessonsSerializer(lesson_done, context={'user': instance})
                 return serializer.data
@@ -288,8 +288,8 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_weeks(self, instance):
-        lessons = Lesson.objects.filter(student=instance).dates('date', 'week').count()
-        lessons_all = Lesson.objects.filter(student=instance).exclude(lesson_status=Lesson.CANCEL).exclude(
+        lessons = Lesson.objects.filter(students=instance).dates('date', 'week').count()
+        lessons_all = Lesson.objects.filter(students=instance).exclude(lesson_status=Lesson.CANCEL).exclude(
             lesson_status=Lesson.RESCHEDULED).count()
         try:
             k = lessons_all / lessons
@@ -310,7 +310,7 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
         return data
 
     def get_weeks_complete_lesson(self, instance):
-        lessons = Lesson.objects.filter(student=instance).dates('date', 'week')
+        lessons = Lesson.objects.filter(students=instance).dates('date', 'week')
         date_now = datetime.datetime.now()
         d = datetime.timedelta(days=7)
         count = 0
@@ -335,11 +335,11 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
                 break
             else:
                 try:
-                    lesson_user = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE,
+                    lesson_user = Lesson.objects.filter(students=instance, lesson_status=Lesson.DONE,
                                                         date__range=[lesson, lessons[i + 1]]).count()
                 except Exception as e:
                     new_day = lesson + d
-                    lesson_user = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE,
+                    lesson_user = Lesson.objects.filter(students=instance, lesson_status=Lesson.DONE,
                                                         date__range=[lesson, new_day]).count()
                 if i == 0:
                     complete_lesson_week.append(str(i))
@@ -354,7 +354,7 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
         return all_list
 
     def get_lessons_evaluation(self, instance):
-        subjects = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE).distinct('subject')
+        subjects = Lesson.objects.filter(students=instance, lesson_status=Lesson.DONE).distinct('subject')
         data = []
         sub_dict = {}
         count_examples = 0
@@ -364,7 +364,7 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
         listening_list = []
         grammar_list = []
         for subject in subjects:
-            lessons = Lesson.objects.filter(student=instance, subject=subject.subject, lesson_status=Lesson.DONE)
+            lessons = Lesson.objects.filter(students=instance, subject=subject.subject, lesson_status=Lesson.DONE)
             for lesson in lessons:
                 try:
                     new_str = lesson.teacher_rate_comment.split('\n')
@@ -421,7 +421,7 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
         return data
 
     def get_efficiency(self, instance):
-        subjects = Lesson.objects.filter(student=instance, lesson_status=Lesson.DONE).distinct('subject')
+        subjects = Lesson.objects.filter(students=instance, lesson_status=Lesson.DONE).distinct('subject')
         teacher_eval = []
         quality = []
         speaking_list = []
@@ -430,7 +430,7 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
         grammar_list = []
         data = []
         for subject in subjects:
-            lessons = Lesson.objects.filter(student=instance, subject=subject.subject, lesson_status=Lesson.DONE)
+            lessons = Lesson.objects.filter(students=instance, subject=subject.subject, lesson_status=Lesson.DONE)
             for lesson in lessons:
                 try:
                     if lesson.teacher_evaluation:
