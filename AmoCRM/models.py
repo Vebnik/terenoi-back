@@ -79,7 +79,7 @@ class CustomerStatus(models.Model):
 
 class Customers(models.Model):
     amo_id = models.BigIntegerField(verbose_name='Айди в Амо', **NULLABLE)
-    user = models.ForeignKey(authapp.models.User, on_delete=models.CASCADE, verbose_name='Пользователь Terenoi', **NULLABLE)
+    user = models.ForeignKey('authapp.User', on_delete=models.CASCADE, verbose_name='Пользователь Terenoi', **NULLABLE)
     name = models.CharField(verbose_name='Название', **NULLABLE, max_length=255)
     status = models.ForeignKey(CustomerStatus, on_delete=models.CASCADE, verbose_name='Статус покупателя')
     price = models.IntegerField(verbose_name='Ожидаемая сумма покупки', **NULLABLE)

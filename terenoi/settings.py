@@ -42,19 +42,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
     'rest_framework_simplejwt',
-    'authapp',
-    'corsheaders',
-    'channels',
     'django_crontab',
+    'corsheaders',
     'drf_yasg',
+    'channels',
+
+    'AmoCRM',
+    'authapp',
+    'base',
     'finance',
     'lessons',
     'notifications',
     'profileapp',
     'settings',
-    'AmoCRM'
 ]
 
 MIDDLEWARE = [
@@ -216,6 +219,7 @@ CORS_ORIGIN_WHITELIST = [
 ]
 
 CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
+CORS_ALLOWED_ORIGINS = CORS_ORIGIN_WHITELIST
 
 CORS_ALLOW_HEADERS = (
     '*',

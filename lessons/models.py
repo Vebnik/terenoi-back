@@ -18,6 +18,7 @@ class Schedule(models.Model):
     title = models.CharField(max_length=50, **NULLABLE, verbose_name='Название')
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='schedule_teacher',
                                 limit_choices_to={'is_teacher': True})
+    students = models.ManyToManyField(User, related_name='students')
     student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='schedule_student',
                                 limit_choices_to={'is_student': True})
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
@@ -60,8 +61,7 @@ class Lesson(models.Model):
     lesson_number = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='lesson_teacher',
                                 limit_choices_to={'is_teacher': True})
-    student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='lesson_student',
-                                limit_choices_to={'is_student': True})
+    students = models.ManyToManyField(User, related_name='lesson_student', limit_choices_to={'is_student': True})
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, verbose_name='Расписание', **NULLABLE)
     topic = models.CharField(verbose_name='Тема урока', **NULLABLE, max_length=255)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
@@ -85,60 +85,58 @@ class Lesson(models.Model):
         verbose_name_plural = 'Уроки'
 
     def __str__(self):
-        return f'{self.pk}-{self.teacher}-{self.student}-{self.subject}'
+        return f'{self.pk}-{self.teacher}-{self.subject}'
 
     def save(self, *args, **kwargs):
         need_to_create_webinar = False
         if self.pk is None:
             need_to_create_webinar = True
-        # student = VoxiAccount.objects.filter(user=self.student).first()
-        lesson_count = Lesson.objects.filter(teacher=self.teacher, student=self.student, subject=self.subject)
-        # if student is None:
-        #     username = f'Student-{self.student.pk}'
-        #     add_voxiaccount(self.student, username, self.student.username)
-        if self.lesson_status == Lesson.SCHEDULED:
-            if not lesson_count:
-                lesson_count = 0
-                self.lesson_number = lesson_count + 1
-            else:
-                self.lesson_number = lesson_count.count() + 1
-            create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-            questions = Subject.objects.filter(name=self.subject.name).first()
-            if not self.teacher_rate_comment:
-                self.teacher_rate_comment = questions.questions
-        if self.lesson_status == Lesson.REQUEST_CANCEL:
-            create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-        if self.lesson_status == Lesson.CANCEL:
-            create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-        if self.student_status and self.teacher_status and self.lesson_status == Lesson.SCHEDULED:
-            self.lesson_status = Lesson.PROGRESS
-            create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-        if self.lesson_status == Lesson.REQUEST_RESCHEDULED:
-            create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-        if self.lesson_status == Lesson.RESCHEDULED:
-            create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.transfer_date, lesson_id=self.pk)
-        if self.lesson_status == Lesson.DONE:
-            get_record(lesson_id=self.pk, lesson_date=self.date)
-            payment_for_lesson(self)
-            count = DeadlineSettings.objects.filter(subject=self.subject).first()
-            if self.schedule and not self.schedule.is_completed:
-                schedule_settings = ScheduleSettings.objects.filter(shedule=self.schedule).order_by('-pk').first()
-                if schedule_settings:
-                    if self.date.date() == schedule_settings.last_lesson.date():
-                        self.schedule.is_completed = True
-                        self.schedule.save()
-            if self.deadline:
-                pass
-            elif count:
-                days = datetime.timedelta(days=count.day_count)
-                deadline = self.date + days
-                self.deadline = deadline
+
+        lesson_count = Lesson.objects.filter(teacher=self.teacher, students=self.students, subject=self.subject)
+        # TODO: for refactoring
+        # if self.lesson_status == Lesson.SCHEDULED:
+        #     if not lesson_count:
+        #         lesson_count = 0
+        #         self.lesson_number = lesson_count + 1
+        #     else:
+        #         self.lesson_number = lesson_count.count() + 1
+        #     create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+        #                                 teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
+        #     questions = Subject.objects.filter(name=self.subject.name).first()
+        #     if not self.teacher_rate_comment:
+        #         self.teacher_rate_comment = questions.questions
+        # if self.lesson_status == Lesson.REQUEST_CANCEL:
+        #     create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+        #                                 teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
+        # if self.lesson_status == Lesson.CANCEL:
+        #     create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+        #                                 teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
+        # if self.student_status and self.teacher_status and self.lesson_status == Lesson.SCHEDULED:
+        #     self.lesson_status = Lesson.PROGRESS
+        #     create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+        #                                 teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
+        # if self.lesson_status == Lesson.REQUEST_RESCHEDULED:
+        #     create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+        #                                 teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
+        # if self.lesson_status == Lesson.RESCHEDULED:
+        #     create_lesson_notifications(lesson_status=self.lesson_status, student=self.student, teacher=self.teacher,
+        #                                 teacher_status=self.teacher_status, date=self.transfer_date, lesson_id=self.pk)
+        # if self.lesson_status == Lesson.DONE:
+        #     get_record(lesson_id=self.pk, lesson_date=self.date)
+        #     payment_for_lesson(self)
+        #     count = DeadlineSettings.objects.filter(subject=self.subject).first()
+        #     if self.schedule and not self.schedule.is_completed:
+        #         schedule_settings = ScheduleSettings.objects.filter(shedule=self.schedule).order_by('-pk').first()
+        #         if schedule_settings:
+        #             if self.date.date() == schedule_settings.last_lesson.date():
+        #                 self.schedule.is_completed = True
+        #                 self.schedule.save()
+        #     if self.deadline:
+        #         pass
+        #     elif count:
+        #         days = datetime.timedelta(days=count.day_count)
+        #         deadline = self.date + days
+        #         self.deadline = deadline
 
         super(Lesson, self).save(*args, **kwargs)
         if need_to_create_webinar:

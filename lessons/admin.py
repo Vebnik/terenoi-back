@@ -10,10 +10,10 @@ from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRe
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'teacher', 'student', 'date', 'transfer_date', 'schedule', 'lesson_status')
+    list_display = ('pk', 'teacher', 'date', 'transfer_date', 'schedule', 'lesson_status')
     list_filter = ('lesson_status',)
-    search_fields = ['teacher__username', 'teacher__first_name', 'teacher__last_name', 'student__username',
-                     'student__first_name', 'student__last_name']
+    search_fields = ['teacher__username', 'teacher__first_name', 'teacher__last_name', 'students__username',
+                     'students__first_name', 'students__last_name']
     date_hierarchy = 'date'
 
 

@@ -68,11 +68,10 @@ class UserClassesSerializer(serializers.ModelSerializer):
 class UserLessonsSerializer(serializers.ModelSerializer):
     teacher = serializers.SerializerMethodField()
     teacher_avatar = serializers.SerializerMethodField()
-    student = serializers.SerializerMethodField()
+    students = serializers.SerializerMethodField()
     current_date = serializers.SerializerMethodField()
     subject = serializers.SerializerMethodField()
     materials = serializers.SerializerMethodField()
-    homeworks = serializers.SerializerMethodField()
     record_link = serializers.SerializerMethodField()
     rate = serializers.SerializerMethodField()
     deadline_days = serializers.SerializerMethodField()
@@ -80,7 +79,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = (
-            'pk', 'teacher', 'teacher_avatar', 'student', 'topic', 'subject', 'materials', 'deadline', 'homeworks',
+            'pk', 'teacher', 'teacher_avatar', 'students', 'topic', 'subject', 'materials', 'deadline',
             'current_date',
             'teacher_status', 'student_status', 'lesson_status', 'record_link', 'rate', 'deadline_days')
 
@@ -95,10 +94,11 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         serializer = UserNameSerializer(user)
         return serializer.data
 
-    def get_student(self, instance):
-        user = User.objects.get(pk=instance.student.pk)
-        serializer = UserNameSerializer(user)
-        return serializer.data
+    def get_students(self, instance):
+        users_list = []
+        for user in instance.students.all():
+            users_list.append(UserNameSerializer(user))
+        return users_list
 
     def get_current_date(self, instance):
         user = self._user()
@@ -115,11 +115,6 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     def get_materials(self, instance):
         materials = LessonMaterials.objects.filter(lesson=instance).select_related()
         serializer = LessonMaterialsSerializer(materials, many=True)
-        return serializer.data
-
-    def get_homeworks(self, instance):
-        homework = LessonHomework.objects.filter(lesson=instance).select_related()
-        serializer = LessonHomeworkSerializer(homework, many=True)
         return serializer.data
 
     def get_rate(self, instance):
