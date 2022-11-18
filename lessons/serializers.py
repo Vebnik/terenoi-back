@@ -97,7 +97,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     def get_students(self, instance):
         users_list = []
         for user in instance.students.all():
-            users_list.append(UserNameSerializer(user))
+            users_list.append(UserNameSerializer(user).data)
         return users_list
 
     def get_current_date(self, instance):
@@ -249,8 +249,15 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'weeks', 'weeks_complete_lesson', 'lesson_completed', 'homework_completed', 'balance', 'efficiency',
-            'lessons_evaluation', 'next_lesson')
+            'weeks',
+            'weeks_complete_lesson',
+            'lesson_completed',
+            'homework_completed',
+            'balance',
+            'efficiency',
+            'lessons_evaluation',
+            'next_lesson'
+        )
 
     def _user(self):
         request = self.context.get('request', None)
@@ -258,7 +265,7 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
             return request.user
         return None
 
-    def get_balance(self, instance):
+    def get_balance(self, instance):  # TODO: !!!
         # balance = HistoryPaymentStudent.objects.filter(student=instance, debit=False, referral=False).aggregate(
         #     total_count=Sum('lesson_count'))
         lesson_count = Lesson.objects.filter(students=instance).exclude(lesson_status=Lesson.CANCEL).exclude(
@@ -266,12 +273,10 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
         return lesson_count
 
     def get_lesson_completed(self, instance):
-        lessons = Lesson.objects.filter(students=instance, lesson_status=Lesson.DONE).count()
-        return lessons
+        return Lesson.objects.filter(students=instance, lesson_status=Lesson.DONE).count()
 
     def get_homework_completed(self, instance):
-        homework = LessonHomework.objects.filter(lesson__students=instance).distinct('lesson').count()
-        return homework
+        return LessonHomework.objects.filter(lesson__students=instance).distinct('lesson').count()
 
     def get_next_lesson(self, instance):
         lesson_pr = Lesson.objects.filter(students=instance, lesson_status=Lesson.PROGRESS).order_by('date').first()
