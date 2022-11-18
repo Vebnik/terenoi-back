@@ -84,12 +84,12 @@ class UpdateStudentSerializer(serializers.ModelSerializer):
         serializer = GlobalUserPurposeSerializer(purposes, many=True, context={'user': instance})
         if not serializer.data:
             data = []
-            lesson_subjects = Lesson.objects.filter(student=instance).distinct('subject')
+            lesson_subjects = Lesson.objects.filter(students=instance).distinct('subject')
             for lesson in lesson_subjects:
-                lesson_count_all = Lesson.objects.filter(student=instance,
+                lesson_count_all = Lesson.objects.filter(students=instance,
                                                          subject__name=lesson.subject.name).exclude(
                     lesson_status=Lesson.CANCEL).exclude(lesson_status=Lesson.RESCHEDULED).count()
-                lesson_count_done = Lesson.objects.filter(student=instance,
+                lesson_count_done = Lesson.objects.filter(students=instance,
                                                           subject__name=lesson.subject.name,
                                                           lesson_status=Lesson.DONE).count()
                 data.append(

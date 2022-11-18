@@ -33,12 +33,12 @@ class UserClassesSerializer(serializers.ModelSerializer):
         return None
 
     def get_all_lessons(self, instance):
-        all_lessons = Lesson.objects.filter(student=self._user()).exclude(lesson_status=Lesson.CANCEL).exclude(
+        all_lessons = Lesson.objects.filter(students=self._user()).exclude(lesson_status=Lesson.CANCEL).exclude(
             lesson_status=Lesson.RESCHEDULED).count()
         return all_lessons
 
     def get_done_lessons(self, instance):
-        done_lessons = Lesson.objects.filter(student=self._user(), lesson_status=Lesson.DONE).count()
+        done_lessons = Lesson.objects.filter(students=self._user(), lesson_status=Lesson.DONE).count()
         return done_lessons
 
     def get_current_date(self, instance):
@@ -47,7 +47,7 @@ class UserClassesSerializer(serializers.ModelSerializer):
     def get_lessons(self, instance):
         user = self._user()
         if user.is_student:
-            lessons = Lesson.objects.filter(student=user, date__date=instance)
+            lessons = Lesson.objects.filter(students=user, date__date=instance)
         else:
             lessons = Lesson.objects.filter(teacher=user, date__date=instance)
         serializer = UserLessonsSerializer(lessons, many=True, context={'user': user})
@@ -55,7 +55,7 @@ class UserClassesSerializer(serializers.ModelSerializer):
 
     def get_subjects(self, instance):
         subject_list = []
-        subjects = Lesson.objects.filter(student=self._user()).distinct('subject')
+        subjects = Lesson.objects.filter(students=self._user()).distinct('subject')
         if subjects:
             for sub in subjects:
                 subject_list.append(sub.subject)
