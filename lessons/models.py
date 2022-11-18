@@ -92,7 +92,7 @@ class Lesson(models.Model):
         if self.pk is None:
             need_to_create_webinar = True
 
-        lesson_count = Lesson.objects.filter(teacher=self.teacher, students=self.students, subject=self.subject)
+        # lesson_count = Lesson.objects.filter(teacher=self.teacher, students=self.students, subject=self.subject)
         # TODO: for refactoring
         # if self.lesson_status == Lesson.SCHEDULED:
         #     if not lesson_count:
