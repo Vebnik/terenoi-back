@@ -75,12 +75,13 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     record_link = serializers.SerializerMethodField()
     rate = serializers.SerializerMethodField()
     deadline_days = serializers.SerializerMethodField()
+    homeworks = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
         fields = (
             'pk', 'teacher', 'teacher_avatar', 'students', 'topic', 'subject', 'materials', 'deadline',
-            'current_date',
+            'current_date', 'homeworks',
             'teacher_status', 'student_status', 'lesson_status', 'record_link', 'rate', 'deadline_days')
 
     def _user(self):
@@ -88,6 +89,11 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         if request:
             return request.user
         return None
+
+    def get_homeworks(self, instance):
+        homework = LessonHomework.objects.filter(lesson=instance).select_related()
+        serializer = LessonHomeworkSerializer(homework, many=True)
+        return serializer.data
 
     def get_teacher(self, instance):
         user = User.objects.get(pk=instance.teacher.pk)
