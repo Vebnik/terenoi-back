@@ -670,7 +670,7 @@ class LessonDoneTemplateView(TemplateView):
         lesson_pk = int(self.request.GET.get('lesson'))
         Notification.objects.create(
             lesson_id=lesson_pk,
-            to_user=user_pk,
+            to_user_id=user_pk,
             type=Notification.LESSON_DONE,
             lesson_date=datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
         )
