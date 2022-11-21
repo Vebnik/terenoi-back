@@ -160,7 +160,7 @@ class PurposeUpdateView(generics.UpdateAPIView):
 
 
 class HomeworksView(APIView):
-    """Домащние работы учеников"""
+    """ Домашние работы учеников"""
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
@@ -662,3 +662,9 @@ class LessonLinkGetter(APIView):
 
 class LessonDoneTemplateView(TemplateView):
     template_name = 'lessons/done.html'
+
+    def get(self, *args, **kwargs):
+        user_pk = int(self.request.GET.get('client'))
+        lesson_pk = int(self.request.GET.get('lesson'))
+        print(user_pk, lesson_pk)
+        return super().get(*args, **kwargs)

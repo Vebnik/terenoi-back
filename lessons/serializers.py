@@ -1257,8 +1257,6 @@ class HomeworksSerializer(serializers.ModelSerializer):
         except Exception:
             lessons_list = Lesson.objects.filter(teacher=instance,
                                                  lesson_status=Lesson.DONE)
-            print(lessons_list)
-
         if lessons_list:
             for les in lessons_list:
                 student_data = []
