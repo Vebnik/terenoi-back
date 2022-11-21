@@ -15,14 +15,15 @@ def create_new_webinar(lesson):
     webinar.save_info(webinar_response)
     webinar.refresh_from_db()
 
-    lesson.student.create_participant(
-        webinar,
-        pruffme.create_participant(
+    for student in lesson.students.all():
+        student.create_participant(
             webinar,
-            lesson.student
-        ),
-        'participant'
-    )
+            pruffme.create_participant(
+                webinar,
+                lesson.student
+            ),
+            'participant'
+        )
 
     lesson.teacher.create_participant(
         webinar,
