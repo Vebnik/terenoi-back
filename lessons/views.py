@@ -1,6 +1,8 @@
 import datetime
 import http
 
+import pytz
+from django.conf import settings
 from django.db.models import Q
 from django.http import JsonResponse
 from rest_framework import generics, status
@@ -670,5 +672,6 @@ class LessonDoneTemplateView(TemplateView):
             lesson_id=lesson_pk,
             to_user=user_pk,
             type=Notification.LESSON_DONE,
+            lesson_date=datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
         )
         return super().get(*args, **kwargs)
