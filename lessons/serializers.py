@@ -774,7 +774,7 @@ class StudentsTeacherSerializer(serializers.ModelSerializer):
             'start_date', 'end_date')
 
     def get_lessons_count(self, instance):
-        lessons_count = Lesson.objects.filter(student=instance, lesson_status=Lesson.SCHEDULED,
+        lessons_count = Lesson.objects.filter(students=instance, lesson_status=Lesson.SCHEDULED,
                                               subject=self.context.get('subject')).count()
         return lessons_count
 
@@ -782,7 +782,7 @@ class StudentsTeacherSerializer(serializers.ModelSerializer):
         return instance.get_avatar()
 
     def get_start_date(self, instance):
-        start_date = Lesson.objects.filter(student=instance, subject=self.context.get('subject'),
+        start_date = Lesson.objects.filter(students=instance, subject=self.context.get('subject'),
                                            teacher=self.context.get('teacher')).order_by('date').first()
         if start_date:
             cur_date = current_date(user=self.context.get('teacher'), date=start_date.date)
@@ -790,10 +790,10 @@ class StudentsTeacherSerializer(serializers.ModelSerializer):
         return None
 
     def get_end_date(self, instance):
-        end_date = Lesson.objects.filter(student=instance, subject=self.context.get('subject'),
+        end_date = Lesson.objects.filter(students=instance, subject=self.context.get('subject'),
                                          teacher=self.context.get('teacher'), lesson_status=Lesson.SCHEDULED)
         if not end_date:
-            end_date_inactive = Lesson.objects.filter(student=instance, subject=self.context.get('subject'),
+            end_date_inactive = Lesson.objects.filter(students=instance, subject=self.context.get('subject'),
                                                       teacher=self.context.get('teacher'),
                                                       lesson_status=Lesson.DONE).order_by('-date').first()
             if end_date_inactive:
@@ -833,18 +833,17 @@ class StudentsSerializer(serializers.ModelSerializer):
         data = []
         subjects = Lesson.objects.filter(teacher=instance).distinct('subject')
         for subject in subjects:
-            print(subject.subject.name)
             inactive_list = []
             active_list = []
             all_lessons = Lesson.objects.filter(teacher=instance, subject=subject.subject)
             for lesson in all_lessons:
                 for student in lesson.students.all():
-                    inactive = Lesson.objects.filter(teacher=instance, subject=subject.subject, students=student.student,
-                                                     lesson_status=Lesson.SCHEDULED).first()
+                    inactive = Lesson.objects.filter(teacher=instance, subject=subject.subject, students=student,
+                                                     lesson_status=Lesson.SCHEDULED).exists()
                     if not inactive:
-                        inactive_list.append(student.student)
+                        inactive_list.append(student)
                     else:
-                        active_list.append(student.student)
+                        active_list.append(student)
 
             serializer_active = StudentsTeacherSerializer(active_list, many=True,
                                                           context={'subject': subject.subject, 'teacher': instance})
