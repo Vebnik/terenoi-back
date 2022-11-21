@@ -1,21 +1,19 @@
-from authapp.models import Webinar, PruffmeAccount, WebinarRecord
+from authapp.models import Webinar, WebinarRecord
 from lessons.services.pruffme import PruffMe
 
 
-def create_new_webinar(lesson):
+def create_new_webinar(webinar_pk):
+    # lesson = Lesson.objects.get(pk=lesson_pk)
+    print(webinar_pk)
+    webinar = Webinar.objects.get(pk=webinar_pk)
     pruffme = PruffMe()
 
-    webinar = Webinar.objects.create(
-        name=f'webinar#{lesson.pk}',
-        start_date=lesson.date,
-        lesson=lesson
-    )
     webinar_response = pruffme.create_webinar(webinar)
 
     webinar.save_info(webinar_response)
     webinar.refresh_from_db()
 
-    for student in lesson.students.all():
+    for student in webinar.lesson.students.all():
         student.create_participant(
             webinar,
             pruffme.create_participant(
@@ -25,11 +23,11 @@ def create_new_webinar(lesson):
             'participant'
         )
 
-    lesson.teacher.create_participant(
+    webinar.lesson.teacher.create_participant(
         webinar,
         pruffme.create_participant(
             webinar,
-            lesson.teacher,
+            webinar.lesson.teacher,
             'moderator'
         ),
         'moderator'

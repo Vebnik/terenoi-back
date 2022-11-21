@@ -1,13 +1,8 @@
-import datetime
-
 from django.db import models
 
-from authapp.models import User, VoxiAccount
-from lessons.services import get_record, payment_for_lesson
-
-from lessons.services.webinar import create_new_webinar
+from authapp.models import User, VoxiAccount, Webinar
+from lessons import tasks
 from notifications.models import Notification
-from notifications.services import create_lesson_notifications
 from profileapp.models import TeacherSubject, Subject
 from settings.models import RateTeachers, DeadlineSettings, WeekDays
 
@@ -140,7 +135,14 @@ class Lesson(models.Model):
 
         super(Lesson, self).save(*args, **kwargs)
         if need_to_create_webinar:
-            create_new_webinar(self)
+            webinar = Webinar.objects.create(
+                name=f'webinar#{self.pk}',
+                start_date=self.date,
+                lesson=self
+            )
+            print(webinar.pk)
+            tasks.create_webinar_and_users_celery.delay(webinar.pk)
+            # create_new_webinar(self)
 
 
 class TeacherWorkHours(models.Model):
