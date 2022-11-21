@@ -540,7 +540,7 @@ class LessonEvaluationUpdateView(generics.CreateAPIView):
         else:
             if int(self.request.data.get('teacher_evaluation')) > 8:
                 manager = ManagerToUser.objects.filter(user=lesson.student).first()
-                LessonRateNotification.objects.create(to_user=lesson.student, lesson_id=self.kwargs.get('pk'),
+                LessonRateNotification.objects.create(to_user__in=lesson.students.all(), lesson_id=self.kwargs.get('pk'),
                                                       type=LessonRateNotification.LESSON_RATE_HIGH)
                 if manager:
                     ManagerNotification.objects.create(manager=manager.manager, to_user=lesson.student,
@@ -548,10 +548,10 @@ class LessonEvaluationUpdateView(generics.CreateAPIView):
                                                        type=ManagerNotification.LESSON_RATE_HIGH)
             elif int(self.request.data.get('teacher_evaluation')) <= 3:
                 manager = ManagerToUser.objects.filter(user=lesson.student).first()
-                LessonRateNotification.objects.create(to_user=lesson.student, lesson_id=self.kwargs.get('pk'),
+                LessonRateNotification.objects.create(to_user__in=lesson.students.all(), lesson_id=self.kwargs.get('pk'),
                                                       type=LessonRateNotification.LESSON_RATE_LOW)
                 if manager:
-                    ManagerNotification.objects.create(manager=manager.manager, to_user=lesson.student,
+                    ManagerNotification.objects.create(manager=manager.manager, to_user__in=lesson.students,
                                                        lesson_id=self.kwargs.get('pk'),
                                                        type=ManagerNotification.LESSON_RATE_LOW)
             return LessonTeacherEvaluationAddSerializer
@@ -565,7 +565,7 @@ class LessonEvaluationUpdateView(generics.CreateAPIView):
 class LessonEvaluationQuestionsRetrieveView(generics.RetrieveAPIView):
     """Получение вопросов для оценки урока учителем"""
     permission_classes = [IsAuthenticated]
-    queryset = Feedback.objects.all()
+    queryset = Lesson.objects.all()
     serializer_class = LessonEvaluationQuestionsSerializer
 
 

@@ -712,7 +712,7 @@ class LessonEvaluationQuestionsSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
 
     class Meta:
-        model = Feedback
+        model = Lesson
         fields = ('questions',)
 
     def get_questions(self, instance):

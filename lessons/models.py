@@ -70,6 +70,10 @@ class Lesson(models.Model):
     lesson_status = models.CharField(verbose_name='Статус урока', max_length=15, choices=LESSON_STATUS_CHOICES,
                                      default=SCHEDULED)
     deadline = models.DateTimeField(verbose_name='Сроки сдачи домашнего задания', **NULLABLE)
+    student_evaluation = models.IntegerField(verbose_name='Оценка урока учеником', **NULLABLE)
+    student_rate_comment = models.TextField(verbose_name='Комментарий студента к оценке урока', **NULLABLE)
+    teacher_evaluation = models.IntegerField(verbose_name='Оценка урока учителем', **NULLABLE)
+    teacher_rate_comment = models.TextField(verbose_name='Комментарий учителя к оценке урока', **NULLABLE)
 
     class Meta:
         verbose_name = 'Урок'
