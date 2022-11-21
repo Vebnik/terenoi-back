@@ -20,7 +20,7 @@ def create_new_webinar(lesson):
             webinar,
             pruffme.create_participant(
                 webinar,
-                lesson.student
+                student
             ),
             'participant'
         )
