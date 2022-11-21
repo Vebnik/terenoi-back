@@ -1266,22 +1266,23 @@ class HomeworksSerializer(serializers.ModelSerializer):
                 check = False
                 homeworks = LessonHomework.objects.filter(lesson=les)
                 serializer_homework = LessonHomeworkSerializer(homeworks, many=True)
-                serializer_student = UserNameSerializer(les.students)
-                if serializer_homework.data:
-                    rate = LessonRateHomework.objects.filter(lesson=les)
-                    serializer_rate = LessonRateHomeworkSerializer(rate, many=True)
-                    if serializer_rate.data:
-                        check = True
-                    data_lesson.append({
-                        'student': serializer_student.data,
-                        'lesson_id': les.pk,
-                        'lesson_count': les.lesson_number,
-                        'topic': les.topic,
-                        'homework': serializer_homework.data,
-                        'rate': serializer_rate.data,
-                        'deadline': les.deadline,
-                        'check': check
-                    })
+                for student_item in les.students.all():
+                    serializer_student = UserNameSerializer(student_item)
+                    if serializer_homework.data:
+                        rate = LessonRateHomework.objects.filter(lesson=les)
+                        serializer_rate = LessonRateHomeworkSerializer(rate, many=True)
+                        if serializer_rate.data:
+                            check = True
+                        data_lesson.append({
+                            'student': serializer_student.data,
+                            'lesson_id': les.pk,
+                            'lesson_count': les.lesson_number,
+                            'topic': les.topic,
+                            'homework': serializer_homework.data,
+                            'rate': serializer_rate.data,
+                            'deadline': les.deadline,
+                            'check': check
+                        })
 
         return data_lesson
 
