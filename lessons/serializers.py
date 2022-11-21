@@ -1266,7 +1266,7 @@ class HomeworksSerializer(serializers.ModelSerializer):
                 check = False
                 homeworks = LessonHomework.objects.filter(lesson=les)
                 serializer_homework = LessonHomeworkSerializer(homeworks, many=True)
-                serializer_student = UserNameSerializer(les.student)
+                serializer_student = UserNameSerializer(les.students)
                 if serializer_homework.data:
                     rate = LessonRateHomework.objects.filter(lesson=les)
                     serializer_rate = LessonRateHomeworkSerializer(rate, many=True)
