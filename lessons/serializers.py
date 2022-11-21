@@ -7,7 +7,7 @@ from authapp.models import User, VoxiAccount, Webinar, WebinarRecord
 from authapp.serializers import UserNameSerializer, VoxiAccountSerializer
 from finance.models import TeacherBalance, HistoryPaymentTeacher
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
-    Schedule, ScheduleSettings, TeacherWorkHours, TeacherWorkHoursSettings
+    Schedule, ScheduleSettings, TeacherWorkHours, TeacherWorkHoursSettings, Feedback
 from lessons.services import current_date
 from lessons.services.webinar import get_webinar_records
 from profileapp.models import Subject, GlobalUserPurpose
@@ -678,13 +678,13 @@ class LessonHomeworkSerializer(serializers.ModelSerializer):
 
 class LessonEvaluationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Lesson
+        model = Feedback
         fields = ('student_evaluation', 'student_rate_comment', 'teacher_evaluation', 'teacher_rate_comment')
 
 
 class LessonStudentEvaluationAddSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Lesson
+        model = Feedback
         fields = ('student_evaluation', 'student_rate_comment')
 
 
@@ -692,7 +692,7 @@ class LessonTeacherEvaluationAddSerializer(serializers.ModelSerializer):
     answers = serializers.SerializerMethodField()
 
     class Meta:
-        model = Lesson
+        model = Feedback
         fields = ('teacher_evaluation', 'answers',)
 
     def get_answers(self, instance):
@@ -712,7 +712,7 @@ class LessonEvaluationQuestionsSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
 
     class Meta:
-        model = Lesson
+        model = Feedback
         fields = ('questions',)
 
     def get_questions(self, instance):

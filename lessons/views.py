@@ -16,7 +16,7 @@ from authapp.models import User, Webinar, PruffmeAccount
 from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson, \
     send_cancel_lesson
 from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
-    ManagerRequestsRejectTeacher, TeacherWorkHours, TeacherWorkHoursSettings
+    ManagerRequestsRejectTeacher, TeacherWorkHours, TeacherWorkHoursSettings, Feedback
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsDetail, LessonHomeworksDetail, \
     LessonEvaluationSerializer, LessonStudentEvaluationAddSerializer, \
@@ -499,24 +499,25 @@ class LessonRateHomeworkRetrieveView(generics.RetrieveAPIView):
     queryset = Lesson.objects.all()
 
 
-class LessonEvaluationRetrieveView(generics.RetrieveAPIView):
+class LessonEvaluationRetrieveView(generics.ListAPIView):
     """
     Просмотр оценки урока
     """
     permission_classes = [IsAuthenticated]
     serializer_class = LessonEvaluationSerializer
-    queryset = Lesson.objects.all()
+
+    def get_queryset(self):
+        return Feedback.objects.filter(lesson_id=self.kwargs.get('pk'))
 
 
-class LessonEvaluationUpdateView(generics.UpdateAPIView):
+class LessonEvaluationUpdateView(generics.CreateAPIView):
     """
     Добавление оценки урока
     """
     permission_classes = [IsAuthenticated]
-    queryset = Lesson.objects.all()
 
     def get_serializer_class(self):
-        lesson = self.get_object()
+        lesson = Lesson.objects.get(pk=self.kwargs.get('pk'))
         if self.request.user.is_student:
             if int(self.request.data.get('student_evaluation')) > 8:
                 manager = ManagerToUser.objects.filter(user=lesson.teacher).first()
@@ -555,11 +556,16 @@ class LessonEvaluationUpdateView(generics.UpdateAPIView):
                                                        type=ManagerNotification.LESSON_RATE_LOW)
             return LessonTeacherEvaluationAddSerializer
 
+    def perform_create(self, serializer):
+        feedback_item = serializer.save()
+        feedback_item.lesson_id = self.kwargs.get('pk')
+        feedback_item.save()
+
 
 class LessonEvaluationQuestionsRetrieveView(generics.RetrieveAPIView):
     """Получение вопросов для оценки урока учителем"""
     permission_classes = [IsAuthenticated]
-    queryset = Lesson.objects.all()
+    queryset = Feedback.objects.all()
     serializer_class = LessonEvaluationQuestionsSerializer
 
 
