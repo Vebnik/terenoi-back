@@ -25,7 +25,7 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     TeacherRecruitingSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
     withdrawing_cancel_lesson
-from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification
+from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification, Notification
 from profileapp.models import Subject, ManagerToUser, GlobalUserPurpose, GlobalPurpose
 from profileapp.serializers import PurposeSerializer, GlobalPurposeSerializer
 from settings.models import WeekDays
@@ -666,5 +666,9 @@ class LessonDoneTemplateView(TemplateView):
     def get(self, *args, **kwargs):
         user_pk = int(self.request.GET.get('client'))
         lesson_pk = int(self.request.GET.get('lesson'))
-        print(user_pk, lesson_pk)
+        Notification.objects.create(
+            lesson_id=lesson_pk,
+            to_user=user_pk,
+            type=Notification.LESSON_DONE,
+        )
         return super().get(*args, **kwargs)
