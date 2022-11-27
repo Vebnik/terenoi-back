@@ -702,10 +702,10 @@ class LessonTeacherEvaluationAddSerializer(serializers.ModelSerializer):
             data += f"Вопрос:{i['question']}\n"
             data += f"Ответ:{i['answer']}\n"
 
-        # lesson = Lesson.objects.get(pk=instance.pk)
-        instance.teacher_rate_comment = data
-        instance.save()
-        return instance.teacher_rate_comment
+        lesson = Lesson.objects.get(pk=instance.lesson.pk)
+        lesson.teacher_rate_comment = data
+        lesson.save()
+        return lesson.teacher_rate_comment
 
 
 class LessonEvaluationQuestionsSerializer(serializers.ModelSerializer):
