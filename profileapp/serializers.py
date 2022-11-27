@@ -326,13 +326,13 @@ class GlobalUserPurposeSerializer(serializers.ModelSerializer):
         return instance.subject.name
 
     def get_lesson_count_all(self, instance):
-        lesson_count = Lesson.objects.filter(student=self.context.get('user'),
+        lesson_count = Lesson.objects.filter(students=self.context.get('user'),
                                              subject__name=instance.subject.name).exclude(
             lesson_status=Lesson.CANCEL).exclude(lesson_status=Lesson.RESCHEDULED).count()
         return lesson_count
 
     def get_lesson_count_done(self, instance):
-        lesson_count = Lesson.objects.filter(student=self.context.get('user'),
+        lesson_count = Lesson.objects.filter(students=self.context.get('user'),
                                              subject__name=instance.subject.name, lesson_status=Lesson.DONE).count()
         return lesson_count
 
