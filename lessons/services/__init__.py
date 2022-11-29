@@ -7,51 +7,12 @@ from voximplant.apiclient import VoximplantAPI, VoximplantException
 import finance
 import lessons
 import notifications
-from authapp.decorators import create_voxi_file
-from authapp.services import send_transfer_lesson
 from settings.models import RateTeachers
 
 
 def current_date(user, date):
     user_timezone = pytz.timezone(user.time_zone or settings.TIME_ZONE)
     return date.astimezone(user_timezone)
-
-
-@create_voxi_file
-def get_record(lesson_id, lesson_date):
-    voxapi = VoximplantAPI("authapp/json/credentials.json")
-    lesson_list = lessons.models.VoximplantRecordLesson.objects.filter(lesson__pk=lesson_id)
-    if not lesson_list:
-        return
-    for lesson in lesson_list:
-        session_id = lesson.session_id
-        lesson_from_date = lesson_date.day
-        lesson_from_date_time_delta = datetime.timedelta(days=2)
-        lesson_from = lesson_date - lesson_from_date_time_delta
-        lesson_to_date = lesson_date.day
-        lesson_to_date_timedelta = datetime.timedelta(days=1)
-        lesson_to = lesson_date + lesson_to_date_timedelta
-        FROM_DATE = datetime.datetime(lesson_date.year, lesson_date.month, lesson_from.day, 0, 0, 0, tzinfo=pytz.utc)
-        TO_DATE = datetime.datetime(lesson_date.year, lesson_date.month, lesson_to.day, 23, 59, 59, tzinfo=pytz.utc)
-        WITH_CALLS = True
-        WITH_RECORDS = True
-        print(lesson_from.day)
-        print(lesson_to.day)
-        record = ''
-        try:
-            res = voxapi.get_call_history(FROM_DATE,
-                                          TO_DATE,
-                                          with_calls=WITH_CALLS,
-                                          with_records=WITH_RECORDS,
-                                          call_session_history_id=session_id
-                                          )
-            record = res.get('result')[0].get('records')[0].get('record_url')
-            lesson.record = record
-            lesson.save()
-        except IndexError:
-            pass
-        except VoximplantException as e:
-            print("Error: {}".format(e.message))
 
 
 def request_transfer(user, lesson, manager, transfer_comment, send_func, date):

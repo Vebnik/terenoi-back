@@ -1,5 +1,4 @@
 import datetime
-import hashlib
 import random
 
 import requests
@@ -8,12 +7,11 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from rest_framework_simplejwt.tokens import RefreshToken
 from sentry_sdk import capture_message, capture_exception
-from voximplant.apiclient import VoximplantAPI, VoximplantException
-import authapp
-import settings as set_app
+
 import AmoCRM
-from authapp.decorators import create_voxi_file
+import authapp
 import profileapp
+import settings as set_app
 
 
 def generate_password():
@@ -152,34 +150,6 @@ def send_reject_cancel_lesson(user, lesson):
     }
     body = render_to_string('emails/transfer_email.html', context)
     send_mail(subject, body, settings.EMAIL_HOST_USER, [user.email], html_message=body)
-
-
-@create_voxi_file
-def create_voxi_account(username, display_name, password):
-    api = VoximplantAPI("authapp/json/credentials.json")
-    USER_NAME = username
-    USER_DISPLAY_NAME = display_name
-    USER_PASSWORD = password
-    APPLICATION_ID = settings.VOXI_APPLICATION_ID
-    try:
-        res = api.add_user(USER_NAME,
-                           USER_DISPLAY_NAME,
-                           USER_PASSWORD,
-                           application_id=APPLICATION_ID)
-
-        user_voxi = authapp.models.VoxiAccount.objects.get(voxi_username=username)
-        user_voxi.voxi_user_id = res.get('user_id')
-        user_voxi.save()
-    except VoximplantException as e:
-        print("Error: {}".format(e.message))
-
-
-def add_voxiaccount(user, username, display_name):
-    password = f'{user.username}{user.username}'
-    # password_encode = hashlib.sha1(password.encode('utf-8')).hexdigest()[:9]
-    authapp.models.VoxiAccount.objects.create(user=user, voxi_username=username, voxi_display_name=display_name,
-                                              voxi_password=password)
-    create_voxi_account(username=username, display_name=display_name, password=password)
 
 
 def slugify(string):

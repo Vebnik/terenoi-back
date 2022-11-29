@@ -6,7 +6,6 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from authapp.services import add_voxiaccount
 
 NULLABLE = {'blank': True, 'null': True}
 
@@ -86,11 +85,6 @@ class User(AbstractUser):
         if 'pbkdf2_sha256' not in self.password:
             password = make_password(self.password)
             self.password = password
-        # if self.is_teacher:
-            # voxi_user = VoxiAccount.objects.filter(user=self).first()
-            # if voxi_user is None:
-            #     username = f'Teacher-{self.pk}'
-            #     add_voxiaccount(self, username, self.username)
         super(User, self).save(*args, **kwargs)
 
     def create_participant(self, webinar, participant_data, role):
@@ -113,18 +107,6 @@ class UserStudyLanguage(models.Model):
     class Meta:
         verbose_name = 'Язык обучения пользователя'
         verbose_name_plural = 'Языки обучения пользователей'
-
-
-class VoxiAccount(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
-    voxi_user_id = models.CharField(max_length=15, **NULLABLE, verbose_name='id пользователя Voxiplant')
-    voxi_username = models.CharField(max_length=150, unique=True, verbose_name='Логин Voxiplant')
-    voxi_display_name = models.CharField(max_length=150, verbose_name='Имя Voxiplant')
-    voxi_password = models.CharField(max_length=50, verbose_name='Пароль Voxiplant')
-
-    class Meta:
-        verbose_name = 'Voxiplant Аккаунт'
-        verbose_name_plural = 'Voxiplant Аккаунты'
 
 
 class Webinar(models.Model):

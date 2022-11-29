@@ -2,7 +2,7 @@ import datetime
 
 from django.db import models
 
-from authapp.models import User, VoxiAccount, Webinar
+from authapp.models import User, Webinar
 from lessons import tasks
 from notifications.models import Notification
 from notifications.services import create_lesson_notifications
@@ -16,8 +16,7 @@ class Schedule(models.Model):
     title = models.CharField(max_length=50, **NULLABLE, verbose_name='Название')
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='schedule_teacher',
                                 limit_choices_to={'is_teacher': True})
-    students = models.ManyToManyField(User, related_name='students')
-    student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик', related_name='schedule_student',
+    students = models.ManyToManyField(User, related_name='students', verbose_name='Ученик',
                                 limit_choices_to={'is_student': True})
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     weekday = models.ManyToManyField(WeekDays, verbose_name='Дни недели')
@@ -106,7 +105,7 @@ class Lesson(models.Model):
             if not self.teacher_rate_comment:
                 self.teacher_rate_comment = questions.questions
         if self.lesson_status == Lesson.REQUEST_CANCEL:
-            create_lesson_notifications(lesson_status=self.lesson_status, studenst=self.students, teacher=self.teacher,
+            create_lesson_notifications(lesson_status=self.lesson_status, students=self.students, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
         if self.lesson_status == Lesson.CANCEL:
             create_lesson_notifications(lesson_status=self.lesson_status, students=self.students, teacher=self.teacher,
@@ -122,8 +121,7 @@ class Lesson(models.Model):
             create_lesson_notifications(lesson_status=self.lesson_status, students=self.students, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.transfer_date, lesson_id=self.pk)
         if self.lesson_status == Lesson.DONE:
-            get_record(lesson_id=self.pk, lesson_date=self.date)
-            payment_for_lesson(self)
+            # payment_for_lesson(self)  #TODO
             count = DeadlineSettings.objects.filter(subject=self.subject).first()
             if self.schedule and not self.schedule.is_completed:
                 schedule_settings = ScheduleSettings.objects.filter(shedule=self.schedule).order_by('-pk').first()
@@ -210,16 +208,6 @@ class LessonRateHomework(models.Model):
     class Meta:
         verbose_name = 'Оценки домашнего задания ученика'
         verbose_name_plural = 'Оценки домашнего задания'
-
-
-class VoximplantRecordLesson(models.Model):
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
-    session_id = models.BigIntegerField(verbose_name='Айди сессии звонка')
-    record = models.TextField(blank=True)
-
-    class Meta:
-        verbose_name = 'Данные звонка'
-        verbose_name_plural = 'Данные звонка'
 
 
 class ManagerRequests(models.Model):

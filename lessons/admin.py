@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse, path
 from django.utils.html import format_html
 
-from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
+from lessons.models import Lesson, LessonMaterials, LessonHomework, LessonRateHomework, \
     ManagerRequests, Schedule, ScheduleSettings, ManagerRequestsRejectTeacher, TeacherWorkHours, \
     TeacherWorkHoursSettings
 
@@ -27,11 +27,6 @@ class LessonMaterialsAdmin(admin.ModelAdmin):
 class LessonHomeworkAdmin(admin.ModelAdmin):
     list_display = ('lesson', 'homework', 'created_at')
     list_filter = ('lesson',)
-
-
-@admin.register(VoximplantRecordLesson)
-class VoximplantRecordLessonAdmin(admin.ModelAdmin):
-    list_display = ('lesson', 'session_id')
 
 
 @admin.register(LessonRateHomework)
@@ -106,10 +101,9 @@ class ScheduleSettingsInline(admin.TabularInline):
 
 @admin.register(Schedule)
 class ScheduleAdmin(admin.ModelAdmin):
-    list_display = ('teacher', 'student', 'title', 'is_completed')
+    list_display = ('teacher', 'title', 'is_completed')
     list_filter = ('is_completed',)
-    search_fields = ['teacher__username', 'teacher__first_name', 'teacher_last_name', 'student__username',
-                     'student__first_name', 'student__last_name']
+    search_fields = ['teacher__username', 'teacher__first_name', 'teacher_last_name']
 
     inlines = [
         ScheduleSettingsInline,

@@ -1,11 +1,10 @@
 from django.contrib import admin
-from django import forms
 from django.http import HttpResponseRedirect
 from django.urls import path
 
-from authapp.models import User, VoxiAccount, UserStudyLanguage, StudyLanguage, Webinar, PruffmeAccount
-from authapp.services import generate_password, send_generate_data, auth_alfa_account, get_students_alfa, \
-    auth_amo_account, get_amo_leads, get_amo_customers, add_func_customer, get_funnel, get_customer_status
+from authapp.models import User, UserStudyLanguage, StudyLanguage, Webinar, PruffmeAccount
+from authapp.services import generate_password, send_generate_data, auth_alfa_account, auth_amo_account, \
+    add_func_customer, get_funnel, get_customer_status
 from authapp.tasks import get_student_alfa_celery, get_leads_amo_celery, get_customers_amo_celery
 from profileapp.models import ManagerToUser
 from settings.models import GeneralContacts
@@ -59,11 +58,6 @@ class UserAdmin(admin.ModelAdmin):
         if not user:
             ManagerToUser.objects.create(manager=request.user, user=obj)
         super(UserAdmin, self).save_model(request, obj, form, change)
-
-
-@admin.register(VoxiAccount)
-class VoxiAccountAdmin(admin.ModelAdmin):
-    list_display = ('user', 'voxi_username', 'voxi_display_name')
 
 
 @admin.register(StudyLanguage)

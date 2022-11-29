@@ -1,19 +1,11 @@
-import datetime
-
-from django.conf import settings
-from django.core.mail import send_mail
-from django.shortcuts import render
-
-# Create your views here.
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from sentry_sdk import capture_message
 
-import authapp
-from AmoCRM.models import Leads, Funnel, FunnelStatus, Clients, Customers, CustomerStatus
-from AmoCRM.services import get_amo_contact_leads, get_leads_data, get_contacts_data, get_customer_user, \
+from AmoCRM.models import Leads, Clients, Customers
+from AmoCRM.services import get_contacts_data, get_customer_user, \
     get_leads_data_add, get_customer_data
 from authapp.services import auth_amo_account
 

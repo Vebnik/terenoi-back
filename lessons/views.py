@@ -15,7 +15,7 @@ from django.views.generic import TemplateView
 from authapp.models import User, Webinar, PruffmeAccount
 from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson, \
     send_cancel_lesson
-from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
+from lessons.models import Lesson, LessonMaterials, LessonHomework, LessonRateHomework, \
     ManagerRequestsRejectTeacher, TeacherWorkHours, TeacherWorkHoursSettings, Feedback
 from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer, VoxiStudentInfoSerializer, \
     UserLessonsCreateSerializer, TeacherStatusUpdate, StudentStatusUpdate, LessonMaterialsDetail, LessonHomeworksDetail, \
@@ -622,7 +622,7 @@ class CreateVoxiCallData(APIView):
         session_id = self.request.query_params.get('session_id')
         try:
             lesson = Lesson.objects.filter(pk=int(lesson_id)).first()
-            VoximplantRecordLesson.objects.create(lesson=lesson, session_id=int(session_id))
+            # VoximplantRecordLesson.objects.create(lesson=lesson, session_id=int(session_id))  TODO
             return Response({'message': 'Данные добавлены'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': 'Данные не добавлены'}, status=status.HTTP_404_NOT_FOUND)

@@ -2,7 +2,7 @@ from django.db.models import Q
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from authapp.models import User, VoxiAccount, UserStudyLanguage, StudyLanguage
+from authapp.models import User, UserStudyLanguage, StudyLanguage
 from finance.models import TeacherBankData
 from profileapp.models import ReferralPromo
 from profileapp.services import generateRefPromo
@@ -118,12 +118,6 @@ class ProfileTeacherDetailSerializer(serializers.ModelSerializer):
     def get_avatar(self, instance):
         print(instance.get_avatar())
         return instance.get_avatar()
-
-
-class VoxiAccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = VoxiAccount
-        fields = ('voxi_username', 'voxi_password')
 
 
 class StudyLanguageSerializer(serializers.ModelSerializer):

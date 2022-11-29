@@ -3,10 +3,10 @@ import datetime
 from dateutil.rrule import rrule, DAILY
 from rest_framework import serializers
 
-from authapp.models import User, VoxiAccount, Webinar, WebinarRecord
-from authapp.serializers import UserNameSerializer, VoxiAccountSerializer
+from authapp.models import User, WebinarRecord
+from authapp.serializers import UserNameSerializer
 from finance.models import TeacherBalance, HistoryPaymentTeacher
-from lessons.models import Lesson, LessonMaterials, LessonHomework, VoximplantRecordLesson, LessonRateHomework, \
+from lessons.models import Lesson, LessonMaterials, LessonHomework, LessonRateHomework, \
     Schedule, ScheduleSettings, TeacherWorkHours, TeacherWorkHoursSettings, Feedback
 from lessons.services import current_date
 from lessons.services.webinar import get_webinar_records

@@ -9,13 +9,10 @@ from lessons.models import ScheduleSettings, Lesson, Schedule
 
 @receiver(post_save, sender=ScheduleSettings)
 def add_schedule_settings(sender, instance, **kwargs):
-    print(instance.shedule.student)
-    print(instance.shedule.teacher)
-    print(instance.near_lesson)
-    lesson = Lesson.objects.filter(student=instance.shedule.student, teacher=instance.shedule.teacher,
+    lesson = Lesson.objects.filter(students__in=instance.shedule.students.all(), teacher=instance.shedule.teacher,
                                    date=instance.near_lesson)
 
-    lesson_last = Lesson.objects.filter(student=instance.shedule.student, teacher=instance.shedule.teacher,
+    lesson_last = Lesson.objects.filter(students__in=instance.shedule.students.all(), teacher=instance.shedule.teacher,
                                    date=instance.last_lesson)
     if lesson or lesson_last:
         pass
@@ -29,8 +26,11 @@ def add_schedule_settings(sender, instance, **kwargs):
 
         len_date_list = len(list(date_list))
         for i, date in enumerate(list(date_list)):
-            Lesson.objects.create(student=instance.shedule.student, teacher=instance.shedule.teacher,
+            new_lesson = Lesson.objects.create(teacher=instance.shedule.teacher,
                                   subject=instance.shedule.subject, date=date, schedule=instance.shedule)
+            for student in instance.shedule.students.all():
+                new_lesson.students.add(student)
+            new_lesson.save()
             if i == len_date_list - 1:
                 instance.last_lesson = date
                 instance.save()
@@ -40,7 +40,7 @@ def add_schedule_settings(sender, instance, **kwargs):
 def add_schedule(sender, instance, **kwargs):
     try:
         old_instance = Schedule.objects.get(id=instance.id)
-        lessons = Lesson.objects.filter(student=instance.student, teacher=old_instance.teacher,
+        lessons = Lesson.objects.filter(students__in=instance.students.all(), teacher=old_instance.teacher,
                                         subject=instance.subject)
         lessons.update(teacher=instance.teacher)
     except Schedule.DoesNotExist:
