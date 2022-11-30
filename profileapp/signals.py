@@ -17,7 +17,7 @@ def create_ref_link(sender, instance, created, **kwargs):
             user_balance = finance.models.StudentBalance.objects.filter(user=instance).first()
             if not user_balance:
                 finance.models.StudentBalance.objects.create(user=instance)
-        else:
+        elif instance.is_teacher:
             user_balance = finance.models.TeacherBalance.objects.filter(user=instance).first()
             if not user_balance:
                 finance.models.TeacherBalance.objects.create(user=instance)

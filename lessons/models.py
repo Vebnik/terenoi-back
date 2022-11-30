@@ -13,7 +13,7 @@ NULLABLE = {'blank': True, 'null': True}
 
 
 class Schedule(models.Model):
-    title = models.CharField(max_length=50, **NULLABLE, verbose_name='Название')
+    title = models.CharField(max_length=50, verbose_name='Название')
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='schedule_teacher',
                                 limit_choices_to={'is_teacher': True})
     students = models.ManyToManyField(User, related_name='students', verbose_name='Ученик',
@@ -23,7 +23,7 @@ class Schedule(models.Model):
     is_completed = models.BooleanField(verbose_name='Завершенно', default=False)
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     class Meta:
         verbose_name = 'Расписание'
