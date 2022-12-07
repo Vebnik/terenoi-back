@@ -68,7 +68,7 @@ class PruffMe:
 
     def get_webinar_record(self, webinar):
         content = {
-            'webinar': '2addcc9e33d6f9a2bec5dd45f410d293', #webinar.hash,
+            'webinar': webinar.hash, #webinar.hash,
             'limit': 10,
             'offset': 0
         }
