@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.urls import path
 
-from authapp.models import User, UserStudyLanguage, StudyLanguage, Webinar, PruffmeAccount
+from authapp.models import User, UserStudyLanguage, StudyLanguage, Webinar, PruffmeAccount, Group
 from authapp.services import generate_password, send_generate_data, auth_alfa_account, auth_amo_account, \
     add_func_customer, get_funnel, get_customer_status
 from authapp.tasks import get_student_alfa_celery, get_leads_amo_celery, get_customers_amo_celery
@@ -18,7 +18,7 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ['username', 'first_name', 'last_name']
 
     def get_urls(self):
-        urls = super(UserAdmin, self).get_urls()
+        urls = super().get_urls()
         custom_urls = [
             path('import/', self.process_import, name='process_import'),
             path('import-leads/', self.process_import_leads, name='process_import_leads'),
@@ -58,6 +58,13 @@ class UserAdmin(admin.ModelAdmin):
         if not user:
             ManagerToUser.objects.create(manager=request.user, user=obj)
         super(UserAdmin, self).save_model(request, obj, form, change)
+
+
+@admin.register(Group)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('title', 'teacher', 'status')
+    list_filter = ('teacher', 'status')
+    search_fields = ['title', 'teacher', 'status']
 
 
 @admin.register(StudyLanguage)

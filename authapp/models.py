@@ -100,6 +100,36 @@ class User(AbstractUser):
         )
 
 
+class Group(models.Model):
+    STATUS_OPEN = 'open'
+    STATUS_LEARN = 'lear'
+    STATUS_DONE = 'done'
+
+    STATUSES = (
+        (STATUS_OPEN, 'Идет набор'),
+        (STATUS_LEARN, 'Обучается'),
+        (STATUS_DONE, 'Завершена'),
+    )
+    title = models.CharField(max_length=50, verbose_name='Название группы')
+    description = models.TextField(verbose_name='Описание')
+    english_level = models.CharField(max_length=50, choices=User.LEVEL_CHOICES, default=User.BEGINNER,
+                                     verbose_name='Уровень английского')
+    status = models.CharField(choices=STATUSES, default=STATUS_OPEN, max_length=15, verbose_name='Статус')
+
+    alfa_id = models.BigIntegerField(verbose_name='Номер из alfa crm', **NULLABLE)
+
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ответственный преподаватель')
+
+    students = models.ManyToManyField(User, verbose_name='Ученики', related_name='group_students')
+
+    class Meta:
+        verbose_name = 'группа'
+        verbose_name_plural = 'группы'
+
+    def __str__(self):
+        return f'{self.title}'
+
+
 class UserStudyLanguage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
     language = models.ManyToManyField(StudyLanguage, verbose_name='Язык обучения')

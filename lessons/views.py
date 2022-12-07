@@ -680,4 +680,9 @@ class LessonDoneTemplateView(TemplateView):
             type=Notification.LESSON_DONE,
             lesson_date=datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
         )
+        user_item = User.objects.get(pk=user_pk)
+        if user_item.is_teacher:
+            lesson_item = Lesson.objects.get(pk=lesson_pk)
+            lesson_item.lesson_status = Lesson.DONE
+            lesson_item.save()
         return super().get(*args, **kwargs)
