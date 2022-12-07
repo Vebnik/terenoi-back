@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'base',
     'finance',
     'lessons',
+    'manager',
     'notifications',
     'profileapp',
     'settings',
@@ -119,7 +120,7 @@ REST_FRAMEWORK = {
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
 AUTH_USER_MODEL = 'authapp.User'
-LOGIN_URL = '/api/auth/login/'
+LOGIN_URL = '/admin/login/'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
