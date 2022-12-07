@@ -2,7 +2,7 @@ import datetime
 
 from django.db import models
 
-from authapp.models import User, Webinar
+from authapp.models import User, Webinar, Group
 from lessons import tasks
 from notifications.models import Notification
 from notifications.services import create_lesson_notifications
@@ -16,11 +16,14 @@ class Schedule(models.Model):
     title = models.CharField(max_length=50, verbose_name='Название')
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='schedule_teacher',
                                 limit_choices_to={'is_teacher': True})
-    students = models.ManyToManyField(User, related_name='students', verbose_name='Ученик',
-                                limit_choices_to={'is_student': True})
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='schedule_group', **NULLABLE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     weekday = models.ManyToManyField(WeekDays, verbose_name='Дни недели')
     is_completed = models.BooleanField(verbose_name='Завершенно', default=False)
+
+    @property
+    def students(self):
+        return self.group.students.all()
 
     def __str__(self):
         return f'{self.title}'
@@ -58,7 +61,8 @@ class Lesson(models.Model):
     lesson_number = models.IntegerField(verbose_name='Номер урока', **NULLABLE)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='lesson_teacher',
                                 limit_choices_to={'is_teacher': True})
-    students = models.ManyToManyField(User, related_name='lesson_student', limit_choices_to={'is_student': True})
+    # students = models.ManyToManyField(User, related_name='lesson_student', limit_choices_to={'is_student': True})
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='lesson_group', **NULLABLE)
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, verbose_name='Расписание', **NULLABLE)
     topic = models.CharField(verbose_name='Тема урока', **NULLABLE, max_length=255)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
@@ -76,6 +80,10 @@ class Lesson(models.Model):
     student_rate_comment = models.TextField(verbose_name='Комментарий студента к оценке урока', **NULLABLE)
     teacher_evaluation = models.IntegerField(verbose_name='Оценка урока учителем', **NULLABLE)
     teacher_rate_comment = models.TextField(verbose_name='Комментарий учителя к оценке урока', **NULLABLE)
+
+    @property
+    def students(self):
+        return self.group.students.all()
 
     class Meta:
         verbose_name = 'Урок'
