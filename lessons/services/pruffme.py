@@ -76,7 +76,7 @@ class PruffMe:
         result = self._send_request('webinar-records', content)
         current_record = ''
         current_record_length = 0
-        print(result)
+
         if 'result' in result and len(result.get('result')) > 0:
             result = result.get('result')[0]
             if result.get('children'):

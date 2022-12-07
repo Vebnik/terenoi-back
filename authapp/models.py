@@ -69,6 +69,7 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False, verbose_name='Верефицирован')
     is_online = models.BooleanField(default=False, verbose_name='Онлайн')
     is_crm = models.BooleanField(default=False, verbose_name='Из alfa/amo crm')
+    crm_data = models.TextField(**NULLABLE)
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -118,9 +119,11 @@ class Group(models.Model):
 
     alfa_id = models.BigIntegerField(verbose_name='Номер из alfa crm', **NULLABLE)
 
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ответственный преподаватель')
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ответственный преподаватель', **NULLABLE)
 
     students = models.ManyToManyField(User, verbose_name='Ученики', related_name='group_students')
+
+    crm_data = models.TextField(**NULLABLE)
 
     class Meta:
         verbose_name = 'группа'

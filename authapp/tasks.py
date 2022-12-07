@@ -4,13 +4,15 @@ import requests
 
 import AmoCRM
 from authapp.services import get_students_alfa, get_funnel, get_amo_leads, get_customer_status, add_func_customer, \
-    get_amo_customers
+    get_amo_customers, get_groups_alfa, get_cgi_alfa
 from terenoi.celery import app
 
 
 @app.task
 def get_student_alfa_celery(token):
     get_students_alfa(token)
+    get_groups_alfa(token)
+    get_cgi_alfa(token)
 
 
 @app.task

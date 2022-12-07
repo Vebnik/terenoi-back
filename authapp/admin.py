@@ -63,8 +63,8 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Group)
 class UserAdmin(admin.ModelAdmin):
     list_display = ('title', 'teacher', 'status')
-    list_filter = ('teacher', 'status')
-    search_fields = ['title', 'teacher', 'status']
+    list_filter = ('status',)
+    search_fields = ['title', 'alfa_id']
 
 
 @admin.register(StudyLanguage)

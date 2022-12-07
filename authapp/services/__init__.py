@@ -1,5 +1,6 @@
 import datetime
 import random
+import time
 
 import requests
 from django.conf import settings
@@ -10,7 +11,6 @@ from sentry_sdk import capture_message, capture_exception
 
 import AmoCRM
 import authapp
-import profileapp
 import settings as set_app
 
 
@@ -206,64 +206,145 @@ def auth_alfa_account():
     return token
 
 
-def get_students_alfa(token):
+def _get_customer_index(token, page=0):
     headers = {
         'X-ALFACRM-TOKEN': token
     }
     data = {
-        'study_status_id': 1
+        'study_status_id': 1,
+        'page': page,
     }
     url = f'{settings.ALFA_HOST_NAME}v2api/{1}/customer/index'
+
     response = requests.post(url=url, headers=headers, json=data)
-    capture_message(response.json())
     try:
-        student_list = response.json().get('items')
+        return response.json().get('items'), response.json().get('total')
+    except:
+        return [], 0
+
+
+def _get_cgi_index(token, group_id):
+    headers = {
+        'X-ALFACRM-TOKEN': token
+    }
+    data = {
+    }
+    url = f'{settings.ALFA_HOST_NAME}v2api/{1}/cgi/index?group_id={group_id}'
+
+    response = requests.post(url=url, headers=headers, json=data)
+    print(response.json())
+    try:
+        return response.json().get('items')
+    except:
+        return []
+
+
+def get_cgi_alfa(token):
+    for group in authapp.models.Group.objects.all():
+        customers_alfa_ids = []
+        for item in _get_cgi_index(token, group.alfa_id):
+            customers_alfa_ids.append(item.get('customer_id', 0))
+
+        list_of_users = list(authapp.models.User.objects.filter(alfa_id__in=customers_alfa_ids))
+        group.students.add(*list_of_users)
+        group.save()
+        time.sleep(1)
+
+
+def _get_group_index(token, page):
+    headers = {
+        'X-ALFACRM-TOKEN': token
+    }
+    data = {
+        'page': page
+    }
+    url = f'{settings.ALFA_HOST_NAME}v2api/{1}/group/index'
+
+    response = requests.post(url=url, headers=headers, json=data)
+    print(response.json())
+    try:
+        return response.json().get('items'), response.json().get('total')
+    except:
+        return [], 0
+
+
+def get_groups_alfa(token):
+    page = 0
+    limit_per_page = 20
+    group_list, total_count = _get_group_index(token, page)
+    while (page + 1) * limit_per_page <= total_count:
+        groups_for_create = []
+        for group in group_list:
+            alfa_student = authapp.models.Group.objects.filter(alfa_id=group.get("id"))
+            if not alfa_student:
+                groups_for_create.append(
+                    authapp.models.Group(
+                        title=group.get('name'),
+                        alfa_id=group.get("id"),
+                        crm_data=group
+                    )
+                )
+
+        authapp.models.Group.objects.bulk_create(
+            groups_for_create,
+            ignore_conflicts=True
+        )
+
+        time.sleep(1)
+        page += 1
+        group_list, total_count = _get_group_index(token, page)
+
+
+def get_students_alfa(token):
+    page = 0
+    limit_per_page = 20
+    student_list, total_count = _get_customer_index(token)
+    while (page + 1) * limit_per_page <= total_count:
+        users_for_create = []
         for student in student_list:
             alfa_student = authapp.models.User.objects.filter(alfa_id=student.get("id"))
-            if alfa_student:
-                pass
-            else:
-                name = student.get('name').split(' ')[:2]
-                name_list = []
-                for item in name:
-                    k = slugify(item.lower())
-                    name_list.append(k)
-                username = f'{name_list[1][0]}.{name_list[0]}'
-                alfa_id = student.get("id")
-                first_name = name[1]
-                last_name = name[0]
-                student_phone = None
-                parent = student.get('legal_name')
+            if not alfa_student:
+                user_tmp_object = {
+                    'password': '123qwe456rty',
+                    'is_crm': True,
+                    'crm_data': student
+                }
+
+                name_list = student.get('name').split(' ')[:2]
+
+                user_tmp_object['username'] = slugify(f'{" ".join(name_list)}')
+                user_tmp_object['alfa_id'] = student.get("id")
+
+                if len(name_list) > 0:
+                    user_tmp_object['first_name'] = name_list[0]
+                if len(name_list) > 1:
+                    user_tmp_object['last_name'] = name_list[1]
+
+                user_tmp_object['birth_date'] = student.get('b_date').split(' ')[0]
+
                 phones = student.get('phone')
-                b_date = student.get('b_date').split(' ')[0]
                 if phones:
+                    student_phone = None
                     for index, phone in enumerate(phones):
                         if index == 0:
                             student_phone = phone
                             phones.remove(student_phone)
-                    user = authapp.models.User.objects.create_user(username=username, first_name=first_name,
-                                                                   last_name=last_name,
-                                                                   phone=student_phone, password='qwe123rty456',
-                                                                   birth_date=b_date,
-                                                                   is_crm=True, alfa_id=alfa_id)
-                else:
-                    user = authapp.models.User.objects.create_user(username=username, first_name=first_name,
-                                                                   last_name=last_name,
-                                                                   password='qwe123rty456',
-                                                                   birth_date=b_date,
-                                                                   is_crm=True, alfa_id=alfa_id)
+                    user_tmp_object['phone'] = student_phone
 
-                if phones:
-                    count = 0
-                    for phone in phones:
-                        if parent and count == 0:
-                            profileapp.models.UserParents.objects.create(user=user, parent_phone=phone,
-                                                                         full_name=parent)
-                            count += 1
-                        else:
-                            profileapp.models.UserParents.objects.create(user=user, parent_phone=phone)
-    except Exception as e:
-        capture_exception(e)
+                users_for_create.append(
+                    authapp.models.User(
+                        **user_tmp_object
+                    )
+                )
+
+        authapp.models.User.objects.bulk_create(
+            users_for_create,
+            ignore_conflicts=True
+        )
+
+        time.sleep(1)
+        page += 1
+        student_list, total_count = _get_customer_index(token, page)
 
 
 def auth_amo_account():
