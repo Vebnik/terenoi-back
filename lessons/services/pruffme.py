@@ -68,7 +68,7 @@ class PruffMe:
 
     def get_webinar_record(self, webinar):
         content = {
-            'webinar': webinar.hash, #webinar.hash,
+            'webinar': webinar.hash,
             'limit': 10,
             'offset': 0
         }
@@ -76,11 +76,16 @@ class PruffMe:
         result = self._send_request('webinar-records', content)
         current_record = ''
         current_record_length = 0
+        print(result)
         if 'result' in result and len(result.get('result')) > 0:
             result = result.get('result')[0]
-            for child in result.get('children'):
-                if int(child.get('duration')) > current_record_length:
-                    current_record = child.get('url')
-                    current_record_length = int(child.get('duration'))
+            if result.get('children'):
+                for child in result.get('children'):
+                    if int(child.get('duration')) > current_record_length:
+                        current_record = child.get('url')
+                        current_record_length = int(child.get('duration'))
+            else:
+                if 'url' in result:
+                    current_record = result.get('url')
 
         return current_record
