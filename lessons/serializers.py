@@ -187,7 +187,7 @@ class HomepageTeacherSerializer(serializers.ModelSerializer):
 
     def get_student_count(self, instance):
         student_count = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.SCHEDULED).distinct(
-            'students').count()
+            'group__students').count()
         return student_count
 
     def get_balance(self, instance):
