@@ -20,7 +20,7 @@ def create_new_webinar(webinar_pk):
     webinar.save_info(webinar_response)
     webinar.refresh_from_db()
 
-    for student in webinar.lesson.students.all():
+    for student in webinar.lesson.group.students.all():
         student.create_participant(
             webinar,
             pruffme.create_participant(

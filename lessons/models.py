@@ -83,7 +83,7 @@ class Lesson(models.Model):
 
     @property
     def students(self):
-        return self.group.students.all()
+        return self.group.students
 
     class Meta:
         verbose_name = 'Урок'
@@ -107,26 +107,26 @@ class Lesson(models.Model):
                 self.lesson_number = lesson_count + 1
             else:
                 self.lesson_number = lesson_count.count() + 1
-            create_lesson_notifications(lesson_status=self.lesson_status, students=self.students, teacher=self.teacher,
+            create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
             questions = Subject.objects.filter(name=self.subject.name).first()
             if not self.teacher_rate_comment:
                 self.teacher_rate_comment = questions.questions
         if self.lesson_status == Lesson.REQUEST_CANCEL:
-            create_lesson_notifications(lesson_status=self.lesson_status, students=self.students, teacher=self.teacher,
+            create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
         if self.lesson_status == Lesson.CANCEL:
-            create_lesson_notifications(lesson_status=self.lesson_status, students=self.students, teacher=self.teacher,
+            create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
         if self.student_status and self.teacher_status and self.lesson_status == Lesson.SCHEDULED:
             self.lesson_status = Lesson.PROGRESS
-            create_lesson_notifications(lesson_status=self.lesson_status, students=self.students, teacher=self.teacher,
+            create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
         if self.lesson_status == Lesson.REQUEST_RESCHEDULED:
-            create_lesson_notifications(lesson_status=self.lesson_status, students=self.students, teacher=self.teacher,
+            create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
         if self.lesson_status == Lesson.RESCHEDULED:
-            create_lesson_notifications(lesson_status=self.lesson_status, students=self.students, teacher=self.teacher,
+            create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
                                         teacher_status=self.teacher_status, date=self.transfer_date, lesson_id=self.pk)
         if self.lesson_status == Lesson.DONE:
             # payment_for_lesson(self)  #TODO
