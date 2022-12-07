@@ -41,7 +41,7 @@ class AllUserLessonsListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.is_student:
-            queryset = Lesson.objects.filter(students=self.request.user).order_by('date').select_related()
+            queryset = Lesson.objects.filter(group__students=self.request.user).order_by('date').select_related()
         else:
             queryset = Lesson.objects.filter(teacher=self.request.user).order_by('date').select_related()
         return queryset
@@ -57,10 +57,10 @@ class AllUserClassesListView(generics.ListAPIView):
         if user.is_student:
             time_delta = datetime.timedelta(days=1)
             day_now = datetime.datetime.now()
-            lesson_query = Lesson.objects.filter(students=self.request.user,
+            lesson_query = Lesson.objects.filter(group__students=self.request.user,
                                                  date__lte=day_now.date() + time_delta).order_by('-date')
             lesson_shedule = Lesson.objects.filter(
-                Q(students=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
+                Q(group__students=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
             if lesson_shedule in lesson_query:
                 lesson_list = lesson_query.dates('date', 'day').order_by('-date')
             else:

@@ -24,13 +24,13 @@ class StudentBalanceSerializer(serializers.ModelSerializer):
 
     def get_lessons_count(self, instance):
         user = self._user()
-        lessons_count = Lesson.objects.filter(students=user).exclude(
+        lessons_count = Lesson.objects.filter(group__students=user).exclude(
             Q(lesson_status=Lesson.RESCHEDULED) & Q(lesson_status=Lesson.CANCEL)).count()
-        lessons_count_done = Lesson.objects.filter(students=user, lesson_status=Lesson.DONE).count()
-        lesson = Lesson.objects.filter(students=user).order_by('-date')[:1].first()
+        lessons_count_done = Lesson.objects.filter(group__students=user, lesson_status=Lesson.DONE).count()
+        lesson = Lesson.objects.filter(group__students=user).order_by('-date')[:1].first()
         if not lesson:
             return 0
-        lesson_date = Lesson.objects.filter(students=user).order_by('-date')[:1].first().date
+        lesson_date = Lesson.objects.filter(group__students=user).order_by('-date')[:1].first().date
         date = current_date(user=user, date=lesson_date)
         return [lessons_count, lessons_count_done, date.date()]
 
