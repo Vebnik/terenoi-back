@@ -539,21 +539,23 @@ class LessonEvaluationUpdateView(generics.CreateAPIView):
             return LessonStudentEvaluationAddSerializer
         else:
             if int(self.request.data.get('teacher_evaluation')) > 8:
-                manager = ManagerToUser.objects.filter(user=lesson.student).first()
-                LessonRateNotification.objects.create(to_user__in=lesson.students.all(), lesson_id=self.kwargs.get('pk'),
-                                                      type=LessonRateNotification.LESSON_RATE_HIGH)
-                if manager:
-                    ManagerNotification.objects.create(manager=manager.manager, to_user=lesson.student,
-                                                       lesson_id=self.kwargs.get('pk'),
-                                                       type=ManagerNotification.LESSON_RATE_HIGH)
+                pass
+                # manager = ManagerToUser.objects.filter(user=lesson.student).first()
+                # LessonRateNotification.objects.create(to_user__in=lesson.students.all(), lesson_id=self.kwargs.get('pk'),
+                #                                       type=LessonRateNotification.LESSON_RATE_HIGH)
+                # if manager:
+                #     ManagerNotification.objects.create(manager=manager.manager, to_user=lesson.student,
+                #                                        lesson_id=self.kwargs.get('pk'),
+                #                                        type=ManagerNotification.LESSON_RATE_HIGH)
             elif int(self.request.data.get('teacher_evaluation')) <= 3:
-                manager = ManagerToUser.objects.filter(user=lesson.student).first()
-                LessonRateNotification.objects.create(to_user__in=lesson.students.all(), lesson_id=self.kwargs.get('pk'),
-                                                      type=LessonRateNotification.LESSON_RATE_LOW)
-                if manager:
-                    ManagerNotification.objects.create(manager=manager.manager, to_user__in=lesson.students,
-                                                       lesson_id=self.kwargs.get('pk'),
-                                                       type=ManagerNotification.LESSON_RATE_LOW)
+                pass
+                # manager = ManagerToUser.objects.filter(user=lesson.student).first()
+                # LessonRateNotification.objects.create(to_user__in=lesson.students.all(), lesson_id=self.kwargs.get('pk'),
+                #                                       type=LessonRateNotification.LESSON_RATE_LOW)
+                # if manager:
+                #     ManagerNotification.objects.create(manager=manager.manager, to_user__in=lesson.students,
+                #                                        lesson_id=self.kwargs.get('pk'),
+                #                                        type=ManagerNotification.LESSON_RATE_LOW)
             return LessonTeacherEvaluationAddSerializer
 
     def perform_create(self, serializer):
