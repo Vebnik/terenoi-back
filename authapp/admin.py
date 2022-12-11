@@ -53,11 +53,11 @@ class UserAdmin(admin.ModelAdmin):
             obj.password = gen_password
             send_generate_data(obj, gen_password)
             obj.is_pass_generation = False
-        super(UserAdmin, self).save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change)
         user = ManagerToUser.objects.filter(user=obj).first()
         if not user:
             ManagerToUser.objects.create(manager=request.user, user=obj)
-        super(UserAdmin, self).save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(Group)
