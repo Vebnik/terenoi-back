@@ -11,3 +11,15 @@ Deploy to stage:
         - develop
     tags:
         - dev
+
+
+Deploy to prod:
+    stage: deploy
+    script:
+        - cp $ENV_PROD .env
+        - bash deploy.sh
+        - ln -s /home/gitlab-runner/media/ /home/gitlab-runner/projects/back/
+    only:
+        - main
+    tags:
+        - prod
