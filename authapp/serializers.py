@@ -72,7 +72,11 @@ class UserLoginSerializer(TokenObtainPairSerializer):
             'username': '',
             'password': attrs.get("password")
         }
-        user_obj = User.objects.filter(Q(email=attrs.get("username")) & Q(is_verified=True)).first()
+        username_for_email = attrs.get("username").lower()
+        username_for_phone = attrs.get("username")
+        username_for_phone = username_for_phone.replace(' ', '').replace(')', '').replace('(', '').replace('-', '').replace('+', '')
+        check_for_email_and_phone = Q(Q(phone=username_for_phone) | Q(email=username_for_email))
+        user_obj = User.objects.filter(check_for_email_and_phone & Q(is_verified=True)).first()
         if user_obj:
             credentials['username'] = user_obj.username
         return super().validate(credentials)
