@@ -1,0 +1,22 @@
+version: '3.7'
+services:
+  app:
+    tty: True
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - 8073:8000
+    env_file:
+      - ./terenoi/.env
+    depends_on:
+      - db
+  db:
+    tty: True
+    stdin_open: true
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres

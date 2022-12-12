@@ -1,0 +1,58 @@
+# without ssl
+server {
+    server_name back.jtstudy.kz;
+    listen 80;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root /home/gitlab-runner/projects/back;
+    }
+
+    location /media/ {
+        root /home/gitlab-runner/projects/back;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/home/gitlab-runner/projects/back/backend.sock;
+    }
+
+}
+
+# with ssl
+server {
+    server_name back.jtstudy.kz;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root /home/gitlab-runner/projects/terenoi;
+    }
+
+    location /media/ {
+        root /home/gitlab-runner/projects/terenoi;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/home/gitlab-runner/projects/terenoi/backend.sock;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/back.jtstudy.kz/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/back.jtstudy.kz/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+
+server {
+    if ($host = back.jtstudy.kz) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    server_name back.jtstudy.kz;
+    return 404; # managed by Certbot
+
+
+}

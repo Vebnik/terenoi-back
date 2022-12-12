@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Понедельник",
+    "number": 0,
+    "american_number": 1
+  },
+  {
+    "name": "Вторник",
+    "number": 1,
+    "american_number": 2
+  },
+  {
+    "name": "Среда",
+    "number": 2,
+    "american_number": 3
+  },
+  {
+    "name": "Четверг",
+    "number": 3,
+    "american_number": 4
+  },
+  {
+    "name": "Пятница",
+    "number": 4,
+    "american_number": 5
+  },
+  {
+    "name": "Суббота",
+    "number": 5,
+    "american_number": 6
+  },
+  {
+    "name": "Воскресенье",
+    "number": 6,
+    "american_number": 0
+  }
+]

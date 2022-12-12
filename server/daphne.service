@@ -1,0 +1,12 @@
+[Unit]
+Description=WebSocket Daphne Service
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/home/gitlab-runner/projects/back/
+ExecStart=/home/gitlab-runner/projects/back/env/bin/daphne -e ssl:8443:privateKey=/etc/letsencrypt/live/back.jtstudy.kz/privkey.pem:certKey=/etc/letsencrypt/live/back.jtstudy.kz/cert.pem terenoi.asgi:application
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

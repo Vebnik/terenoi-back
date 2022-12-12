@@ -1,0 +1,13 @@
+stages:
+    - deploy
+
+Deploy to stage:
+    stage: deploy
+    script:
+        - cp $ENV_STAGE .env
+        - bash deploy.sh
+        - ln -s /home/gitlab-runner/media/ /home/gitlab-runner/projects/back/
+    only:
+        - develop
+    tags:
+        - dev
