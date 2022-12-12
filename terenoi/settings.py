@@ -217,6 +217,9 @@ CORS_ORIGIN_WHITELIST = [
     'https://student.jtstudy.kz',
     'https://teacher.jtstudy.kz',
     'https://pruffme.com',
+    'http://slot6t.oscarbot.ru/'
+    'http://slot6f.oscarbot.ru/'
+    'http://slot6b.oscarbot.ru/'
 ]
 
 CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
