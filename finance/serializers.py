@@ -111,7 +111,7 @@ class TeacherBalanceSerializer(serializers.ModelSerializer):
         teacher_subject = TeacherSubject.objects.filter(user=self._user())
         teacher_rate = TeacherRate.objects.filter(teacher=self._user())
         if not teacher_subject:
-            return None
+            return 0
         else:
             if not teacher_rate:
                 for subj in teacher_subject:
