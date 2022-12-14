@@ -192,7 +192,7 @@ class HomepageTeacherSerializer(serializers.ModelSerializer):
 
     def get_balance(self, instance):
         balance = TeacherBalance.objects.filter(user=instance).first().money_balance
-        return balance
+        return balance if balance else 0
 
     def get_payment_date(self, instance):
         data = []
@@ -225,7 +225,7 @@ class HomepageTeacherSerializer(serializers.ModelSerializer):
             average = sum(data) / len(data)
             return average
         else:
-            return None
+            return 0
 
     def get_next_lesson(self, instance):
         lesson_pr = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.PROGRESS).order_by('date').first()
