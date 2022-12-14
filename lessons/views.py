@@ -203,14 +203,17 @@ class StudentsRejectView(APIView):
     def post(self, request, pk):
         try:
             student = User.objects.filter(pk=pk).first()
-            manager = ManagerToUser.objects.get(user=student).manager
-            subject = self.request.data.get('subject')
-            comment = self.request.data.get('comment')
-            subject_name = Subject.objects.filter(name=subject).first()
-            ManagerRequestsRejectTeacher.objects.create(manager=manager, student=student, old_teacher=self.request.user,
-                                                        subject=subject_name, comment=comment)
-            ManagerNotification.objects.create(manager=manager, type=ManagerNotification.REQUEST_REJECT_STUDENT)
-            return Response({'message': 'Запрос на отказ ученика отправлен'}, status=status.HTTP_200_OK)
+            manager_item = ManagerToUser.objects.filter(user=student).first()
+            if manager_item:
+                manager = manager_item.manager
+                subject = self.request.data.get('subject')
+                comment = self.request.data.get('comment')
+                subject_name = Subject.objects.filter(name=subject).first()
+                ManagerRequestsRejectTeacher.objects.create(manager=manager, student=student, old_teacher=self.request.user,
+                                                            subject=subject_name, comment=comment)
+                ManagerNotification.objects.create(manager=manager, type=ManagerNotification.REQUEST_REJECT_STUDENT)
+                return Response({'message': 'Запрос на отказ ученика отправлен'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Менеджер не назначен'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception:
             return Response({'message': 'Что-то пошло не так, попробуйте еще раз'}, status=status.HTTP_400_BAD_REQUEST)
 
