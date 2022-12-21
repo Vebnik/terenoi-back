@@ -73,13 +73,13 @@ class UserLoginSerializer(TokenObtainPairSerializer):
             'password': attrs.get("password")
         }
         username_for_email = attrs.get("username").lower()
-        username_for_phone = attrs.get("username")
+        username_for_phone = attrs.get("username").lower()
         username_for_phone = username_for_phone.replace(' ', '').replace(')', '').replace('(', '').replace('-', '').replace('+', '')
-        user_obj = User.objects.filter(email=username_for_phone, is_verified=True).first()
+        user_obj = User.objects.filter(email=username_for_email, is_verified=True).first()
         if user_obj:
             credentials['username'] = user_obj.username
         else:
-            user_obj = User.objects.filter(phone=username_for_email, is_verified=True).first()
+            user_obj = User.objects.filter(phone=username_for_phone, is_verified=True).first()
             if user_obj:
                 credentials['username'] = user_obj.username
         return super().validate(credentials)
