@@ -24,7 +24,7 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer, \
     StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer, TeacherScheduleCreateSerializer, \
     TeacherScheduleDetailSerializer, StudentsActiveSerializer, TeacherScheduleNoneDetailSerializer, \
-    TeacherRecruitingSerializer
+    TeacherRecruitingSerializer, TeacherSubjectSerializer, TeacherStudentsListSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
     withdrawing_cancel_lesson
 from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification, Notification
@@ -691,3 +691,27 @@ class LessonDoneTemplateView(TemplateView):
             lesson_item.lesson_status = Lesson.DONE
             lesson_item.save()
         return super().get(*args, **kwargs)
+
+
+class TeacherLanguageListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request):
+        user = self.get_object()
+        serializer = TeacherSubjectSerializer(user)
+        return Response(serializer.data)
+
+
+class TeacherStudentsListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request):
+        user = self.get_object()
+        serializer = TeacherStudentsListSerializer(user)
+        return Response(serializer.data)
