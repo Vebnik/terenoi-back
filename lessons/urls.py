@@ -8,7 +8,7 @@ from lessons.views import AllUserLessonsListView, UserLessonRetrieveView, VoxiTe
     StudentsListView, StudentsRejectView, StudentsDetailView, HomeworksView, TopicUpdateView, PurposeUpdateView, \
     PurposeView, TeacherScheduleCreateView, TeacherScheduleListView, TeacherScheduleUpdateView, \
     TeacherScheduleDetailListView, StudentsActiveListView, TeacherRecruitingListView, TeacherRecruitingUpdateView, \
-    LessonTemplateView, LessonDoneTemplateView, LessonLinkGetter
+    LessonTemplateView, LessonDoneTemplateView, LessonLinkGetter, TeacherLanguageListView, TeacherStudentsListView
 
 app_name = 'lessons'
 
@@ -60,4 +60,7 @@ urlpatterns = [
     path('pruffme/page/', LessonTemplateView.as_view(), name='pruffme_page'),
     path('pruffme/done/', LessonDoneTemplateView.as_view(), name='pruffme_done_page'),
     path('pruffme/link/<lesson_id>/', LessonLinkGetter.as_view(), name='pruffme_get_link'),
+
+    path('teacher/language-list/', TeacherLanguageListView.as_view(), name='language_list'),
+    path('teacher/students-list/', TeacherStudentsListView.as_view(), name='language_list'),
 ]

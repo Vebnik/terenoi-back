@@ -3,8 +3,8 @@ import datetime
 from dateutil.rrule import rrule, DAILY
 from rest_framework import serializers
 
-from authapp.models import User, WebinarRecord
-from authapp.serializers import UserNameSerializer
+from authapp.models import User, WebinarRecord, UserStudyLanguage, Group
+from authapp.serializers import UserNameSerializer, UserFullNameSerializer
 from finance.models import TeacherBalance, HistoryPaymentTeacher
 from lessons.models import Lesson, LessonMaterials, LessonHomework, LessonRateHomework, \
     Schedule, ScheduleSettings, TeacherWorkHours, TeacherWorkHoursSettings, Feedback
@@ -1289,3 +1289,35 @@ class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ('topic',)
+
+
+class TeacherSubjectSerializer(serializers.ModelSerializer):
+    languages = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('languages',)
+
+    def get_languages(self, instance):
+        languages = UserStudyLanguage.objects.filter(user=instance).first()
+        if languages:
+            names = [lang_names.name for lang_names in languages.language.all()]
+            return names
+        raise serializers.ValidationError('Languages not found')
+
+
+class TeacherStudentsListSerializer(serializers.ModelSerializer):
+    students = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('students',)
+
+    def get_students(self, instance):
+        groups = Group.objects.filter(teacher=instance).all()
+        if groups:
+            students_group = groups.values('students').distinct('students')
+            students_list = [User.objects.get(pk=student.get('students')) for student in students_group]
+            serializer = UserFullNameSerializer(students_list, many=True)
+            return serializer.data
+        raise serializers.ValidationError('Students not found')
