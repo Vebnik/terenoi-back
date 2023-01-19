@@ -32,7 +32,7 @@ class StudentBalance(models.Model):
 class TeacherBalance(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель',
                              limit_choices_to={'is_teacher': True})
-    money_balance = models.IntegerField(verbose_name='Баланс', **NULLABLE)
+    money_balance = models.IntegerField(verbose_name='Баланс', default=0)
     currency = models.CharField(verbose_name='Валюта', choices=CURRENCY_CHOICES, default=TENGE, max_length=5)
     bonus_money_balance = models.IntegerField(verbose_name='Бонусный баланс', **NULLABLE)
     withdrawal_money = models.IntegerField(verbose_name='Выведенные деньги', **NULLABLE)

@@ -59,7 +59,7 @@ class PruffMe:
             'user': {
                 'email': user.email,
                 'name': f'{user.first_name} {user.last_name}',
-                'link': f'https://back.jtstudy.kz/api/lessons/pruffme/done/?client={user.pk}&lesson={webinar.lesson.pk}',
+                'link': f'{settings.BACK_URL}/api/lessons/pruffme/done/?client={user.pk}&lesson={webinar.lesson.pk}',
                 'role': role
             }
         }
