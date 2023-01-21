@@ -2,7 +2,7 @@ from django.db.models import Q
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from authapp.models import User, UserStudyLanguage, StudyLanguage
+from authapp.models import User, UserStudyLanguage, StudyLanguage, Group
 from finance.models import TeacherBankData
 from profileapp.models import ReferralPromo
 from profileapp.services import generateRefPromo
@@ -125,7 +125,6 @@ class ProfileTeacherDetailSerializer(serializers.ModelSerializer):
         fields = ('first_name', 'last_name', 'avatar', 'is_teacher')
 
     def get_avatar(self, instance):
-        print(instance.get_avatar())
         return instance.get_avatar()
 
 
@@ -156,3 +155,9 @@ class UserFullNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('pk', 'first_name', 'last_name')
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ('students',)
