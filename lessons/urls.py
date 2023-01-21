@@ -8,7 +8,8 @@ from lessons.views import AllUserLessonsListView, UserLessonRetrieveView, VoxiTe
     StudentsListView, StudentsRejectView, StudentsDetailView, HomeworksView, TopicUpdateView, PurposeUpdateView, \
     PurposeView, TeacherScheduleCreateView, TeacherScheduleListView, TeacherScheduleUpdateView, \
     TeacherScheduleDetailListView, StudentsActiveListView, TeacherRecruitingListView, TeacherRecruitingUpdateView, \
-    LessonTemplateView, LessonDoneTemplateView, LessonLinkGetter, TeacherLanguageListView, TeacherStudentsListView
+    LessonTemplateView, LessonDoneTemplateView, LessonLinkGetter, TeacherLanguageListView, TeacherStudentsListView, \
+    FastLessonCreateView
 
 app_name = 'lessons'
 
@@ -63,4 +64,7 @@ urlpatterns = [
 
     path('teacher/language-list/', TeacherLanguageListView.as_view(), name='language_list'),
     path('teacher/students-list/', TeacherStudentsListView.as_view(), name='language_list'),
+
+    path('add/fast-lesson/', FastLessonCreateView.as_view(), name='fast_lesson'),
+
 ]

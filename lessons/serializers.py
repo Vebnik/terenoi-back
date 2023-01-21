@@ -4,13 +4,13 @@ from dateutil.rrule import rrule, DAILY
 from rest_framework import serializers
 
 from authapp.models import User, WebinarRecord, UserStudyLanguage, Group
-from authapp.serializers import UserNameSerializer, UserFullNameSerializer
+from authapp.serializers import UserNameSerializer, UserFullNameSerializer, GroupSerializer
 from finance.models import TeacherBalance, HistoryPaymentTeacher
 from lessons.models import Lesson, LessonMaterials, LessonHomework, LessonRateHomework, \
     Schedule, ScheduleSettings, TeacherWorkHours, TeacherWorkHoursSettings, Feedback
 from lessons.services import current_date
 from lessons.services.webinar import get_webinar_records
-from profileapp.models import Subject, GlobalUserPurpose
+from profileapp.models import Subject, GlobalUserPurpose, TeacherSubject
 from profileapp.serializers import SubjectSerializer, UpdateStudentSerializer
 from settings.models import WeekDays, DeadlineSettings
 
@@ -1299,9 +1299,9 @@ class TeacherSubjectSerializer(serializers.ModelSerializer):
         fields = ('languages',)
 
     def get_languages(self, instance):
-        languages = UserStudyLanguage.objects.filter(user=instance).first()
+        languages = TeacherSubject.objects.filter(user=instance).all()
         if languages:
-            names = [lang_names.name for lang_names in languages.language.all()]
+            names = [lang_names.subject.name for lang_names in languages.all()]
             return names
         raise serializers.ValidationError('Languages not found')
 
@@ -1321,3 +1321,48 @@ class TeacherStudentsListSerializer(serializers.ModelSerializer):
             serializer = UserFullNameSerializer(students_list, many=True)
             return serializer.data
         raise serializers.ValidationError('Students not found')
+
+
+class FastLessonCreateSerializer(serializers.ModelSerializer):
+    subject = serializers.SerializerMethodField()
+    group = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lesson
+        fields = ('pk', 'teacher', 'topic', 'date', 'group', 'subject')
+
+    def _user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return None
+
+    def get_date(self, instance):
+        user = self._user()
+        date = current_date(user, instance.date)
+        return date
+
+    def get_group(self, instance):
+        user = self._user()
+        student_list = [User.objects.get(pk=item.get('pk')) for item in self.context.get('request').data.get('group')]
+        title = f'Fast Lesson with teacher {user.username}, lesson №{instance.pk}'
+        descr = f'Fast Lesson with teacher {user.username}'
+        fast_group = Group.objects.create(title=title, description=descr, teacher=user, create_status=Group.CREATE_FAST)
+        for student in student_list:
+            fast_group.students.add(student)
+        fast_group.save()
+        lesson = Lesson.objects.get(pk=instance.pk)
+        lesson.group = fast_group
+        lesson.save()
+        serializer = GroupSerializer(lesson.group)
+        return serializer.data
+
+    def get_subject(self, instance):
+        sub = self.context.get('request').data.get('subject')
+        if sub:
+            subject = Subject.objects.get(name=sub)
+            lesson = Lesson.objects.get(pk=instance.pk)
+            lesson.subject = subject
+            lesson.save()
+        serializer = SubjectSerializer(sub)
+        return serializer.data

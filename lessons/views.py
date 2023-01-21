@@ -1,5 +1,6 @@
 import datetime
 import http
+import os
 
 import pytz
 from django.conf import settings
@@ -12,7 +13,7 @@ from rest_framework.views import APIView
 
 from django.views.generic import TemplateView
 
-from authapp.models import User, Webinar, PruffmeAccount
+from authapp.models import User, Webinar, PruffmeAccount, Group
 from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson, \
     send_cancel_lesson
 from lessons.models import Lesson, LessonMaterials, LessonHomework, LessonRateHomework, \
@@ -24,11 +25,12 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer, \
     StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer, TeacherScheduleCreateSerializer, \
     TeacherScheduleDetailSerializer, StudentsActiveSerializer, TeacherScheduleNoneDetailSerializer, \
-    TeacherRecruitingSerializer, TeacherSubjectSerializer, TeacherStudentsListSerializer
+    TeacherRecruitingSerializer, TeacherSubjectSerializer, TeacherStudentsListSerializer, FastLessonCreateSerializer
 from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
     withdrawing_cancel_lesson
+from lessons.services.services import is_free_date
 from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification, Notification
-from profileapp.models import Subject, ManagerToUser, GlobalUserPurpose, GlobalPurpose
+from profileapp.models import Subject, ManagerToUser, GlobalUserPurpose, GlobalPurpose, TeacherSubject
 from profileapp.serializers import PurposeSerializer, GlobalPurposeSerializer
 from settings.models import WeekDays
 
@@ -60,7 +62,8 @@ class AllUserClassesListView(generics.ListAPIView):
             lesson_query = Lesson.objects.filter(group__students=self.request.user,
                                                  date__lte=day_now.date() + time_delta).order_by('-date')
             lesson_shedule = Lesson.objects.filter(
-                Q(group__students=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
+                Q(group__students=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[
+                             :1].select_related()
             if lesson_shedule in lesson_query:
                 lesson_list = lesson_query.dates('date', 'day').order_by('-date')
             else:
@@ -209,7 +212,8 @@ class StudentsRejectView(APIView):
                 subject = self.request.data.get('subject')
                 comment = self.request.data.get('comment')
                 subject_name = Subject.objects.filter(name=subject).first()
-                ManagerRequestsRejectTeacher.objects.create(manager=manager, student=student, old_teacher=self.request.user,
+                ManagerRequestsRejectTeacher.objects.create(manager=manager, student=student,
+                                                            old_teacher=self.request.user,
                                                             subject=subject_name, comment=comment)
                 ManagerNotification.objects.create(manager=manager, type=ManagerNotification.REQUEST_REJECT_STUDENT)
                 return Response({'message': 'Запрос на отказ ученика отправлен'}, status=status.HTTP_200_OK)
@@ -715,3 +719,31 @@ class TeacherStudentsListView(APIView):
         user = self.get_object()
         serializer = TeacherStudentsListSerializer(user)
         return Response(serializer.data)
+
+
+class FastLessonCreateView(generics.CreateAPIView):
+    """Создание быстрого урока"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = FastLessonCreateSerializer
+    queryset = Lesson.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        if self.request.data.get('subject'):
+            subject = Subject.objects.filter(name=self.request.data.get('subject')).first()
+            if subject is None:
+                return Response({"message": "Такого предмета не существует."}, status=status.HTTP_404_NOT_FOUND)
+
+        if self.request.data.get('group'):
+            if not self.request.data.get('date'):
+                return Response({"message": "Дата не выбрана"}, status=status.HTTP_404_NOT_FOUND)
+            if not is_free_date(request_date=self.request.data.get('date'), groups=self.request.data.get('group')):
+                return Response({"message": "Дата не может быть выбрана, "
+                                            "так как уже есть назначенный урок на эту дату"},
+                                status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"message": "Ученики не выбраны"}, status=status.HTTP_404_NOT_FOUND)
+
+        lesson_data = super(FastLessonCreateView, self).post(request, *args, **kwargs)
+
+        return Response({"link": f"{os.getenv('FRONT_URL')}/call-for-lesson/{lesson_data.data.get('pk')}"},
+                        status=status.HTTP_201_CREATED)
