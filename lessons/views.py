@@ -1,5 +1,6 @@
 import datetime
 import http
+import os
 
 import pytz
 from django.conf import settings
@@ -744,5 +745,5 @@ class FastLessonCreateView(generics.CreateAPIView):
 
         lesson_data = super(FastLessonCreateView, self).post(request, *args, **kwargs)
 
-        return Response({"link": f"http://slot6f.oscarbot.ru/call-for-lesson/{lesson_data.data.get('pk')}"},
+        return Response({"link": f"{os.getenv('FRONT_URL')}/call-for-lesson/{lesson_data.data.get('pk')}"},
                         status=status.HTTP_201_CREATED)

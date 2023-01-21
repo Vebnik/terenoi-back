@@ -6,7 +6,6 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-
 NULLABLE = {'blank': True, 'null': True}
 
 
@@ -111,11 +110,21 @@ class Group(models.Model):
         (STATUS_LEARN, 'Обучается'),
         (STATUS_DONE, 'Завершена'),
     )
+
+    CREATE_NORMAL = 'normal'
+    CREATE_FAST = 'fast'
+
+    CREATE_TYPE = (
+        (CREATE_NORMAL, 'Обычное создание группы'),
+        (CREATE_FAST, 'Быстрое создание группы'),
+    )
+
     title = models.CharField(max_length=50, verbose_name='Название группы')
     description = models.TextField(verbose_name='Описание')
     english_level = models.CharField(max_length=50, choices=User.LEVEL_CHOICES, default=User.BEGINNER,
                                      verbose_name='Уровень английского')
     status = models.CharField(choices=STATUSES, default=STATUS_OPEN, max_length=15, verbose_name='Статус')
+    create_status = models.CharField(choices=CREATE_TYPE, default=CREATE_NORMAL, max_length=25, verbose_name='Тип создания')
 
     alfa_id = models.BigIntegerField(verbose_name='Номер из alfa crm', **NULLABLE)
 

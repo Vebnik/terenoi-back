@@ -1347,12 +1347,12 @@ class FastLessonCreateSerializer(serializers.ModelSerializer):
         student_list = [User.objects.get(pk=item.get('pk')) for item in self.context.get('request').data.get('group')]
         title = f'Fast Lesson with teacher {user.username}, lesson №{instance.pk}'
         descr = f'Fast Lesson with teacher {user.username}'
-        k = Group.objects.create(title=title, description=descr, teacher=user)
-        for i in student_list:
-            k.students.add(i)
-        k.save()
+        fast_group = Group.objects.create(title=title, description=descr, teacher=user, create_status=Group.CREATE_FAST)
+        for student in student_list:
+            fast_group.students.add(student)
+        fast_group.save()
         lesson = Lesson.objects.get(pk=instance.pk)
-        lesson.group = k
+        lesson.group = fast_group
         lesson.save()
         serializer = GroupSerializer(lesson.group)
         return serializer.data
