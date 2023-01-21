@@ -1,38 +1,41 @@
-from django.views.generic import TemplateView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView, FormView, TemplateView, UpdateView
+from django.http import HttpRequest
+
+from django.views.generic import TemplateView
+from django.views.generic import ListView, TemplateView
+from django.db.models import Q
 
 from authapp.models import User
 from .mixins import UserAccessMixin, PagePaginateByMixin
-from .forms import StudentSearchForm
+from .forms import StudentFilterForm, StudentSearchForm
 
 
-class DashboardView(UserAccessMixin, PermissionRequiredMixin, TemplateView):
+class DashboardView(UserAccessMixin, TemplateView):
     permission_required = ''
     template_name = 'manager/dashboard.html'
 
 
+# Stident
 class UsersStudentListView(UserAccessMixin, PagePaginateByMixin, ListView):
     template_name = 'manager/users.html'
     queryset = User.objects.filter(is_student__exact=True)
-    paginate_by = 1
 
     def get_paginate_by(self, queryset):
         return self.request.GET.get('by', self.paginate_by)
 
 
-class UsersStudenSearchtListView(UserAccessMixin, ListView):
+class UsersStudenFiltertListView(UserAccessMixin, ListView):
 
     template_name = 'manager/users.html'
-    paginate_by = 1
 
     def get_paginate_by(self, queryset):
-        return self.request.GET.get('by', 10)
+        return self.request.GET.get('by', self.paginate_by)
 
     def dispatch(self, request, *args, **kwargs):
-        form = StudentSearchForm(request.GET)
+        self.paginate_by = request.COOKIES.get('paginate_by', 10)
+        form = StudentFilterForm(request.GET)
 
         if form.is_valid():
 
@@ -50,19 +53,45 @@ class UsersStudenSearchtListView(UserAccessMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class UsersTeacherListView(UserAccessMixin, ListView):
+class UsersStudenSearchtListView(UserAccessMixin, ListView):
+    template_name = 'manager/users.html'
+
+    def get_paginate_by(self, queryset):
+        return self.request.GET.get('by', self.paginate_by)
+
+    def dispatch(self, request: HttpRequest, *args, **kwargs):
+        self.paginate_by = request.COOKIES.get('paginate_by', 10)
+        form = StudentSearchForm(request.GET)
+
+        if form.is_valid():
+            search_data = form.cleaned_data.get('search_data')
+            first_name = Q(first_name__icontains=search_data)
+            last_name = Q(last_name__icontains=search_data)
+            phone = Q(phone__icontains=search_data)
+            email = Q(email__icontains=search_data)
+
+            self.queryset = User.objects.filter(
+                first_name | last_name | phone | email, is_student__exact=True
+            )
+
+        if not self.queryset: self.queryset = []
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+# Teacher
+class UsersTeacherListView(UserAccessMixin, PagePaginateByMixin, ListView):
     template_name = 'manager/users_teacher.html'
     queryset = User.objects.filter(is_teacher__exact=True)
-    paginate_by = 1
 
     def get_paginate_by(self, queryset):
         return self.request.GET.get('by', 1)
 
 
-class UsersManagerListView(UserAccessMixin, ListView):    
+# Manager
+class UsersManagerListView(UserAccessMixin, PagePaginateByMixin, ListView):    
     template_name = 'manager/users_manager.html'
     queryset = User.objects.filter(is_student__exact=False, is_teacher__exact=False)
-    paginate_by = 1
 
     def get_paginate_by(self, queryset):
         return self.request.GET.get('by', 10)

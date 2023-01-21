@@ -96,11 +96,12 @@
   <div class="card">
     <div class="card-body border-bottom">
       <h4 class="card-title">Поиск &amp; Фильтр</h4>
-      <form method="get" action="search/" class="row justify-content-center align-items-center text-center">
+      <form method="get" action="filter/" class="row justify-content-center align-items-center text-center">
         {% csrf_token %}
         <div class="col-md-3 user_role">
           <label class="form-label" for="UserRole">Остаток уроков</label>
           <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2" name="lessons_residue">
+              <option value="None">0</option>
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -147,10 +148,14 @@
     <div class="card-datatable table-responsive pt-0">
       <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
         <div class="d-flex justify-content-between align-items-center header-actions mx-1 row mt-75">
-          <div class="col-sm-12 col-lg-4 d-flex justify-content-center justify-content-lg-start">
+          <form method="get" action="search" class="col-sm-12 col-lg-4 justify-content-center" style="display: flex; flex-direction: row; height: 38px;">
+            {% csrf_token %}
             <label style="margin-top: 10px; margin-right: 5px;">Поиск</label>
-            <input type="search" class="form-control" placeholder="">
-          </div>
+            <input name="search_data" class="form-control" placeholder="Имя / Почта / Номер" style="margin-right: 10px;">
+            <button class="dt-button btn btn-primary col-lg-4 waves-effect waves-float waves-light" type="submit">
+              <span>Поиск</span>
+            </button>
+          </form>
           <div class="col-sm-12 col-lg-8 ps-xl-75 ps-0 mt-50" style="margin-bottom: 10px;">
               <div class="dt-action-buttons d-flex align-items-center justify-content-center justify-content-lg-end flex-lg-nowrap flex-wrap">
                   <div style="margin-right: 10px;">
@@ -210,6 +215,7 @@
                   Show
                 </div>
                 <select class="form-select" id="paginate_by">
+                  <option value="1">1</option>
                   <option value="10">10</option>
                   <option value="25">25</option>
                   <option value="50">50</option>
@@ -227,7 +233,7 @@
               <ul class="pagination">
                 {% if page_obj.has_previous %}
                     <li class="paginate_button page-item previous">
-                        <a href="{% url 'manager:users' %}?page={{ page_obj.previous_page_number }}"
+                        <a href="{{request.get_full_path}}&page={{ page_obj.previous_page_number }}"
                            class="page-link">&nbsp;</a>
                     </li>
                 {% else %}
@@ -243,14 +249,22 @@
                   {% else %}
                     <li class="paginate_button page-item">
                   {% endif %}
-                      <a href="{% url 'manager:users' %}?page={{ i }}" class="page-link">{{ i }}</a>
+                      {% if request.GET.dict %}
+                      <a href="{{request.get_full_path}}&page={{ i }}" class="page-link">{{ i }}</a>
+                      {% else %}
+                      <a href="{{request.get_full_path}}?page={{ i }}" class="page-link">{{ i }}</a>
+                      {% endif %}
                     </li>
 
                 {% endfor %}
                 
-                {% if page_obj.has_next %}
+                {% if page_obj.has_next and request.GET.dict %}
                     <li class="paginate_button page-item next">
-                        <a href="{% url 'manager:users' %}?page={{ page_obj.next_page_number }}" class="page-link">&nbsp;</a>
+                        <a href="{{request.get_full_path}}&page={{ page_obj.next_page_number }}" class="page-link">&nbsp;</a>
+                    </li>
+                {% elif page_obj.has_next %}
+                    <li class="paginate_button page-item next">
+                      <a href="{{request.get_full_path}}?page={{ page_obj.next_page_number }}" class="page-link">&nbsp;</a>
                     </li>
                 {% else %}
                     <li class="paginate_button page-item next disabled">
