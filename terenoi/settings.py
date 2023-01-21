@@ -114,6 +114,9 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.openapi.AutoSchema",
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
+    'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
+    'DATE_FORMAT': '%Y-%m-%d',
+
 }
 
 # Password validation
