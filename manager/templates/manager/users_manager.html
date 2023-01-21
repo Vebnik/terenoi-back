@@ -198,7 +198,7 @@
                   <option value="100">100</option>
                 </select>
                 <div class="col-3" style="padding-top: 8px;">
-                  0 of 0 entries
+                  {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
                 </div>
               </div>
             </div>

@@ -2,16 +2,11 @@ from django.views.generic import TemplateView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView, FormView, TemplateView
+from django.views.generic import ListView, FormView, TemplateView, UpdateView
 
-from .models import Student
-
-class UserAccessMixin:
-
-    @method_decorator(login_required())
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_staff:
-            return super().dispatch(request, *args, **kwargs)
+from authapp.models import User
+from .mixins import UserAccessMixin, PagePaginateByMixin
+from .forms import StudentSearchForm
 
 
 class DashboardView(UserAccessMixin, PermissionRequiredMixin, TemplateView):
@@ -19,33 +14,63 @@ class DashboardView(UserAccessMixin, PermissionRequiredMixin, TemplateView):
     template_name = 'manager/dashboard.html'
 
 
-class UsersListView(ListView):
+class UsersStudentListView(UserAccessMixin, PagePaginateByMixin, ListView):
     template_name = 'manager/users.html'
-    model = Student
+    queryset = User.objects.filter(is_student__exact=True)
+    paginate_by = 1
+
+    def get_paginate_by(self, queryset):
+        return self.request.GET.get('by', self.paginate_by)
+
+
+class UsersStudenSearchtListView(UserAccessMixin, ListView):
+
+    template_name = 'manager/users.html'
     paginate_by = 1
 
     def get_paginate_by(self, queryset):
         return self.request.GET.get('by', 10)
 
+    def dispatch(self, request, *args, **kwargs):
+        form = StudentSearchForm(request.GET)
 
-#TODO переименовать модель Student в USER
-class UsersTeacherListView(ListView):
+        if form.is_valid():
+
+            balance_residue = form.cleaned_data.get('balance_residue').split('-')
+
+            self.queryset = User.objects.filter(
+                studentbalance__lessons_balance__gte=int(form.cleaned_data.get('lessons_residue')),
+                status=form.cleaned_data.get('status'),
+                studentbalance__money_balance__gte=int(balance_residue[0]),
+                studentbalance__money_balance__lte=int(balance_residue[1])
+            )
+
+        if not self.queryset: self.queryset = []
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+class UsersTeacherListView(UserAccessMixin, ListView):
     template_name = 'manager/users_teacher.html'
-    model = Student
+    queryset = User.objects.filter(is_teacher__exact=True)
     paginate_by = 1
 
     def get_paginate_by(self, queryset):
-        return self.request.GET.get('by', 10)
+        return self.request.GET.get('by', 1)
 
 
-class UsersManagerListView(ListView):
+class UsersManagerListView(UserAccessMixin, ListView):    
     template_name = 'manager/users_manager.html'
-    model = Student
+    queryset = User.objects.filter(is_student__exact=False, is_teacher__exact=False)
     paginate_by = 1
 
     def get_paginate_by(self, queryset):
         return self.request.GET.get('by', 10)
 
 
-class UsersCreateView(TemplateView):
+class UsersCreateView(UserAccessMixin, TemplateView):
     template_name = 'manager/users_create.html'
+    
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+

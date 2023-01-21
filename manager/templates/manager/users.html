@@ -96,41 +96,53 @@
   <div class="card">
     <div class="card-body border-bottom">
       <h4 class="card-title">Поиск &amp; Фильтр</h4>
-      <div class="row">
-        <div class="col-md-4 user_role">
+      <form method="get" action="search/" class="row justify-content-center align-items-center text-center">
+        {% csrf_token %}
+        <div class="col-md-3 user_role">
           <label class="form-label" for="UserRole">Остаток уроков</label>
-          <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2">
-              <option value="">1</option>
-              <option value="">2</option>
-              <option value="">3</option>
-              <option value="">4</option>
-              <option value="">5</option>
-              <option value="">6</option>
-              <option value="">7</option>
-              <option value="">8</option>
-              <option value="">9</option>
-              <option value="">10</option>
+          <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2" name="lessons_residue">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
           </select>
         </div>
-        <div class="col-md-4 user_plan">
+        <div class="col-md-3 user_plan">
           <label class="form-label" for="UserRole">Остаток баланса</label>
-            <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2">
-              <option value="2000 - 3000">2000 - 3000</option>
-              <option value="2000 - 3000">2000 - 3000</option>
-              <option value="2000 - 3000">2000 - 3000</option>
-              <option value="2000 - 3000">2000 - 3000</option>
+            <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2" name="balance_residue">
+              <option value="0-1000">0 - 1000</option>
+              <option value="1000-2000">1000 - 2000</option>
+              <option value="2000-3000">2000 - 3000</option>
+              <option value="3000-4000">3000 - 4000</option>
+              <option value="4000-5000">4000 - 5000</option>
+              <option value="5000-6000">5000 - 6000</option>
+              <option value="6000-7000">6000 - 7000</option>
+              <option value="7000-8000">7000 - 8000</option>
+              <option value="8000-9000">8000 - 9000</option>
+              <option value="9000-10000">9000 - 10000</option>
             </select> 
         </div>
-        <div class="col-md-4 user_status">
+        <div class="col-md-3 user_status">
             <label class="form-label" for="UserRole">Статус</label>
-            <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2">
-              <option value="active">Активный</option>
-              <option value="active">Активный</option>
-              <option value="active">Активный</option>
-              <option value="active">Активный</option>
+            <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2" name="status">
+              <option value="Активный">Активный</option>
+              <option value="На паузе">На паузе</option>
+              <option value="Архивный">Архивный</option>
+              <option value="Отказ">Отказ</option>
             </select> 
         </div>
-      </div>
+        <div class="col-md-3 mt-75 pt-75 row">
+          <button class="dt-button btn btn-primary waves-effect waves-float waves-light" type="submit">
+            <span>Применить</span>
+          </button>
+        </div>
+      </form>
     </div>
     <div class="card-datatable table-responsive pt-0">
       <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
@@ -158,6 +170,12 @@
         <table class="user-list-table table dataTable no-footer dtr-column" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
           <thead class="table-light">
             <tr role="row">
+              <th class="sorting_disabled dt-checkboxes-cell dt-checkboxes-select-all" rowspan="1" colspan="1" style="width: 30px;" data-col="1" aria-label="">
+                <div class="form-check"> 
+                  <input class="form-check-input" type="checkbox" value="" id="checkboxSelectAll">
+                  <label class="form-check-label" for="checkboxSelectAll"></label>
+                </div>
+              </th>
               <th class="sorting sorting_desc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" style="width: 68.125px;" aria-sort="descending" aria-label="Name: activate to sort column ascending">
                 Пользователь
               </th>
@@ -191,20 +209,21 @@
                 <div class="col-2" style="padding-top: 8px; width: max-content;">
                   Show
                 </div>
-                <select class="form-select">
+                <select class="form-select" id="paginate_by">
                   <option value="10">10</option>
                   <option value="25">25</option>
                   <option value="50">50</option>
                   <option value="100">100</option>
                 </select>
                 <div class="col-3" style="padding-top: 8px;">
-                  0 of 0 entries
+                  {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
                 </div>
               </div>
             </div>
           </div>
           <div class="col-2" style="margin-top: 10px; position: relative;">
             <div class="dataTables_paginate paging_simple_numbers" id="DataTables_Table_0_paginate">
+               <!-- PAGINATION -->
               <ul class="pagination">
                 {% if page_obj.has_previous %}
                     <li class="paginate_button page-item previous">
@@ -218,22 +237,28 @@
                 {% endif %}
 
                 {% for i in page_obj.paginator.page_range %}
-                    <li class="paginate_button page-item ">
-                        <a href="#" class="page-link">{{ i }}</a></li>
+
+                  {% if page_obj.number == i %}
+                    <li class="paginate_button page-item active">
+                  {% else %}
+                    <li class="paginate_button page-item">
+                  {% endif %}
+                      <a href="{% url 'manager:users' %}?page={{ i }}" class="page-link">{{ i }}</a>
+                    </li>
+
                 {% endfor %}
                 
                 {% if page_obj.has_next %}
                     <li class="paginate_button page-item next">
-                        <a href="{% url 'manager:users' %}?page={{ page_obj.next_page_number }}"
-                           class="page-link">&nbsp;</a>
+                        <a href="{% url 'manager:users' %}?page={{ page_obj.next_page_number }}" class="page-link">&nbsp;</a>
                     </li>
                 {% else %}
                     <li class="paginate_button page-item next disabled">
                         <a href="#" class="page-link">&nbsp;</a>
                     </li>
                 {% endif %}
-            </ul>
-
+              </ul>
+              <!-- PAGINATION END -->
             </div>
           </div>
         </div>
