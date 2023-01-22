@@ -13,6 +13,7 @@ from lessons.services.webinar import get_webinar_records
 from profileapp.models import Subject, GlobalUserPurpose, TeacherSubject
 from profileapp.serializers import SubjectSerializer, UpdateStudentSerializer
 from settings.models import WeekDays, DeadlineSettings
+from django.conf import settings
 
 
 class UserClassesSerializer(serializers.ModelSerializer):
@@ -1340,7 +1341,7 @@ class FastLessonCreateSerializer(serializers.ModelSerializer):
     def get_date(self, instance):
         import pytz
         current_timezone = pytz.timezone(pytz.UTC)
-        return instance.date.astimezone(current_timezone)
+        return instance.date.astimezone(current_timezone).astimezone(pytz.timezone(settings.TIME_ZONE))
 
     def get_group(self, instance):
         user = self._user()
