@@ -83,7 +83,9 @@ class Lesson(models.Model):
 
     @property
     def students(self):
-        return self.group.students
+        if self.group:
+            return self.group.students
+        return []
 
     class Meta:
         verbose_name = 'Урок'
