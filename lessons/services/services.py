@@ -7,7 +7,7 @@ from django.conf import settings
 
 def is_free_date(request_date, groups):
     date = datetime.strptime(request_date, settings.REST_FRAMEWORK.get('DATETIME_FORMAT'))
-    student_list = [User.objects.get(pk=item.get('pk')) for item in groups]
+    student_list = [User.objects.get(pk=item) for item in groups]
     for student in student_list:
         groups = Group.objects.filter(students=student).all()
         for group in groups:

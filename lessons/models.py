@@ -16,7 +16,8 @@ class Schedule(models.Model):
     title = models.CharField(max_length=50, verbose_name='Название')
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='schedule_teacher',
                                 limit_choices_to={'is_teacher': True})
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='schedule_group', **NULLABLE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='schedule_group',
+                              **NULLABLE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     weekday = models.ManyToManyField(WeekDays, verbose_name='Дни недели')
     is_completed = models.BooleanField(verbose_name='Завершенно', default=False)
@@ -62,7 +63,8 @@ class Lesson(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='lesson_teacher',
                                 limit_choices_to={'is_teacher': True})
     # students = models.ManyToManyField(User, related_name='lesson_student', limit_choices_to={'is_student': True})
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='lesson_group', **NULLABLE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='lesson_group',
+                              **NULLABLE)
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, verbose_name='Расписание', **NULLABLE)
     topic = models.CharField(verbose_name='Тема урока', **NULLABLE, max_length=255)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
@@ -100,38 +102,17 @@ class Lesson(models.Model):
         super(Lesson, self).save(*args, **kwargs)
 
         lesson_count = Lesson.objects.filter(teacher=self.teacher, subject=self.subject)
-        # TODO: for refactoring
-        try:
-            if self.lesson_status == Lesson.SCHEDULED:
-                if not lesson_count:
-                    lesson_count = 0
-                    self.lesson_number = lesson_count + 1
-                else:
-                    self.lesson_number = lesson_count.count() + 1
-                create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
-                                            teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
+        if self.lesson_status == Lesson.SCHEDULED:
+            if not lesson_count:
+                lesson_count = 0
+                self.lesson_number = lesson_count + 1
+            else:
+                self.lesson_number = lesson_count.count() + 1
+            if self.subject:
                 questions = Subject.objects.filter(name=self.subject.name).first()
                 if not self.teacher_rate_comment:
                     self.teacher_rate_comment = questions.questions
 
-            if self.lesson_status == Lesson.REQUEST_CANCEL:
-                create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
-                                            teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-            if self.lesson_status == Lesson.CANCEL:
-                create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
-                                            teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-            if self.student_status and self.teacher_status and self.lesson_status == Lesson.SCHEDULED:
-                self.lesson_status = Lesson.PROGRESS
-                create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
-                                            teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-            if self.lesson_status == Lesson.REQUEST_RESCHEDULED:
-                create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
-                                            teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-            if self.lesson_status == Lesson.RESCHEDULED:
-                create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
-                                            teacher_status=self.teacher_status, date=self.transfer_date, lesson_id=self.pk)
-        except Exception:
-            pass
         if self.lesson_status == Lesson.DONE:
             # payment_for_lesson(self)  #TODO
             count = DeadlineSettings.objects.filter(subject=self.subject).first()
@@ -147,6 +128,18 @@ class Lesson(models.Model):
                 days = datetime.timedelta(days=count.day_count)
                 deadline = self.date + days
                 self.deadline = deadline
+
+        # TODO: for refactoring
+        if self.group:
+            if self.lesson_status == Lesson.RESCHEDULED:
+                create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students,
+                                            teacher=self.teacher,
+                                            teacher_status=self.teacher_status, date=self.transfer_date,
+                                            lesson_id=self.pk)
+            else:
+                create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students,
+                                            teacher=self.teacher,
+                                            teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
 
         if need_to_create_webinar:
             webinar = Webinar.objects.create(

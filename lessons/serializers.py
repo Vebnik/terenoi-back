@@ -10,6 +10,7 @@ from lessons.models import Lesson, LessonMaterials, LessonHomework, LessonRateHo
     Schedule, ScheduleSettings, TeacherWorkHours, TeacherWorkHoursSettings, Feedback
 from lessons.services import current_date
 from lessons.services.webinar import get_webinar_records
+from notifications.services import create_lesson_notifications
 from profileapp.models import Subject, GlobalUserPurpose, TeacherSubject
 from profileapp.serializers import SubjectSerializer, UpdateStudentSerializer
 from settings.models import WeekDays, DeadlineSettings
@@ -1344,7 +1345,7 @@ class FastLessonCreateSerializer(serializers.ModelSerializer):
 
     def get_group(self, instance):
         user = self._user()
-        student_list = [User.objects.get(pk=item.get('pk')) for item in self.context.get('request').data.get('group')]
+        student_list = [User.objects.get(pk=item) for item in self.context.get('request').data.get('group')]
         title = f'Fast Lesson with teacher {user.username}, lesson №{instance.pk}'
         descr = f'Fast Lesson with teacher {user.username}'
         fast_group = Group.objects.create(title=title, description=descr, teacher=user, create_status=Group.CREATE_FAST)
@@ -1354,6 +1355,10 @@ class FastLessonCreateSerializer(serializers.ModelSerializer):
         lesson = Lesson.objects.get(pk=instance.pk)
         lesson.group = fast_group
         lesson.save()
+        create_lesson_notifications(lesson_status=lesson.lesson_status, students=lesson.group.students,
+                                    teacher=lesson.teacher,
+                                    teacher_status=lesson.teacher_status, date=lesson.date,
+                                    lesson_id=lesson.pk)
         serializer = GroupSerializer(lesson.group)
         return serializer.data
 
@@ -1363,6 +1368,8 @@ class FastLessonCreateSerializer(serializers.ModelSerializer):
             subject = Subject.objects.get(name=sub)
             lesson = Lesson.objects.get(pk=instance.pk)
             lesson.subject = subject
+            if not lesson.teacher_rate_comment:
+                lesson.teacher_rate_comment = subject.questions
             lesson.save()
         serializer = SubjectSerializer(sub)
         return serializer.data
