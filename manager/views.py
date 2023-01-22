@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.utils.decorators import method_decorator
-from django.http import HttpRequest
 
+from pytils import translit
+from django.http import HttpRequest
 from django.views.generic import TemplateView
 from django.views.generic import ListView, TemplateView
 from django.db.models import Q
@@ -64,14 +65,20 @@ class UsersStudenSearchtListView(UserAccessMixin, ListView):
         form = StudentSearchForm(request.GET)
 
         if form.is_valid():
+            trans_search_data = translit.translify(form.cleaned_data.get('search_data'))
             search_data = form.cleaned_data.get('search_data')
+
+            trans_first_name = Q(first_name__icontains=trans_search_data)
+            trans_last_name = Q(last_name__icontains=trans_search_data)
+
             first_name = Q(first_name__icontains=search_data)
             last_name = Q(last_name__icontains=search_data)
+
             phone = Q(phone__icontains=search_data)
             email = Q(email__icontains=search_data)
 
             self.queryset = User.objects.filter(
-                first_name | last_name | phone | email, is_student__exact=True
+                trans_first_name | trans_last_name | first_name | last_name | phone | email, is_student__exact=True
             )
 
         if not self.queryset: self.queryset = []
