@@ -103,7 +103,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
 
     def get_students(self, instance):
         users_list = []
-        if instance.students > 0:
+        if instance.students:
             for user in instance.students.all():
                 users_list.append(UserNameSerializer(user).data)
         return users_list
