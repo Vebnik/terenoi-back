@@ -1355,7 +1355,7 @@ class FastLessonCreateSerializer(serializers.ModelSerializer):
         fast_group.save()
         lesson = Lesson.objects.get(pk=instance.pk)
         lesson.group = fast_group
-        lesson.date += datetime.timedelta(hours=pytz.timezone(settings.TIME_ZONE).utcoffset())
+        lesson.date += datetime.timedelta(hours=6)
         lesson.save()
         serializer = GroupSerializer(lesson.group)
         return serializer.data
