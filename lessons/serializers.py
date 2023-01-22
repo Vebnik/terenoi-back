@@ -1341,9 +1341,10 @@ class FastLessonCreateSerializer(serializers.ModelSerializer):
     def get_date(self, instance):
         import pytz
         current_timezone = pytz.timezone(pytz.UTC)
-        return instance.date.astimezone(current_timezone) + datetime.timedelta(hours=pytz.timezone(settings.TIME_ZONE).utcoffset())
+        return instance.date.astimezone(current_timezone)
 
     def get_group(self, instance):
+        import pytz
         user = self._user()
         student_list = [User.objects.get(pk=item.get('pk')) for item in self.context.get('request').data.get('group')]
         title = f'Fast Lesson with teacher {user.username}, lesson №{instance.pk}'
@@ -1354,6 +1355,7 @@ class FastLessonCreateSerializer(serializers.ModelSerializer):
         fast_group.save()
         lesson = Lesson.objects.get(pk=instance.pk)
         lesson.group = fast_group
+        lesson.date += datetime.timedelta(hours=pytz.timezone(settings.TIME_ZONE).utcoffset())
         lesson.save()
         serializer = GroupSerializer(lesson.group)
         return serializer.data
