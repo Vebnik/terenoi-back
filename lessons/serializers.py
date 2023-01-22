@@ -1341,7 +1341,7 @@ class FastLessonCreateSerializer(serializers.ModelSerializer):
     def get_date(self, instance):
         import pytz
         current_timezone = pytz.timezone(pytz.UTC)
-        return instance.date.astimezone(current_timezone).astimezone(pytz.timezone(settings.TIME_ZONE))
+        return instance.date.astimezone(current_timezone) + datetime.timedelta(hours=pytz.timezone(settings.TIME_ZONE).utcoffset())
 
     def get_group(self, instance):
         user = self._user()
