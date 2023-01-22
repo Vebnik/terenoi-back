@@ -103,8 +103,9 @@ class UserLessonsSerializer(serializers.ModelSerializer):
 
     def get_students(self, instance):
         users_list = []
-        for user in instance.students.all():
-            users_list.append(UserNameSerializer(user).data)
+        if len(instance.students) > 0:
+            for user in instance.students.all():
+                users_list.append(UserNameSerializer(user).data)
         return users_list
 
     def get_current_date(self, instance):
