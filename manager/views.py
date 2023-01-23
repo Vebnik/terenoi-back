@@ -40,6 +40,8 @@ class UsersStudenFiltertListView(UserAccessMixin, ListView):
 
         if form.is_valid():
 
+            print(form.cleaned_data)
+
             balance_residue = form.cleaned_data.get('balance_residue').split('-')
 
             self.queryset = User.objects.filter(

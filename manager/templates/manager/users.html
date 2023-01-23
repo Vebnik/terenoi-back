@@ -96,12 +96,11 @@
   <div class="card">
     <div class="card-body border-bottom">
       <h4 class="card-title">Поиск &amp; Фильтр</h4>
-      <form method="get" action="filter/" class="row justify-content-center align-items-center text-center">
-        {% csrf_token %}
+      <form method="get" action="/manager/users/filter/" class="row justify-content-center align-items-center text-center">
         <div class="col-md-3 user_role">
           <label class="form-label" for="UserRole">Остаток уроков</label>
           <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2" name="lessons_residue">
-              <option value="None">0</option>
+              <option value="0">0</option>
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -148,8 +147,7 @@
     <div class="card-datatable table-responsive pt-0">
       <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
         <div class="d-flex justify-content-between align-items-center header-actions mx-1 row mt-75">
-          <form method="get" action="search" class="col-sm-12 col-lg-4 justify-content-center" style="display: flex; flex-direction: row; height: 38px;">
-            {% csrf_token %}
+          <form method="get" action="/manager/users/search/" class="col-sm-12 col-lg-4 justify-content-center" style="display: flex; flex-direction: row; height: 38px;">
             <label style="margin-top: 10px; margin-right: 5px;">Поиск</label>
             <input name="search_data" class="form-control" placeholder="Имя / Почта / Номер" style="margin-right: 10px;">
             <button class="dt-button btn btn-primary col-lg-4 waves-effect waves-float waves-light" type="submit">

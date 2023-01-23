@@ -20,5 +20,5 @@ urlpatterns = [
     path('users/manager/', UsersManagerListView.as_view(), name='users_managers'),
     path('users/create/', UsersCreateView.as_view(), name='users_create'),
     path('users/filter/', UsersStudenFiltertListView.as_view(), name='user_filter'),
-    path('users/search', UsersStudenSearchtListView.as_view(), name='users_search')
+    path('users/search/', UsersStudenSearchtListView.as_view(), name='users_search')
 ]
