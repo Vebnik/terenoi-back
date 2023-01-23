@@ -9,8 +9,8 @@ from django.views.generic import ListView, TemplateView
 from django.db.models import Q
 
 from authapp.models import User
-from .mixins import UserAccessMixin, PagePaginateByMixin
-from .forms import StudentFilterForm, StudentSearchForm
+from manager.mixins import UserAccessMixin, PagePaginateByMixin
+from manager.forms import StudentFilterForm, StudentSearchForm
 
 
 class DashboardView(UserAccessMixin, TemplateView):

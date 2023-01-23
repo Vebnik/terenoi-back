@@ -100,6 +100,9 @@
         <div class="col-md-3 user_role">
           <label class="form-label" for="UserRole">Остаток уроков</label>
           <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2" name="lessons_residue">
+            {% if request.GET.lessons_residue %}
+              <option value="{{ request.GET.lessons_residue }}">{{ request.GET.lessons_residue }}</option>
+            {% endif %}
               <option value="0">0</option>
               <option value="1">1</option>
               <option value="2">2</option>
@@ -116,6 +119,9 @@
         <div class="col-md-3 user_plan">
           <label class="form-label" for="UserRole">Остаток баланса</label>
             <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2" name="balance_residue">
+              {% if request.GET.lessons_residue %}
+                <option value="{{ request.GET.balance_residue }}">{{ request.GET.balance_residue }}</option>
+              {% endif %}
               <option value="0-1000">0 - 1000</option>
               <option value="1000-2000">1000 - 2000</option>
               <option value="2000-3000">2000 - 3000</option>
@@ -131,6 +137,9 @@
         <div class="col-md-3 user_status">
             <label class="form-label" for="UserRole">Статус</label>
             <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2" name="status">
+              {% if request.GET.lessons_residue %}
+                <option value="{{ request.GET.status }}">{{ request.GET.status }}</option>
+              {% endif %}
               <option value="Активный">Активный</option>
               <option value="На паузе">На паузе</option>
               <option value="Архивный">Архивный</option>
