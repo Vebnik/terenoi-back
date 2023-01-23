@@ -734,11 +734,9 @@ class FastLessonCreateView(generics.CreateAPIView):
                 return Response({"message": "Такого предмета не существует."}, status=status.HTTP_404_NOT_FOUND)
 
         if self.request.data.get('group'):
-            if not self.request.data.get('date'):
-                return Response({"message": "Дата не выбрана"}, status=status.HTTP_404_NOT_FOUND)
             if not is_free_date(request_date=self.request.data.get('date'), groups=self.request.data.get('group')):
-                return Response({"message": "Дата не может быть выбрана, "
-                                            "так как уже есть назначенный урок на эту дату"},
+                return Response({"message": "Дата и время не могут быть выбраны,"
+                                            "так как уже есть назначенный урок на это время"},
                                 status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({"message": "Ученики не выбраны"}, status=status.HTTP_404_NOT_FOUND)
