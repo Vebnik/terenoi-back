@@ -1,0 +1,570 @@
+[33mcommit 1c7ae7c027f46bd879f077caf189e4143c9d5a35[m[33m ([m[1;36mHEAD -> [m[1;32missue-57[m[33m)[m
+Author: Vebnik(Nik) <vebnik111@gmail.com>
+Date:   Mon Jan 23 16:10:02 2023 +0300
+
+    fix requirements
+
+[33mcommit 0a0c75cc47d479efe6d7155f31c32c556765c9c0[m[33m ([m[1;31morigin/issue-57[m[33m)[m
+Author: Vebnik(Nik) <vebnik111@gmail.com>
+Date:   Sun Jan 22 10:52:25 2023 +0300
+
+    add transliteration search, add new dependency in requirements [#57]
+
+[33mcommit 1756734b5b9ae798fb242d5d143cdd6830bb92f6[m
+Author: Vebnik(Nik) <vebnik111@gmail.com>
+Date:   Sun Jan 22 00:54:55 2023 +0300
+
+    add global search in db [#57]
+
+[33mcommit 410a77670f89e7646507b6fda5eae27a7c36a27a[m
+Author: Vebnik(Nik) <vebnik111@gmail.com>
+Date:   Sat Jan 21 18:16:33 2023 +0300
+
+    add student list pagination, update User model, add pretty table row [#57]
+
+[33mcommit 830d0465617da6109b57150fe0e96add40af6ac9[m
+Author: Vebnik(Nik) <vebnik111@gmail.com>
+Date:   Thu Jan 19 23:40:04 2023 +0300
+
+    add base template, add new model for testuser [#57]
+
+[33mcommit ffe65d7f30771186a49bc4c182eba828c0116fb6[m[33m ([m[1;31morigin/develop[m[33m, [m[1;32mdevelop[m[33m)[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 21 09:20:52 2022 +0300
+
+    fast fixes for email or phone auth
+
+[33mcommit 755c20be3c5173ef6e67b983cf6106dcbc295ba9[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Thu Dec 15 18:09:06 2022 +0300
+
+    fast fixes
+
+[33mcommit ea6ebe60a80f7e3fecd7bd820fa3a79a4b3ceadb[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 14 20:11:35 2022 +0300
+
+    fast fixes
+
+[33mcommit 6ccc35abee0285a3cf03de1fa0bf7a43302c609f[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 14 18:50:20 2022 +0300
+
+    fast fixes
+
+[33mcommit 62e77fe0a32ecf53b5047563c7e887a4575fa7de[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 14 18:42:24 2022 +0300
+
+    fast fixes
+
+[33mcommit 03a0196c11e369753a480d42d5632655242f5d24[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 14 18:23:03 2022 +0300
+
+    fast fixes
+
+[33mcommit 42a7484b2697985b50a055f6fac5ed8bc1a273a4[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Dec 13 13:46:40 2022 +0300
+
+    schedule group fixes
+
+[33mcommit 91146940a6f9cb0cb5d540ab1e285afe335c982d[m
+Merge: c240ece afbfa47
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Dec 13 13:32:56 2022 +0300
+
+    Merge remote-tracking branch 'origin/develop' into develop
+
+[33mcommit c240eced29284e387aec90370b889106c284a0c7[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Dec 13 13:22:26 2022 +0300
+
+    fix address for pruffme
+
+[33mcommit afbfa47aa21ac07f4c9d47689114590db582f2a9[m
+Merge: 9d6048d b812e64
+Author: Oleg Maslov <oleg.gnome@yandex.ru>
+Date:   Mon Dec 12 22:16:18 2022 +0000
+
+    Merge branch 'main' into 'develop'
+    
+    # Conflicts:
+    #   .gitlab-ci.yml
+
+[33mcommit 9d6048d7e5b915f39fce77dd7b998782d917272e[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Dec 13 01:14:57 2022 +0300
+
+    fixes for auth by email of phone
+
+[33mcommit 02cf604498522cf1543379676a24330169831e22[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Dec 12 23:17:22 2022 +0300
+
+    cors
+
+[33mcommit 01dd53a86377d1771c30e9761b3418eb3bf49141[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Dec 12 23:12:42 2022 +0300
+
+    cors
+
+[33mcommit 64cdae544e167506c95e121b2c8abe401b452b57[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Dec 12 23:00:16 2022 +0300
+
+    cors
+
+[33mcommit cae83d17116ce0c1736e199c979757dd56d627ef[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Dec 12 22:15:31 2022 +0300
+
+    new ci/cd for main
+
+[33mcommit b812e64c10aeb46b3c4e8cec318a4f6ecb62560b[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Dec 12 21:54:55 2022 +0300
+
+    new ci/cd for main
+
+[33mcommit c0fc49d6f44123d079f77f6c25b06d44e1518d1a[m
+Merge: eab8141 bd47c7b
+Author: Oleg Maslov <oleg.gnome@yandex.ru>
+Date:   Mon Dec 12 18:53:34 2022 +0000
+
+    Merge branch 'develop' into 'main'
+    
+    add recruiting field for teacher schedule, create view and serializer for get...
+    
+    See merge request just-to-study/back!1
+
+[33mcommit bd47c7bf7158f79c2bb78ba9848574d64759d368[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Sun Dec 11 21:33:24 2022 +0300
+
+    fixes for admin
+
+[33mcommit 6f085ade719e7e40b765253a9204cfd15b4cc25c[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Thu Dec 8 01:20:28 2022 +0300
+
+    start to combine new admin interface
+
+[33mcommit 653a539054167be3e7535a029a398d823d783412[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 7 23:55:04 2022 +0300
+
+    fixes serializers  [#928]
+
+[33mcommit 4594752933d1383e479dbbf1d0e5bc5b7b8f7333[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 7 23:50:30 2022 +0300
+
+    fixes serializers  [#928]
+
+[33mcommit bf574db6bb8e410b04a506dfdc1cf500343e12f2[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 7 23:43:06 2022 +0300
+
+    fixes for querysets by the students and groups [#928]
+
+[33mcommit 978c63d42cf2e81fb0d363a032bf3b0dc022a9e1[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 7 23:31:10 2022 +0300
+
+    remove users and add group for schedule and lesson [#928]
+
+[33mcommit c77ca5752aecf02bb71fe655de3ca0f4d824a7f3[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 7 23:21:27 2022 +0300
+
+    getting info about customers and groups from alfacrm [#925]
+
+[33mcommit babf9ef42d09134f0eece024341419f55e40bb66[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 7 20:59:20 2022 +0300
+
+    getting records fixes
+
+[33mcommit 67f4bafa6b3a53c15944031e10ec07000d915a00[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 7 20:43:37 2022 +0300
+
+    getting records fixes
+
+[33mcommit ebb0911f5e6b09354ab0a4f611c29335e20fafed[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 7 20:11:13 2022 +0300
+
+    disable notifications to user
+
+[33mcommit 79c971ba14233a7990d0e43b08de54ef1e9261fe[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Dec 7 20:01:16 2022 +0300
+
+    closing lesson on teacher feedback sending + admin new styles
+
+[33mcommit f93567ae1cc4d4c4df55dbed2df612f22b736170[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Nov 30 16:16:00 2022 +0300
+
+    little fixes as pretty refactoring
+
+[33mcommit f77646d319a12bc609623e0dcf59c59a70dfe4ba[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Nov 30 15:37:57 2022 +0300
+
+    disable email notifications for TODO
+
+[33mcommit 853e1da7fe5a29d2645caa3ee2c987931c59c530[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Nov 29 11:53:31 2022 +0300
+
+    refactoring [#910]
+
+[33mcommit b1e6723418ce765b529cd89822d7710a896b109c[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Sun Nov 27 23:21:26 2022 +0300
+
+    fix student feedback [#913]
+
+[33mcommit 925cc76377efc323890d30b0219ab53aad7669ad[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Sun Nov 27 22:58:04 2022 +0300
+
+    fix student feedback [#913]
+
+[33mcommit 82d4b0cb81dadb7355a12495004c0910fff547d4[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Sun Nov 27 22:17:36 2022 +0300
+
+    fix student feedback [#913]
+
+[33mcommit 4282bcf222caecde57136398e44750765c6332d0[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Sun Nov 27 21:43:58 2022 +0300
+
+    fix teacher feedback [#913]
+
+[33mcommit 91ba59c03608abf5dc05d278a39fa715698ca7eb[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Nov 22 01:25:10 2022 +0300
+
+    getting feedback in extended model [#909]
+
+[33mcommit 26b69fb86e2b09f8707be77219a176eec65dec64[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Nov 22 01:11:49 2022 +0300
+
+    getting feedback in extended model [#909]
+
+[33mcommit e924196464b0c897d1e2e93773b1936ee738636c[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Nov 22 01:10:55 2022 +0300
+
+    getting feedback in extended model [#909]
+
+[33mcommit 15b7933b1bb6cec84a309e53b8222a1b8771dbbe[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Nov 21 23:39:02 2022 +0300
+
+    fixes old bug for group users lesson [bug-fix]
+
+[33mcommit 2d90acc8287a587d39d6f970fadd77ab9b2b8013[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Nov 21 23:34:32 2022 +0300
+
+    fixes old bug for group users lesson [bug-fix]
+
+[33mcommit d09cbbc51b93e4b5f1174d6029cc040f5f18b571[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Nov 21 23:22:57 2022 +0300
+
+    fixes old bug for group users lesson [bug-fix]
+
+[33mcommit d70a740faf6b09d8c96fd50dfcf9e10885c85ff9[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Nov 21 22:17:52 2022 +0300
+
+    fixes old bug for group users lesson [bug-fix]
+
+[33mcommit 34a3713ed51a42725e109ba1fe4e3daffa535edf[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Nov 21 22:03:49 2022 +0300
+
+    send websocket info about lesson done [#893]
+
+[33mcommit 825e60ad22c2634e847c0641a140d9feef68de3f[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Nov 21 21:36:43 2022 +0300
+
+    send websocket info about lesson done [#893]
+
+[33mcommit 2824e673d4c4349ae256a747cf79423f0b191cb2[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Nov 21 18:27:16 2022 +0300
+
+    pruffme for group users [#893]
+
+[33mcommit d64059429a6fbe7f9dd47f9619858e7a421cf297[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Nov 21 18:22:21 2022 +0300
+
+    check closing done windows [#893]
+
+[33mcommit ba22bb483f3b91b9d3cd57a9979b5d2e85c2984d[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Nov 21 15:48:15 2022 +0300
+
+    fix teacher query for students [#908]
+
+[33mcommit 2910d4b7adee691907acd4f01d62f59fd5851b0b[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Nov 21 15:43:37 2022 +0300
+
+    fix teacher query for students [#908]
+
+[33mcommit 56500971e9fe22418ea1afe061ebdd2b24173fbc[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Nov 21 15:25:39 2022 +0300
+
+    fixes for teacher [#908]
+
+[33mcommit 202fcfad4ea0333ff51c3fdcbc33ee560c9fe6b8[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Mon Nov 21 15:24:59 2022 +0300
+
+    fixes for teacher [#908]
+
+[33mcommit d8e434ce157cdc7ced93d9e25a74da64b5061476[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Sat Nov 19 15:34:44 2022 +0300
+
+    fixes for teacher [#908]
+
+[33mcommit d28fe69ca8663fd926303cbb27386a29cca811e8[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Sat Nov 19 15:29:24 2022 +0300
+
+    fixes for teacher [#908]
+
+[33mcommit 5444a49a7b138e430979a38d559a15293e8cbcd4[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Sat Nov 19 01:04:45 2022 +0300
+
+    fixes for teacher [#908]
+
+[33mcommit 74363bd7ee239488a9c6408c1a664b4d2847d88c[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Fri Nov 18 23:53:25 2022 +0300
+
+    return homeworks [#907]
+
+[33mcommit fe1692599a2fea93785c6108c55323cc11d6589e[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Fri Nov 18 22:12:47 2022 +0300
+
+    fixes other endpoints for work with group of users [#907]
+
+[33mcommit 580cdfc8a4c88787fcdb4a246e6419c39e600288[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Fri Nov 18 13:58:58 2022 +0300
+
+    home page fixes for getting next lesson [#907]
+
+[33mcommit 3559a8af34df31a03eb7a12f59649251fed4547c[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Fri Nov 18 13:28:04 2022 +0300
+
+    home page fixes [#907]
+
+[33mcommit 250ad2827dd2906df8d9434a4ccb92be327b5496[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Thu Nov 17 15:43:07 2022 +0300
+
+    renews about architecture [#906]
+
+[33mcommit a05007bcc58345017ed45c859d2665c390198406[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Thu Nov 17 14:38:02 2022 +0300
+
+    renews about architecture [#906]
+
+[33mcommit 66f7429c005ec52c37b895b88b0b1725ceae6784[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Nov 8 22:35:17 2022 +0300
+
+    cors
+
+[33mcommit 04454deeb1896305746261b23ae966d83bdad755[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Nov 8 22:21:00 2022 +0300
+
+    load records
+
+[33mcommit 481b275e3a7f5266b85e5462ba0d56377d371bfd[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Sat Nov 5 14:05:33 2022 +0300
+
+    load records
+
+[33mcommit 90052cfc2307e60629dc1aa80c599aba09c94425[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Sat Nov 5 14:05:11 2022 +0300
+
+    load records
+
+[33mcommit ca19623e6c132f726a5d965fb6506c3990426d0a[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Sat Nov 5 09:56:26 2022 +0300
+
+    load records
+
+[33mcommit 5bbc1eba88b569dc71cf51ab8dd74400eb12186f[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Fri Nov 4 22:13:47 2022 +0300
+
+    set new provider calls as pruffme
+
+[33mcommit fb7bf62a6e7a063e335078f91c9afd8a4e77b102[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Fri Nov 4 22:10:42 2022 +0300
+
+    set new provider calls as pruffme
+
+[33mcommit 850b2bde1926ab5082f85484bc8173174eee95c5[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Fri Nov 4 21:57:44 2022 +0300
+
+    set new provider calls as pruffme
+
+[33mcommit d233da40f4ed2c827976624a3cc6e3727ab43518[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Fri Nov 4 21:51:41 2022 +0300
+
+    set new provider calls as pruffme
+
+[33mcommit 150e47f7663e11355fa9f5fd5e3a83969b287e86[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Fri Nov 4 21:15:09 2022 +0300
+
+    set new provider calls as pruffme
+
+[33mcommit 55a88297d299e08ee0652786ea32ca19b6af6940[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Oct 25 22:48:07 2022 +0400
+
+    ci/cd configs
+
+[33mcommit dbe6c9c643a5cca9e75cef3eef2573f2897083af[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Oct 25 21:17:04 2022 +0400
+
+    fix files removing
+
+[33mcommit 5b2ec4f3111a8d3f07a1153c3e31b4f542d54e9d[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Oct 25 21:12:25 2022 +0400
+
+    fix files removing
+
+[33mcommit 324f96e96241eaed5e875711b411713f6ef3f11f[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Oct 25 21:08:38 2022 +0400
+
+    remove env file
+
+[33mcommit 4ff219c7ee1e40f947a444e06f17873b89253450[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Oct 25 21:02:11 2022 +0400
+
+    remove env file
+
+[33mcommit b8ddce6e82ec5513becd38fe6f421904c3f7489e[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Tue Oct 25 21:01:18 2022 +0400
+
+    fork and remove files and folders
+
+[33mcommit f43f7081b267e95e0317a4c97295bb87ef0494a3[m
+Merge: 3b7c664 bfbc73e
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Oct 5 10:11:56 2022 +0300
+
+    Merge remote-tracking branch 'origin/develop' into develop
+
+[33mcommit 3b7c664de6ee7a9660c2a225d34b7f3ca694d38f[m
+Author: olegmaslov <oleg.gnome@yandex.ru>
+Date:   Wed Oct 5 10:08:44 2022 +0300
+
+    fix deploy
+
+[33mcommit bfbc73ee455d5559b9adfc2146d420e1e3af488c[m
+Author: Oleg Maslov <oleg.gnome@yandex.ru>
+Date:   Tue Oct 4 06:32:13 2022 +0000
+
+    Update .gitlab-ci.yml file
+
+[33mcommit 149a7be1a22f5927f7a5c012c3dc1a022e398bc5[m
+Merge: f3d611a cbd0ce3
+Author: Oleg Maslov <oleg.gnome@yandex.ru>
+Date:   Fri May 20 09:54:53 2022 +0000
+
+    Merge branch 'issue-678' into 'develop'
+    
+    fix webhooks app#678]
+    
+    See merge request oscarbot/ternoi_back!100
+
+[33mcommit cbd0ce335a20b08aff9700ee46526ec465dda779[m
+Author: julia <sorulaijuli@gmail.ru>
+Date:   Thu May 19 15:49:27 2022 +0300
+
+    fix webhooks app#678]
+
+[33mcommit f3d611a406f13e7c9c7991361b16f618ea91e1ec[m
+Merge: 311fca2 1f7e007
+Author: Oleg Maslov <oleg.gnome@yandex.ru>
+Date:   Wed May 18 15:53:22 2022 +0000
+
+    Merge branch 'issue-678' into 'develop'
+    
+    add sentry_sdk[#678]
+    
+    See merge request oscarbot/ternoi_back!99
+
+[33mcommit 1f7e007649607faeeab1ed5660a66b3f1a7c613d[m
+Author: julia <sorulaijuli@gmail.ru>
+Date:   Wed May 18 18:21:30 2022 +0300
+
+    add sentry_sdk[#678]
+
+[33mcommit 311fca229a93eab886cda4b558d5a104363e0af2[m
+Merge: 9e0fdcb cd42105
+Author: Oleg Maslov <oleg.gnome@yandex.ru>
+Date:   Mon May 16 19:41:03 2022 +0000
+
+    Merge branch 'issue-678' into 'develop'
+    
+    fix req.txt[#678]
+    
+    See merge request oscarbot/ternoi_back!98
+
+[33mcommit cd421050021a1d7b328fdb77c8b60bda4c166dcf[m
+Author: julia <sorulaijuli@gmail.ru>
+Date:   Mon May 16 22:38:09 2022 +0300
+
+    fix req.txt[#678]
+
+[33mcommit 9e0fdcb8b2818ccf1b751247648b4eda1ffd8adf[m
+Merge: 6ad4580 72fe00e
+Author: Oleg Maslov <oleg.gnome@yandex.ru>
+Date:   Mon May 16 19:09:38 2022 +0000
+
+    Merge branch 'issue-678' into 'develop'
+    
+    add celery tasks for alfa/amo funcs, fix amocrm views for webhooks[#678]
+    
+    See merge request oscarbot/ternoi_back!97
