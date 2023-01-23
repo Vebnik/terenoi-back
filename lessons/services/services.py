@@ -16,8 +16,11 @@ def is_free_date(request_date, groups):
             for lesson_date in lesson_dates:
                 student_lesson_date = current_date(student, lesson_date.get('date'))
                 end_student_lesson_date = current_date(student, lesson_date.get('date') + datetime.timedelta(hours=1))
+                start_student_lesson_date = current_date(student, lesson_date.get('date') - datetime.timedelta(hours=1))
                 utc = pytz.UTC
                 start_time = date.replace(tzinfo=utc)
                 if student_lesson_date <= start_time < end_student_lesson_date:
+                    return False
+                if start_student_lesson_date < start_time <= student_lesson_date:
                     return False
     return True
