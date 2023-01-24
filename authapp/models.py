@@ -60,6 +60,7 @@ class User(AbstractUser):
         (CANCELED, 'Отказ'),
     )
 
+    middle_name = models.CharField(max_length=32, verbose_name='Отчество', **NULLABLE)
     status = models.CharField(max_length=8, verbose_name='Статус', choices=STATUS_CHOICES, default=ACTIVE)
     avatar = models.ImageField(upload_to='user_avatar/', verbose_name='Avatar', **NULLABLE)
     birth_date = models.DateField(verbose_name='Дата Рождения', **NULLABLE)
@@ -120,6 +121,9 @@ class User(AbstractUser):
             'Архивный': 'secondary',
             'Отказ': 'danger'
         }.get(self.status)
+
+    def get_absolute_url(self):
+        return '/manager/users/'
 
 
 class Group(models.Model):

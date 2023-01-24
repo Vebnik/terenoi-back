@@ -1,0 +1,114 @@
+
+
+<form method="post" id="user_create_form" class="validate-form mt-2 pt-50" novalidate="novalidate" action="#">
+    {% csrf_token %}
+    <div class="row">
+        <!-- ROW 1 -->
+        <div class="row">
+            <div class="col-12 col-sm-4 mb-1">
+                <label class="form-label" for="accountFirstName">Фамилия</label>
+                <input required type="text" class="form-control" id="accountFirstName" name="first_name" placeholder="Петрова" value="{{ request.POST.first_name }}" data-msg="Please enter first name">
+            </div>
+            <div class="col-12 col-sm-4 mb-1">
+                <label class="form-label" for="accountLastName">Имя</label>
+                <input required type="text" class="form-control" id="accountLastName" name="last_name" placeholder="Яна" value="{{ request.POST.last_name }}" data-msg="Please enter last name">
+            </div>
+            <div class="col-12 col-sm-4 mb-1">
+                <label class="form-label" for="accountLastName">Отчество</label>
+                <input required type="text" class="form-control" id="accountMiddleName" name="middle_name" placeholder="Васильевна" value="{{ request.POST.middle_name }}" data-msg="Please enter last name">
+            </div>
+        </div>
+
+        <!-- ROW 2 -->
+        <div class="row">
+            <div class="col-12 col-sm-4 mb-1">
+                <label class="form-label" for="accountBirthDate">Дата рождения</label>
+                <input required type="date" class="form-control" id="accountBirthDate" name="birth_date" placeholder="12.11.1990" value="{{ request.POST.birth_date }}">
+            </div>
+            <div class="col-12 col-sm-4 mb-1">
+                <label class="form-label" for="country">Пол</label>
+                <div class="position-relative">
+                    <select id="gender" class="select2 form-select select2-hidden-accessible" name="gender" data-select2-id="country" tabindex="-1" aria-hidden="true">
+                        <option value="F">Женский</option>
+                        <option value="M">Мужской</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-sm-4 mb-1">
+                <label class="form-label" for="accountEmail">Почта</label>
+                <input type="email" class="form-control account-number-mask" id="accountEmail" name="email" placeholder="user@gmail.com" value="{{ request.POST.email }}">
+            </div>
+        </div>
+
+        <!-- ROW 3 -->
+        <div class="row">
+            <div class="col-12 col-sm-4 mb-1">
+                <label class="form-label" for="accountAddress">Номер телефона</label>
+                <input required type="number" class="form-control" id="accountPhone" name="phone" placeholder="+7 (777) 7777 77 77" value="{{ request.POST.phone }}">
+            </div>
+            <div class="col-12 col-sm-4 mb-1">
+                <label class="form-label" for="accountState">Пароль</label>
+                <input required type="password" class="form-control" id="accountPassword" name="password" placeholder="***********" value="{{ request.POST.password }}">
+            </div>
+            <div class="col-12 col-sm-4 mb-1">
+                <!-- Ниже ПУСТОЙ СИМВОЛ -->
+                <label class="form-label" for="accountZipCode">ㅤㅤ</label> 
+                <!-- Выше ПУСТОЙ СИМВОЛ -->
+                <div class="d-flex flex-column">
+                    <label class="form-check-label mb-50" for="customSwitch10"></label>
+                    <div class="form-check form-switch form-check-primary">
+                        <input type="checkbox" class="form-check-input" id="passwordGeneration" checked name="is_pass_generation">
+                        <label class="form-check-label" for="customSwitch10">
+                            <span class="switch-icon-left"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                            <span class="switch-icon-right"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>
+                            Сгенерировать пароль
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROW 4 -->
+        <div class="row">
+            <!-- <div class="col-12 col-sm-4 mb-1">
+                <label class="form-label" for="country">Country</label>
+                <div class="position-relative">
+                    <select name="country" id="country" class="select2 form-select select2-hidden-accessible" data-select2-id="country" tabindex="-1" aria-hidden="true">
+                        <option value="" data-select2-id="2">Select Country</option>
+                        <option value="Australia">Australia</option>
+                        <option value="Bangladesh">Bangladesh</option>
+                        <option value="Belarus">Belarus</option>
+                        <option value="Brazil">Brazil</option>
+                        <option value="Canada">Canada</option>
+                        <option value="China">China</option>
+                        <option value="France">France</option>
+                        <option value="Germany">Germany</option>
+                        <option value="India">India</option>
+                        <option value="Indonesia">Indonesia</option>
+                        <option value="Israel">Israel</option>
+                        <option value="Italy">Italy</option>
+                        <option value="Japan">Japan</option>
+                        <option value="Korea">Korea, Republic of</option>
+                        <option value="Mexico">Mexico</option>
+                        <option value="Philippines">Philippines</option>
+                        <option value="Russia">Russian Federation</option>
+                        <option value="South Africa">South Africa</option>
+                        <option value="Thailand">Thailand</option>
+                        <option value="Turkey">Turkey</option>
+                        <option value="Ukraine">Ukraine</option>
+                        <option value="United Arab Emirates">United Arab Emirates</option>
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="United States">United States</option>
+                    </select>
+                </div>
+            </div> -->
+        </div>
+
+        <!-- SUBMIT BTN -->
+        <div class="col-12">
+            <button type="submit" id="submit_btn" class="btn btn-primary mt-1 me-1 waves-effect waves-float waves-light">Сохранить</button>
+            <button type="reset" class="btn btn-outline-secondary mt-1 waves-effect">Очистить</button>
+        </div>
+    </div>
+
+</form>
