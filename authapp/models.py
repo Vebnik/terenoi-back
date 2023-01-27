@@ -47,6 +47,19 @@ class User(AbstractUser):
         (ADVANCED, 'Advanced'),
     )
 
+    ACTIVE = 'Активный'
+    PAUSE = 'На паузе'
+    ARCHIVE = 'Архивный'
+    CANCELED = 'Отказ'
+
+    STATUS_CHOICES = (
+        (ACTIVE, 'Активный'),
+        (PAUSE, 'На паузе'),
+        (ARCHIVE, 'Архивный'),
+        (CANCELED, 'Отказ'),
+    )
+
+    status = models.CharField(max_length=8, verbose_name='Статус', choices=STATUS_CHOICES, default=ACTIVE)
     avatar = models.ImageField(upload_to='user_avatar/', verbose_name='Avatar', **NULLABLE)
     birth_date = models.DateField(verbose_name='Дата Рождения', **NULLABLE)
     phone = models.CharField(max_length=25, verbose_name='Телефон', **NULLABLE)
@@ -98,6 +111,14 @@ class User(AbstractUser):
             session=participant_data.get('session'),
             role=role
         )
+    
+    def get_status_color(self):
+        return {
+            'Активный': 'success',
+            'На паузе': 'warning',
+            'Архивный': 'secondary',
+            'Отказ': 'danger'
+        }.get(self.status)
 
 
 class Group(models.Model):
