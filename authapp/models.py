@@ -60,6 +60,13 @@ class User(AbstractUser):
         (CANCELED, 'Отказ'),
     )
 
+    # TODO Validate from Oleg
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+    
+    username = models.CharField(verbose_name='username', max_length=150, null=True, blank=True, unique=False)
+    email = models.EmailField(verbose_name='email address', blank=True, unique=True)
+
     middle_name = models.CharField(max_length=32, verbose_name='Отчество', **NULLABLE)
     status = models.CharField(max_length=8, verbose_name='Статус', choices=STATUS_CHOICES, default=ACTIVE)
     avatar = models.ImageField(upload_to='user_avatar/', verbose_name='Avatar', **NULLABLE)
@@ -97,9 +104,14 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         super(User, self).save(*args, **kwargs)
+
         if 'pbkdf2_sha256' not in self.password:
             password = make_password(self.password)
             self.password = password
+
+        if not self.username:
+            self.username = self.email
+
         super(User, self).save(*args, **kwargs)
 
     def create_participant(self, webinar, participant_data, role):

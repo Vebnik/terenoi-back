@@ -1,24 +1,27 @@
 window.addEventListener('load', () => {
 
-  function is_valid_form() {
-    for (const el of [...document.querySelectorAll('input'), ...document.querySelectorAll('select')]) {
-      if (!el.value) {
-        toastr.warning(`Check ${el.name.replace('_', ' ')}`)
-        return false
-      }
-    }
-    username = 
-    `${document.querySelector('#accountFirstName').value}_${document.querySelector('#accountLastName').value}`
-    
-    html = `<input required type="text" class="hidden" name="username" value="${username}">`
-    document.getElementById('user_create_form').insertAdjacentHTML('beforebegin', html)
-    
-    return true
-  }
+  setTimeout(() => {
 
-  document.querySelector('#submit_btn').addEventListener('click', (ev) => {
-    if (!is_valid_form()) {
-      ev.preventDefault()
+    function get_unput(id=1) {
+      return `
+      <p>
+        <label for="id_phone_extend">Дополнительный номер телефона</label>
+        <input type="text" name="phone" maxlength="25" class="form-control" required="" id="id_phone_extend">
+      </p>
+      <p>
+        <label for="comments">Коментарии</label>
+        <input type="text" name="comments" maxlength="25" class="form-control" required="" id="comments">
+      </p>
+      <p>
+        <input class="form-control hidden">
+      </p>`
     }
+
+    document.querySelector('#addPhoneBtn').addEventListener('click', (ev) => {
+      form = document.querySelector('#userCreateFormBody')
+      form.insertAdjacentHTML('beforeend', get_unput())
+    })
+
   })
+
 })

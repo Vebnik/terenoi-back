@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from manager.mixins import StyleFormMixin
 from authapp.models import User
 
+
 class StudentFilterForm(forms.Form):
   lessons_residue = forms.IntegerField(max_value=10, min_value=0)
   balance_residue = forms.CharField(max_length=9)
@@ -14,7 +15,13 @@ class StudentSearchForm(StyleFormMixin, forms.Form):
   search_data = forms.CharField(max_length=100)
 
 
-class StudentCreateForm(forms.ModelForm):
+class StudentCreateForm(StyleFormMixin, forms.ModelForm):
+
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+
+    for key in self.fields:
+        self.fields[key].required = True 
 
   class Meta:
     model = User
@@ -27,7 +34,11 @@ class StudentCreateForm(forms.ModelForm):
       'middle_name',
       'email',
       'password',
-      'username',
       )
+
+    widgets = {
+      'birth_date': forms.DateInput(attrs={'type': 'date'}),
+      'password': forms.DateInput(attrs={'type': 'password'}),
+    }
 
   

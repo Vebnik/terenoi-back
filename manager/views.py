@@ -3,8 +3,8 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.utils.decorators import method_decorator
 
 
+from django.urls import reverse_lazy
 from pytils import translit
-from django.shortcuts import render
 from django.http import HttpRequest, HttpResponse
 from django.views.generic import TemplateView
 from django.views.generic import ListView, TemplateView, FormView, CreateView
@@ -15,7 +15,7 @@ from manager.mixins import UserAccessMixin, PagePaginateByMixin, StyleFormMixin
 from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm
 
 
-# Dasboard page
+# Dashboard page
 class DashboardView(UserAccessMixin, TemplateView):
     permission_required = ''
     template_name = 'manager/dashboard.html'
@@ -112,26 +112,15 @@ class UsersManagerListView(UserAccessMixin, PagePaginateByMixin, ListView):
 # Create user
 class UsersCreateView(UserAccessMixin, CreateView):
     template_name = 'manager/users_create.html'
-    model = User
     form_class = StudentCreateForm
-    success_url = 'manager.urls.users'
+    model = User
+    success_url = reverse_lazy('manager:users')
 
-    def post(self, request, *args, **kwargs):
-        try:
-            form = self.get_form()
 
-            print(request.POST)
+    # TODO Спросить у Олега насчёт оверрайда 
+    def dispatch(self, request: HttpRequest, *args, **kwargs):
 
-            if form.is_valid():
-                return super().post(request, *args, **kwargs)
+        print(request.POST)
 
-            raise Exception('Error in some input')
-        except Exception as ex:
-            try:
-                context = self.get_context_data()
-                context.update({'error_handlers': ex})
-            except:
-                context = {'error_handlers': ex}
-            finally:
-                return render(request, template_name=self.template_name, context=context)
+        return super().dispatch(request, *args, **kwargs)
 
