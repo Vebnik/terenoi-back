@@ -6,21 +6,27 @@ from django.conf import settings
 import pytz
 
 
-def is_free_date(request_date, groups):
-    date = datetime.datetime.strptime(request_date, settings.REST_FRAMEWORK.get('DATETIME_FORMAT'))
+def is_free_date_user(user, date, type):
+    if type == 'group':
+        lesson_dates = Lesson.objects.filter(group__students=user).all().values('date')
+    else:
+        lesson_dates = Lesson.objects.filter(teacher=user).all().values('date')
+    for lesson_date in lesson_dates:
+        utc = pytz.UTC
+        start_time = date.replace(tzinfo=utc)
+        if lesson_date.get('date') <= start_time < lesson_date.get('date') + datetime.timedelta(hours=1):
+            return False
+        if lesson_date.get('date') - datetime.timedelta(hours=1) < start_time <= lesson_date.get('date'):
+            return False
+    return True
+
+
+def is_free_date(date, groups, teacher):
     student_list = [User.objects.get(pk=item) for item in groups]
     for student in student_list:
-        groups = Group.objects.filter(students=student).all()
-        for group in groups:
-            lesson_dates = Lesson.objects.filter(group=group).all().values('date')
-            for lesson_date in lesson_dates:
-                student_lesson_date = current_date(student, lesson_date.get('date'))
-                end_student_lesson_date = current_date(student, lesson_date.get('date') + datetime.timedelta(hours=1))
-                start_student_lesson_date = current_date(student, lesson_date.get('date') - datetime.timedelta(hours=1))
-                utc = pytz.UTC
-                start_time = date.replace(tzinfo=utc)
-                if student_lesson_date <= start_time < end_student_lesson_date:
-                    return False
-                if start_student_lesson_date < start_time <= student_lesson_date:
-                    return False
-    return True
+        student_free_date = is_free_date_user(user=student, date=date, type='group')
+        if not student_free_date:
+            return student_free_date
+
+    teacher_free_date = is_free_date_user(user=teacher, date=date, type='teacher')
+    return teacher_free_date
