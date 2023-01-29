@@ -64,8 +64,9 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     
-    username = models.CharField(verbose_name='username', max_length=150, null=True, blank=True, unique=False)
+    username = models.CharField(verbose_name='username', max_length=150, unique=False, **NULLABLE)
     email = models.EmailField(verbose_name='email address', blank=True, unique=True)
+    additional_number = models.ManyToManyField(verbose_name='Дополнительные номера', to='AdditionalUserNumber', **NULLABLE)
 
     middle_name = models.CharField(max_length=32, verbose_name='Отчество', **NULLABLE)
     status = models.CharField(max_length=8, verbose_name='Статус', choices=STATUS_CHOICES, default=ACTIVE)
@@ -215,3 +216,12 @@ class PruffmeAccount(models.Model):
     session = models.CharField(**NULLABLE, max_length=255)
     webinar = models.ForeignKey(Webinar, on_delete=models.CASCADE, **NULLABLE)
     role = models.CharField(**NULLABLE, max_length=255)
+
+
+class AdditionalUserNumber(models.Model):
+    user_ref = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='User')
+    phone = models.CharField(max_length=25, verbose_name='Дополнительный телефон', **NULLABLE)
+    comment = models.CharField(verbose_name='Комментраий', max_length=100, **NULLABLE)
+
+    def __str__(self) -> str:
+        return f'{self.phone} {self.comment}'

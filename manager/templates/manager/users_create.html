@@ -29,12 +29,11 @@
         <div class="d-flex mt-75">
             <h4 class="mb-0 ml-50"> Общие данные </h4>
         </div>
-        <form method="post" id="userCreateForm" class="mt-75">
+        <form method="post" id="userCreateForm" class="mt-75" enctype="multipart/form-data">
             {% csrf_token %}
             <div id="userCreateFormBody" class="mb-50" style="display: grid; grid-template-columns: auto auto auto; grid-column-gap: 50px;">
-
                 {{ form.as_p }}
-                
+
                 <div class="" style="display: flex; align-items: center;">
                     <label class="form-check-label mb-50" for="customSwitch10"></label>
                     <div class="form-check form-switch form-check-primary">
@@ -44,6 +43,8 @@
                         </label>
                     </div>
                 </div>
+
+                {{ formset.as_p }}
 
             </div>
             <span id="addPhoneBtn" class="btn btn-outline-primary mb-50">

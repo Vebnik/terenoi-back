@@ -6,11 +6,11 @@ window.addEventListener('load', () => {
       return `
       <p>
         <label for="id_phone_extend">Дополнительный номер телефона</label>
-        <input type="text" name="phone" maxlength="25" class="form-control" required="" id="id_phone_extend">
+        <input type="text" name="phone" maxlength="25" class="form-control" required id="id_phone_extend">
       </p>
       <p>
         <label for="comments">Коментарии</label>
-        <input type="text" name="comments" maxlength="25" class="form-control" required="" id="comments">
+        <input type="text" name="comments" maxlength="25" class="form-control" required id="comments">
       </p>
       <p>
         <input class="form-control hidden">

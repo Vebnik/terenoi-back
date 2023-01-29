@@ -5,14 +5,17 @@ from django.utils.decorators import method_decorator
 
 from django.urls import reverse_lazy
 from pytils import translit
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest
 from django.views.generic import TemplateView
-from django.views.generic import ListView, TemplateView, FormView, CreateView
+from django.views.generic import ListView, TemplateView, CreateView
 from django.db.models import Q
+from django.forms import inlineformset_factory, formset_factory
 
 from authapp.models import User
-from manager.mixins import UserAccessMixin, PagePaginateByMixin, StyleFormMixin
-from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm
+from manager.mixins import UserAccessMixin, PagePaginateByMixin
+from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm, AdditionalUserNumberForm
+from manager.formsets import StudentCreateFormSet, AdditionalUserNumberFormSet
+from authapp.models import AdditionalUserNumber
 
 
 # Dashboard page
@@ -113,14 +116,23 @@ class UsersManagerListView(UserAccessMixin, PagePaginateByMixin, ListView):
 class UsersCreateView(UserAccessMixin, CreateView):
     template_name = 'manager/users_create.html'
     form_class = StudentCreateForm
-    model = User
     success_url = reverse_lazy('manager:users')
 
 
-    # TODO Спросить у Олега насчёт оверрайда 
-    def dispatch(self, request: HttpRequest, *args, **kwargs):
+    def form_valid(self, form):
+        request_form = dict(self.request.POST)
+        respone = super().form_valid(form)
+        phones = request_form.get('phone')[1:]
+        comments = request_form.get('comments')
+        new_user = self.object
 
-        print(request.POST)
+        if new_user is None:
+            return respone
 
-        return super().dispatch(request, *args, **kwargs)
+        if phones and comments:
+            for i in range(0, len(phones)):
+                number = AdditionalUserNumber(user_ref=new_user, phone=phones[i], comment=comments[i])
+                number.save()
+
+        return respone
 

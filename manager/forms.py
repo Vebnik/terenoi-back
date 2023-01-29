@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from manager.mixins import StyleFormMixin
 from authapp.models import User
+from authapp.models import AdditionalUserNumber
 
 
 class StudentFilterForm(forms.Form):
@@ -21,7 +22,7 @@ class StudentCreateForm(StyleFormMixin, forms.ModelForm):
     super().__init__(*args, **kwargs)
 
     for key in self.fields:
-        self.fields[key].required = True 
+      self.fields[key].required = True 
 
   class Meta:
     model = User
@@ -42,3 +43,18 @@ class StudentCreateForm(StyleFormMixin, forms.ModelForm):
     }
 
   
+class AdditionalUserNumberForm(StyleFormMixin, forms.ModelForm):
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+
+    for key in self.fields:
+      self.fields[key].required = True 
+
+  class Meta:
+    model = AdditionalUserNumber
+    fields = ('phone', 'comment')
+
+    widgets = {
+      'user': forms.Select(attrs={'class': 'hidden'}),
+      'comment': forms.Select(attrs={'type': 'text'}),
+    }
