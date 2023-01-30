@@ -16,6 +16,7 @@ from manager.mixins import UserAccessMixin, PagePaginateByMixin
 from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm, AdditionalUserNumberForm
 from manager.formsets import StudentCreateFormSet, AdditionalUserNumberFormSet
 from authapp.models import AdditionalUserNumber
+from manager.service import CleanData
 
 
 # Dashboard page
@@ -120,19 +121,21 @@ class UsersCreateView(UserAccessMixin, CreateView):
 
 
     def form_valid(self, form):
-        request_form = dict(self.request.POST)
         respone = super().form_valid(form)
-        phones = request_form.get('phone')[1:]
-        comments = request_form.get('comments')
         new_user = self.object
 
         if new_user is None:
             return respone
 
+        request_form = dict(self.request.POST)
+        phones = request_form.get('phone')[1:]
+        comments = request_form.get('comments')
+
         if phones and comments:
             for i in range(0, len(phones)):
-                number = AdditionalUserNumber(user_ref=new_user, phone=phones[i], comment=comments[i])
+                phone = CleanData.phone_clener(phones[i])
+                number = AdditionalUserNumber(user_ref=new_user, phone=phone, comment=comments[i])
                 number.save()
-
+                
         return respone
 
