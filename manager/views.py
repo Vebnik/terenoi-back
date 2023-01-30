@@ -128,14 +128,22 @@ class UsersCreateView(UserAccessMixin, CreateView):
             return respone
 
         request_form = dict(self.request.POST)
-        phones = request_form.get('phone')[1:]
-        comments = request_form.get('comments')
+        phones = request_form.get('phone', [])[1:] # slice first phone
+        comments = request_form.get('comments', [])
 
         if phones and comments:
-            for i in range(0, len(phones)):
-                phone = CleanData.phone_clener(phones[i])
-                number = AdditionalUserNumber(user_ref=new_user, phone=phone, comment=comments[i])
-                number.save()
-                
+
+            bulk = [
+                AdditionalUserNumber(
+                    user_ref=new_user, 
+                    phone=CleanData.phone_clener(phones[i]), 
+                    comment=comments[i]
+                ) for i in range(0, len(phones))
+            ]
+
+            AdditionalUserNumber.objects.bulk_create(bulk)
+            new_user.additional_number.set(bulk)
+            new_user.save()
+
         return respone
 
