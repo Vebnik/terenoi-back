@@ -8,7 +8,7 @@ from manager.views import \
     UsersTeacherListView, \
     UsersManagerListView, \
     UsersStudenSearchtListView, \
-    UsersStudenFiltertListView, UsersUpdateView
+    UsersStudenFiltertListView, UsersUpdateView, UserDetailView
 
 app_name = ManagerConfig.name
 
@@ -24,4 +24,5 @@ urlpatterns = [
 
     path('users/create/', UsersCreateView.as_view(), name='users_create'),
     path('users/update/<int:pk>/', UsersUpdateView.as_view(), name='users_update'),
+    path('users/detail/<int:pk>/', UserDetailView.as_view(), name='users_detail'),
 ]

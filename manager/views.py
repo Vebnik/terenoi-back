@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django.http import HttpRequest
-from django.urls import reverse_lazy
-from django.views.generic import ListView, TemplateView, CreateView, UpdateView
+from django.urls import reverse_lazy, reverse
+from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DetailView
 from pytils import translit
 
 from authapp.models import AdditionalUserNumber
@@ -105,11 +105,21 @@ class UsersManagerListView(UserAccessMixin, PagePaginateByMixin, ListView):
         return self.request.GET.get('by', 10)
 
 
+class UserDetailView(UserAccessMixin, DetailView):
+    model = User
+    template_name = 'manager/users_detail.html'
+
+
 # Create user
 class UsersCreateView(UserAccessMixin, CreateView):
     template_name = 'manager/users_create.html'
     form_class = StudentCreateForm
-    success_url = reverse_lazy('manager:users')
+    model = User
+    # success_url = reverse_lazy('manager:users')
+
+    def get_success_url(self):
+        user_pk = self.model.objects.all().order_by('-id').first().pk
+        return reverse('manager:users_detail', user_pk)
 
 
     def form_valid(self, form):

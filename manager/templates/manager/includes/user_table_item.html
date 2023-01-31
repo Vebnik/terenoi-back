@@ -16,7 +16,7 @@
                       </span>
                   </div>
             {% endif %}
-            <a href="{% url 'manager:users_update' student.pk %}" class="font-weight-bold d-block text-nowrap"
+            <a href="{% url 'manager:users_detail' student.pk %}" class="font-weight-bold d-block text-nowrap"
                target="_self">
                 {{ student.first_name }} {{ student.last_name }}
             </a>
@@ -51,8 +51,7 @@
         <div class="dropdown b-dropdown btn-group">
             <button aria-haspopup="true" aria-expanded="false" type="button"
                     class="btn dropdown-toggle btn-link dropdown-toggle-no-caret">
-{#                {% include 'manager/svg_includes/triple_dot.html' %}#}
-                <i data-feather="circle" class="font-medium-4"></i>
+                {% include 'manager/svg_includes/triple_dot.html' %}
             </button>
             <ul role="menu" tabindex="-1" class="dropdown-menu" aria-labelledby="__BVID__3291__BV_toggle_">
                 <li role="presentation">

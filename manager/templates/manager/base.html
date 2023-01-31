@@ -230,10 +230,12 @@
 <!-- END: Page JS-->
 
 
+{% block js_extends %}
+{% endblock %}
 <!-- CUSTOM JS -->
 <script src="{% static 'assets/js/manager_user_checkbox.js' %}"></script>
 <script src="{% static 'assets/js/manager_user_paginate.js' %}"></script>
-<script src="{% static 'assets/js/manager_create_user_form_validation.js' %}"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <!-- END CUSTOM JS -->
 
