@@ -1,21 +1,13 @@
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.utils.decorators import method_decorator
-
-
-from django.urls import reverse_lazy
-from pytils import translit
-from django.http import HttpRequest
-from django.views.generic import TemplateView
-from django.views.generic import ListView, TemplateView, CreateView
 from django.db.models import Q
-from django.forms import inlineformset_factory, formset_factory
+from django.http import HttpRequest
+from django.urls import reverse_lazy
+from django.views.generic import ListView, TemplateView, CreateView, UpdateView
+from pytils import translit
 
-from authapp.models import User
-from manager.mixins import UserAccessMixin, PagePaginateByMixin
-from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm, AdditionalUserNumberForm
-from manager.formsets import StudentCreateFormSet, AdditionalUserNumberFormSet
 from authapp.models import AdditionalUserNumber
+from authapp.models import User
+from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm
+from manager.mixins import UserAccessMixin, PagePaginateByMixin
 from manager.service import CleanData
 
 
@@ -121,11 +113,11 @@ class UsersCreateView(UserAccessMixin, CreateView):
 
 
     def form_valid(self, form):
-        respone = super().form_valid(form)
+        response = super().form_valid(form)
         new_user = self.object
 
         if new_user is None:
-            return respone
+            return response
 
         request_form = dict(self.request.POST)
         phones = request_form.get('phone', [])[1:] # slice first phone
@@ -145,5 +137,39 @@ class UsersCreateView(UserAccessMixin, CreateView):
             new_user.additional_number.set(bulk)
             new_user.save()
 
-        return respone
+        return response
+
+class UsersUpdateView(UserAccessMixin, UpdateView):
+    model = User
+    template_name = 'manager/users_create.html'
+    form_class = StudentCreateForm
+    success_url = reverse_lazy('manager:users')
+
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        new_user = self.object
+
+        if new_user is None:
+            return response
+
+        request_form = dict(self.request.POST)
+        phones = request_form.get('phone', [])[1:] # slice first phone
+        comments = request_form.get('comments', [])
+
+        if phones and comments:
+
+            bulk = [
+                AdditionalUserNumber(
+                    user_ref=new_user,
+                    phone=CleanData.phone_clener(phones[i]),
+                    comment=comments[i]
+                ) for i in range(0, len(phones))
+            ]
+
+            AdditionalUserNumber.objects.bulk_create(bulk)
+            new_user.additional_number.set(bulk)
+            new_user.save()
+
+        return response
 
