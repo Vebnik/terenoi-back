@@ -6,9 +6,18 @@
     </th>
     <td aria-colindex="1" role="cell" class="">
         <div class="media-body align-items-center" style="display: flex;">
-            <img style="border-radius: 50%; margin-right: 10px;" width="32px" height="32px"
-                 src="http://vuexy.oscarbot.ru/img/9.3fd39137.png" alt="avatar">
-            <a href="{% url 'manager:users_update' student.pk %}" class="font-weight-bold d-block text-nowrap" target="_self">
+            {% if student.avatar %}
+                <img style="border-radius: 50%; margin-right: 10px;" width="32px" height="32px"
+                     src="/media/{{ student.avatar }}" alt="avatar">
+            {% else %}
+                <div class="avatar bg-light-primary p-50 me-1">
+                      <span class="avatar-content">
+                          <i data-feather="user" class="font-medium-4"></i>
+                      </span>
+                  </div>
+            {% endif %}
+            <a href="{% url 'manager:users_update' student.pk %}" class="font-weight-bold d-block text-nowrap"
+               target="_self">
                 {{ student.first_name }} {{ student.last_name }}
             </a>
         </div>
