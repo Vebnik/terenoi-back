@@ -1,4 +1,9 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
+
+from manager.mixins import StyleFormMixin
+from authapp.models import User
+from authapp.models import AdditionalUserNumber
 
 
 class StudentFilterForm(forms.Form):
@@ -7,5 +12,49 @@ class StudentFilterForm(forms.Form):
   status = forms.CharField(max_length=100)
 
 
-class StudentSearchForm(forms.Form):
+class StudentSearchForm(StyleFormMixin, forms.Form):
   search_data = forms.CharField(max_length=100)
+
+
+class StudentCreateForm(StyleFormMixin, forms.ModelForm):
+
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+
+    for key in self.fields:
+      self.fields[key].required = True 
+
+  class Meta:
+    model = User
+    fields = (
+      'birth_date', 
+      'gender', 
+      'phone', 
+      'first_name',
+      'last_name',
+      'middle_name',
+      'email',
+      'password',
+      )
+
+    widgets = {
+      'birth_date': forms.DateInput(attrs={'type': 'date'}),
+      'password': forms.DateInput(attrs={'type': 'password'}),
+    }
+
+  
+class AdditionalUserNumberForm(StyleFormMixin, forms.ModelForm):
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+
+    for key in self.fields:
+      self.fields[key].required = True 
+
+  class Meta:
+    model = AdditionalUserNumber
+    fields = ('phone', 'comment')
+
+    widgets = {
+      'user': forms.Select(attrs={'class': 'hidden'}),
+      'comment': forms.Select(attrs={'type': 'text'}),
+    }

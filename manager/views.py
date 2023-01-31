@@ -2,23 +2,30 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.utils.decorators import method_decorator
 
+
+from django.urls import reverse_lazy
 from pytils import translit
 from django.http import HttpRequest
 from django.views.generic import TemplateView
-from django.views.generic import ListView, TemplateView
+from django.views.generic import ListView, TemplateView, CreateView
 from django.db.models import Q
+from django.forms import inlineformset_factory, formset_factory
 
 from authapp.models import User
 from manager.mixins import UserAccessMixin, PagePaginateByMixin
-from manager.forms import StudentFilterForm, StudentSearchForm
+from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm, AdditionalUserNumberForm
+from manager.formsets import StudentCreateFormSet, AdditionalUserNumberFormSet
+from authapp.models import AdditionalUserNumber
+from manager.service import CleanData
 
 
+# Dashboard page
 class DashboardView(UserAccessMixin, TemplateView):
     permission_required = ''
     template_name = 'manager/dashboard.html'
 
 
-# Stident
+# Student list
 class UsersStudentListView(UserAccessMixin, PagePaginateByMixin, ListView):
     template_name = 'manager/users.html'
     queryset = User.objects.filter(is_student__exact=True)
@@ -88,7 +95,7 @@ class UsersStudenSearchtListView(UserAccessMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
 
-# Teacher
+# Teacher list
 class UsersTeacherListView(UserAccessMixin, PagePaginateByMixin, ListView):
     template_name = 'manager/users_teacher.html'
     queryset = User.objects.filter(is_teacher__exact=True)
@@ -97,7 +104,7 @@ class UsersTeacherListView(UserAccessMixin, PagePaginateByMixin, ListView):
         return self.request.GET.get('by', 1)
 
 
-# Manager
+# Manager list
 class UsersManagerListView(UserAccessMixin, PagePaginateByMixin, ListView):    
     template_name = 'manager/users_manager.html'
     queryset = User.objects.filter(is_student__exact=False, is_teacher__exact=False)
@@ -106,9 +113,37 @@ class UsersManagerListView(UserAccessMixin, PagePaginateByMixin, ListView):
         return self.request.GET.get('by', 10)
 
 
-class UsersCreateView(UserAccessMixin, TemplateView):
+# Create user
+class UsersCreateView(UserAccessMixin, CreateView):
     template_name = 'manager/users_create.html'
-    
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+    form_class = StudentCreateForm
+    success_url = reverse_lazy('manager:users')
+
+
+    def form_valid(self, form):
+        respone = super().form_valid(form)
+        new_user = self.object
+
+        if new_user is None:
+            return respone
+
+        request_form = dict(self.request.POST)
+        phones = request_form.get('phone', [])[1:] # slice first phone
+        comments = request_form.get('comments', [])
+
+        if phones and comments:
+
+            bulk = [
+                AdditionalUserNumber(
+                    user_ref=new_user, 
+                    phone=CleanData.phone_clener(phones[i]), 
+                    comment=comments[i]
+                ) for i in range(0, len(phones))
+            ]
+
+            AdditionalUserNumber.objects.bulk_create(bulk)
+            new_user.additional_number.set(bulk)
+            new_user.save()
+
+        return respone
 

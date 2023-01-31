@@ -59,6 +59,7 @@ class User(AbstractUser):
         (CANCELED, 'Отказ'),
     )
 
+    middle_name = models.CharField(max_length=32, verbose_name='Отчество', **NULLABLE)
     status = models.CharField(max_length=8, verbose_name='Статус', choices=STATUS_CHOICES, default=ACTIVE)
     avatar = models.ImageField(upload_to='user_avatar/', verbose_name='Avatar', **NULLABLE)
     birth_date = models.DateField(verbose_name='Дата Рождения', **NULLABLE)
@@ -95,9 +96,14 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         super(User, self).save(*args, **kwargs)
+
         if 'pbkdf2_sha256' not in self.password:
             password = make_password(self.password)
             self.password = password
+
+        if not self.username:
+            self.username = self.email
+
         super(User, self).save(*args, **kwargs)
 
     def create_participant(self, webinar, participant_data, role):
@@ -119,6 +125,9 @@ class User(AbstractUser):
             'Архивный': 'secondary',
             'Отказ': 'danger'
         }.get(self.status)
+
+    def get_absolute_url(self):
+        return '/manager/users/'
 
 
 class Group(models.Model):
@@ -208,3 +217,12 @@ class PruffmeAccount(models.Model):
     session = models.CharField(**NULLABLE, max_length=255)
     webinar = models.ForeignKey(Webinar, on_delete=models.CASCADE, **NULLABLE)
     role = models.CharField(**NULLABLE, max_length=255)
+
+
+class AdditionalUserNumber(models.Model):
+    user_ref = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='User')
+    phone = models.CharField(max_length=25, verbose_name='Дополнительный телефон', **NULLABLE)
+    comment = models.CharField(verbose_name='Комментраий', max_length=100, **NULLABLE)
+
+    def __str__(self) -> str:
+        return f'{self.phone} {self.comment}'
