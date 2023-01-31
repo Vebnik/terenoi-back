@@ -115,11 +115,11 @@ class UsersCreateView(UserAccessMixin, CreateView):
     template_name = 'manager/users_create.html'
     form_class = StudentCreateForm
     model = User
-    # success_url = reverse_lazy('manager:users')
+    success_url = reverse_lazy('manager:users')
 
-    def get_success_url(self):
-        user_pk = self.model.objects.all().order_by('-id').first().pk
-        return reverse('manager:users_detail', user_pk)
+    # def get_success_url(self):
+    #     user_pk = self.model.objects.all().order_by('-id').first().pk
+    #     return reverse('manager:users_detail', user_pk)
 
 
     def form_valid(self, form):
