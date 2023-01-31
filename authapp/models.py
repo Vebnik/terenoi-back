@@ -60,14 +60,6 @@ class User(AbstractUser):
         (CANCELED, 'Отказ'),
     )
 
-    # TODO Validate from Oleg
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
-    
-    username = models.CharField(verbose_name='username', max_length=150, unique=False, **NULLABLE)
-    email = models.EmailField(verbose_name='email address', blank=True, unique=True)
-    additional_number = models.ManyToManyField(verbose_name='Дополнительные номера', to='AdditionalUserNumber', **NULLABLE)
-
     middle_name = models.CharField(max_length=32, verbose_name='Отчество', **NULLABLE)
     status = models.CharField(max_length=8, verbose_name='Статус', choices=STATUS_CHOICES, default=ACTIVE)
     avatar = models.ImageField(upload_to='user_avatar/', verbose_name='Avatar', **NULLABLE)
