@@ -233,7 +233,8 @@ class HomepageTeacherSerializer(serializers.ModelSerializer):
     def get_next_lesson(self, instance):
         lesson_pr = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.PROGRESS).order_by('date').first()
         if not lesson_pr:
-            lesson = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.SCHEDULED).order_by('date').first()
+            lesson = Lesson.objects.filter(teacher=instance,
+                                           lesson_status__in=[Lesson.SCHEDULED, Lesson.REQUEST_RESCHEDULED]).order_by('date').first()
             if not lesson:
                 lesson_done = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.DONE).order_by(
                     '-date').first()
@@ -290,7 +291,8 @@ class HomepageStudentSerializer(serializers.ModelSerializer):
     def get_next_lesson(self, instance):
         lesson_pr = Lesson.objects.filter(group__students=instance, lesson_status=Lesson.PROGRESS).order_by('date').first()
         if not lesson_pr:
-            lesson = Lesson.objects.filter(group__students=instance, lesson_status=Lesson.SCHEDULED).order_by('date').first()
+            lesson = Lesson.objects.filter(group__students=instance,
+                                           lesson_status__in=[Lesson.SCHEDULED, Lesson.REQUEST_RESCHEDULED]).order_by('date').first()
             if not lesson:
                 lesson_done = Lesson.objects.filter(group__students=instance, lesson_status=Lesson.DONE).order_by(
                     '-date').first()
