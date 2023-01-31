@@ -1,70 +1,81 @@
 {% extends 'manager/base.html' %}
 {% load static %}
 {% block content %}
-  <div class="card">
-    <div class="card-header border-bottom">
-        <h4 class="card-title">Создание пользователя </h4>
-    </div>
-    <div class="card-body py-2 my-25">
-
-        <!-- header section -->
-        <div class="d-flex">
-            <a href="#" class="me-25">
-                <img src="https://i.pinimg.com/originals/3b/44/d4/3b44d4a91a8cd625984fb30451cf6686.png" id="account-upload-img" class="uploadedAvatar rounded me-50" alt="profile image" height="100" width="100">
-            </a>
-            <!-- upload and reset button -->
-            <div class="d-flex align-items-end mt-75 ms-1">
-                <div>
-                    <button type="button" id="account-reset" class="btn btn-sm btn-outline-secondary mb-75 waves-effect">Очистить</button>
-                    <label for="avatar" class="btn btn-sm btn-primary mb-75 me-75 waves-effect waves-float waves-light">Загрузить</label>
-                    <input form="userCreateForm" class="form-control hidden" type="file" id="avatar" accept="image/png, image/jpg, image/jpeg" name="avatar">
-                    <p class="mb-0">Поддерживаемые форматы: png, jpg, jpeg.</p>
-                </div>
-            </div>
-            <!--/ upload and reset button -->
+    <div class="card">
+        <div class="card-header border-bottom">
+            <h4 class="card-title">Создание пользователя </h4>
         </div>
-        <!--/ header section -->
+        <div class="card-body py-2 my-25">
 
-        <!-- form -->
-        <div class="d-flex mt-75">
-            <h4 class="mb-0 ml-50"> Общие данные </h4>
-        </div>
-        <form method="post" id="userCreateForm" class="mt-75" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div id="userCreateFormBody" class="mb-50" style="display: grid; grid-template-columns: auto auto auto; grid-column-gap: 50px;">
-                {{ form.as_p }}
-                <div class="" style="display: flex; align-items: center;">
-                    <label class="form-check-label mb-50" for="customSwitch10"></label>
-                    <div class="form-check form-switch form-check-primary">
-                        <input type="checkbox" class="form-check-input" id="passwordGeneration" checked name="is_pass_generation">
-                        <label class="form-check-label" for="customSwitch10">
-                            Сгенерировать пароль
-                        </label>
+            <!-- header section -->
+            <div class="d-flex">
+                <a href="#" class="me-25">
+                    <div class="avatar bg-light-primary p-50 me-1" style="width: 100px; height: 100px">
+                      <span class="avatar-content" style="margin: 30% auto;">
+                          <i data-feather="user" class="font-large-5"></i>
+                      </span>
+                    </div>
+                </a>
+                <!-- upload and reset button -->
+                <div class="d-flex align-items-end mt-75 ms-1">
+                    <div>
+                        <label for="avatar"
+                               class="btn btn-sm btn-primary mb-75 me-75 waves-effect waves-float waves-light">Загрузить</label>
+                        <button type="button" id="account-reset"
+                                class="btn btn-sm btn-outline-secondary mb-75 waves-effect">Очистить
+                        </button>
+                        <input form="userCreateForm" class="form-control hidden" type="file" id="avatar"
+                               accept="image/png, image/jpg, image/jpeg" name="avatar">
+                        <p class="mb-0">Поддерживаемые форматы: png, jpg, jpeg.</p>
                     </div>
                 </div>
+                <!--/ upload and reset button -->
             </div>
-            <span id="addPhoneBtn" class="btn btn-outline-primary mb-50">
+            <!--/ header section -->
+
+            <!-- form -->
+            <div class="d-flex mt-75">
+                <h4 class="mb-0 ml-50"> Общие данные </h4>
+            </div>
+            <form method="post" id="userCreateForm" class="mt-75" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div id="userCreateFormBody" class="mb-50"
+                     style="display: grid; grid-template-columns: auto auto auto; grid-column-gap: 50px;">
+                    {{ form.as_p }}
+                    <div class="" style="display: flex; align-items: center;">
+                        <label class="form-check-label mb-50" for="customSwitch10"></label>
+                        <div class="form-check form-switch form-check-primary">
+                            <input type="checkbox" class="form-check-input" id="passwordGeneration" checked
+                                   name="is_pass_generation">
+                            <label class="form-check-label" for="customSwitch10">
+                                Сгенерировать пароль
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <span id="addPhoneBtn" class="btn btn-link mb-50">
                 <i data-feather="plus"></i>Добавить номер телефона
             </span>
-            <br>
-            <button type="submit" class="btn btn-primary">Сохранить</button>
-            <a href="{% url 'manager:users' %}">
-                <span class="btn btn-secondary">Отмена</span>
-            </a>
-        </form>
-        <!--/ form -->
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <a href="{% url 'manager:users' %}">
+                        <span class="btn btn-outline-secondary">Отмена</span>
+                    </a>
+                </div>
+            </form>
+            <!--/ form -->
 
-        <!-- TOAST INFO -->
-        {% if error_handlers %}
-        <script type="text/javascript">
-            var error = "{{ error_handlers.args }}"
-            setTimeout(() => toastr.warning(error), 1000)
-        </script>
-        {% endif %}
-        <!-- TOAST INFO END -->
+            <!-- TOAST INFO -->
+            {% if error_handlers %}
+                <script type="text/javascript">
+                    var error = "{{ error_handlers.args }}"
+                    setTimeout(() => toastr.warning(error), 1000)
+                </script>
+            {% endif %}
+            <!-- TOAST INFO END -->
 
+        </div>
     </div>
-  </div>
 {% endblock content %}
 
 {% block js_extends %}

@@ -108,8 +108,9 @@
         <div class="card">
             <div class="card-body border-bottom">
                 <span class="float-end mt-0">
-                    <a href="{% url 'manager:users_create' %}" class="dt-button add-new btn btn-primary" tabindex="0" type="button">
-                        <i class="fa fa-plus"></i>
+                    <a href="{% url 'manager:users_create' %}" class="dt-button add-new btn btn-primary" tabindex="0"
+                       type="button">
+                        <i data-feather="plus"></i>
                         Добавить пользователя
                     </a>
                 </span>
@@ -117,7 +118,7 @@
                 <form method="get" action="/manager/users/filter/"
                       class="row justify-content-center align-items-center text-center">
                     <div class="col-md-3 user_role">
-                        <label class="form-label" for="UserRole">Остаток уроков</label>
+                        <label class="form-label float-start" for="UserRole">Остаток уроков</label>
                         <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2" name="lessons_residue">
                             {% if request.GET.lessons_residue %}
                                 <option value="{{ request.GET.lessons_residue }}">{{ request.GET.lessons_residue }}</option>
@@ -136,7 +137,7 @@
                         </select>
                     </div>
                     <div class="col-md-3 user_plan">
-                        <label class="form-label" for="UserRole">Остаток баланса</label>
+                        <label class="form-label float-start" for="UserRole">Остаток баланса</label>
                         <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2" name="balance_residue">
                             {% if request.GET.lessons_residue %}
                                 <option value="{{ request.GET.balance_residue }}">{{ request.GET.balance_residue }}</option>
@@ -154,7 +155,7 @@
                         </select>
                     </div>
                     <div class="col-md-3 user_status">
-                        <label class="form-label" for="UserRole">Статус</label>
+                        <label class="form-label float-start" for="UserRole">Статус</label>
                         <select id="UserRole" class="form-select text-capitalize mb-md-0 mb-2" name="status">
                             {% if request.GET.lessons_residue %}
                                 <option value="{{ request.GET.status }}">{{ request.GET.status }}</option>
@@ -165,11 +166,13 @@
                             <option value="Отказ">Отказ</option>
                         </select>
                     </div>
-                    <div class="col-md-3 mt-75 pt-75 row">
-                        <button class="dt-button btn btn-primary waves-effect waves-float waves-light" type="submit">
+                    <div class="col-md-2 mt-75 pt-75 row">
+                        <button class="dt-button btn btn-outline-primary waves-effect waves-float waves-light w-75 float-end"
+                                type="submit">
                             <span>Применить</span>
                         </button>
                     </div>
+                    <div class="col-md-1"></div>
                 </form>
             </div>
             <div class="card-datatable table-responsive pt-0">
@@ -188,16 +191,18 @@
                         </form>
                         <div class="col-sm-12 col-lg-8 ps-xl-75 ps-0 mt-50" style="margin-bottom: 10px;">
                             <div class="dt-action-buttons d-flex align-items-center justify-content-center justify-content-lg-end flex-lg-nowrap flex-wrap">
+                                <label class="form-label float-start me-1 font-small-4">Действия</label>
                                 <div style="margin-right: 10px;">
                                     <select class="form-select">
+                                        <option>---</option>
                                         <option>Удалить выбранные</option>
                                         <option>Деактивировать выбранные</option>
                                     </select>
                                 </div>
                                 <div class="dt-buttons d-inline-flex">
-                                    <a href="{% url 'manager:users_create' %}" class="dt-button add-new btn btn-primary"
+                                    <a href="#" class="dt-button add-new btn btn-outline-primary"
                                        tabindex="0" type="button">
-                                        <span>Добавить пользователя</span>
+                                        <span>Применить</span>
                                     </a>
                                 </div>
                             </div>
