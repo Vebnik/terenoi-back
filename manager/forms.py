@@ -50,13 +50,8 @@ class AdditionalNumberForm(StyleFormMixin, forms.ModelForm):
     super().__init__(*args, **kwargs)
 
     for key in self.fields:
-      self.fields[key].required = True 
+      self.fields[key].required = True
 
   class Meta:
     model = AdditionalUserNumber
     fields = ('phone', 'comment')
-
-    widgets = {
-      'user': forms.Select(attrs={'class': 'hidden'}),
-      'comment': forms.Select(attrs={'type': 'text'}),
-    }

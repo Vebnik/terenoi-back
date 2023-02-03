@@ -122,41 +122,33 @@ class UsersCreateView(UserAccessMixin, CreateView):
         context =  super().get_context_data(**kwargs)
 
         AdditionalNumberFormSet = inlineformset_factory(
-            self.model, AdditionalUserNumber, form=AdditionalNumberForm, extra=1
+            self.model, AdditionalUserNumber, form=AdditionalNumberForm, extra=0
         )
 
+        if self.request.method == 'POST':
+            formset = AdditionalNumberFormSet(self.request.POST, instance=self.object)
+        else:
+            formset = AdditionalNumberFormSet(instance=self.object)
+
+        context['formset'] = formset
         return context
 
-    # TODO Переписать на formset
-    # TODO Взять реализацию формы и формсета из isa_day_62
-    # FIXME Переделать создание доп формы с номером в соответсвии с формсетом
-    # TODO Очистка номера
     def form_valid(self, form):
-        response = super().form_valid(form)
-        new_user = self.object
+        context_data = self.get_context_data()
+        formset = context_data['formset']
+        
+        self.object = form.save()
 
-        if new_user is None:
-            return response
+        if formset.is_valid():
+            formset.instance = self.object
+            additional_number = formset.save()
+            self.object.additional_user_number.set(additional_number)
 
-        request_form = dict(self.request.POST)
-        phones = request_form.get('phone', [])[1:] # slice first phone
-        comments = request_form.get('comments', [])
+        self.object.save()
 
-        if phones and comments:
+        return super().form_valid(form)
 
-            bulk = [
-                AdditionalUserNumber(
-                    user_ref=new_user, 
-                    phone=Utils.phone_clener(phones[i]), 
-                    comment=comments[i]
-                ) for i in range(0, len(phones))
-            ]
-
-            AdditionalUserNumber.objects.bulk_create(bulk)
-            new_user.additional_number.set(bulk)
-            new_user.save()
-
-        return response
+    # TODO Очистка номера
 
 
 class UsersUpdateView(UserAccessMixin, UpdateView):
@@ -165,30 +157,35 @@ class UsersUpdateView(UserAccessMixin, UpdateView):
     form_class = StudentCreateForm
     success_url = reverse_lazy('manager:users')
 
+
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+
+        AdditionalNumberFormSet = inlineformset_factory(
+            self.model, AdditionalUserNumber, form=AdditionalNumberForm, extra=0
+        )
+
+        if self.request.method == 'POST':
+            formset = AdditionalNumberFormSet(self.request.POST, instance=self.object)
+        else:
+            formset = AdditionalNumberFormSet(instance=self.object)
+
+        context['formset'] = formset
+        return context
+
+
     def form_valid(self, form):
-        response = super().form_valid(form)
-        new_user = self.object
+        context_data = self.get_context_data()
+        formset = context_data['formset']
+        
+        self.object = form.save()
 
-        if new_user is None:
-            return response
+        if formset.is_valid():
+            formset.instance = self.object
+            additional_number = formset.save()
+            self.object.additional_user_number.set(additional_number)
 
-        request_form = dict(self.request.POST)
-        phones = request_form.get('phone', [])[1:] # slice first phone
-        comments = request_form.get('comments', [])
+        self.object.save()
 
-        if phones and comments:
-
-            bulk = [
-                AdditionalUserNumber(
-                    user_ref=new_user,
-                    phone=Utils.phone_clener(phones[i]),
-                    comment=comments[i]
-                ) for i in range(0, len(phones))
-            ]
-
-            AdditionalUserNumber.objects.bulk_create(bulk)
-            new_user.additional_number.set(bulk)
-            new_user.save()
-
-        return response
+        return super().form_valid(form)
 

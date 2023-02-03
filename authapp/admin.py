@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.urls import path
 
-from authapp.models import User, UserStudyLanguage, StudyLanguage, Webinar, PruffmeAccount, Group
+from authapp.models import User, UserStudyLanguage, StudyLanguage, Webinar, PruffmeAccount, Group, AdditionalUserNumber
 from authapp.services import generate_password, send_generate_data, auth_alfa_account, auth_amo_account, \
     add_func_customer, get_funnel, get_customer_status
 from authapp.tasks import get_student_alfa_celery, get_leads_amo_celery, get_customers_amo_celery
@@ -98,3 +98,7 @@ class WebinarAdmin(admin.ModelAdmin):
     inlines = [
         PruffmeAccountInline
     ]
+
+@admin.register(AdditionalUserNumber)
+class AdditionalUserNumberAdmin(admin.ModelAdmin):
+    list_display = ('user_ref', 'phone', 'comment')
