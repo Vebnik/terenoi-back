@@ -43,9 +43,9 @@ class AllUserLessonsListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.is_student:
-            queryset = Lesson.objects.filter(group__students=self.request.user).order_by('date').select_related()
+            queryset = Lesson.objects.filter(group__students=self.request.user).exclude(lesson_status=Lesson.RESCHEDULED).order_by('date').select_related()
         else:
-            queryset = Lesson.objects.filter(teacher=self.request.user).order_by('date').select_related()
+            queryset = Lesson.objects.filter(teacher=self.request.user).order_by('date').exclude(lesson_status=Lesson.RESCHEDULED).select_related()
         return queryset
 
 
@@ -312,13 +312,15 @@ class LessonHomeworksAdd(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         self.kwargs.get('pk')
+        student = self.request.user
+        print(student)
         lesson = self.get_object()
         if self.request.FILES.getlist('homework'):
             for material in self.request.FILES.getlist('homework'):
-                LessonHomework.objects.create(lesson=self.get_object(), homework=material)
+                LessonHomework.objects.create(lesson=self.get_object(), homework=material, students=student)
         if self.request.data.get('text_homework'):
             text = self.request.data.get('text_homework')
-            LessonHomework.objects.create(lesson=self.get_object(), text_homework=text)
+            LessonHomework.objects.create(lesson=self.get_object(), text_homework=text, students=student)
         HomeworkNotification.objects.create(to_user=lesson.teacher, lesson_id=self.kwargs.get('pk'),
                                             type=HomeworkNotification.HOMEWORK_ADD)
         return super(LessonHomeworksAdd, self).update(request, *args, **kwargs)
