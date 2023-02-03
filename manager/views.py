@@ -3,12 +3,13 @@ from django.http import HttpRequest
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DetailView
 from pytils import translit
+from django.forms import inlineformset_factory
 
 from authapp.models import AdditionalUserNumber
 from authapp.models import User
-from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm
+from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm, AdditionalNumberForm
 from manager.mixins import UserAccessMixin, PagePaginateByMixin
-from manager.service import CleanData
+from manager.service import Utils
 
 
 # Dashboard page
@@ -117,37 +118,38 @@ class UsersCreateView(UserAccessMixin, CreateView):
     model = User
     success_url = reverse_lazy('manager:users')
 
-    # def get_success_url(self):
-    #     user_pk = self.model.objects.all().order_by('-id').first().pk
-    #     return reverse('manager:users_detail', user_pk)
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
 
+        AdditionalNumberFormSet = inlineformset_factory(
+            self.model, AdditionalUserNumber, form=AdditionalNumberForm, extra=0
+        )
+
+        if self.request.method == 'POST':
+            formset = AdditionalNumberFormSet(self.request.POST, instance=self.object)
+        else:
+            formset = AdditionalNumberFormSet(instance=self.object)
+
+        context['formset'] = formset
+        return context
 
     def form_valid(self, form):
-        response = super().form_valid(form)
-        new_user = self.object
+        context_data = self.get_context_data()
+        formset = context_data['formset']
+        
+        self.object = form.save()
 
-        if new_user is None:
-            return response
+        if formset.is_valid():
+            formset.instance = self.object
+            additional_number = formset.save()
+            self.object.additional_user_number.set(additional_number)
 
-        request_form = dict(self.request.POST)
-        phones = request_form.get('phone', [])[1:] # slice first phone
-        comments = request_form.get('comments', [])
+        self.object.save()
 
-        if phones and comments:
+        return super().form_valid(form)
 
-            bulk = [
-                AdditionalUserNumber(
-                    user_ref=new_user, 
-                    phone=CleanData.phone_clener(phones[i]), 
-                    comment=comments[i]
-                ) for i in range(0, len(phones))
-            ]
+    # TODO Очистка номера
 
-            AdditionalUserNumber.objects.bulk_create(bulk)
-            new_user.additional_number.set(bulk)
-            new_user.save()
-
-        return response
 
 class UsersUpdateView(UserAccessMixin, UpdateView):
     model = User
@@ -156,30 +158,34 @@ class UsersUpdateView(UserAccessMixin, UpdateView):
     success_url = reverse_lazy('manager:users')
 
 
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+
+        AdditionalNumberFormSet = inlineformset_factory(
+            self.model, AdditionalUserNumber, form=AdditionalNumberForm, extra=0
+        )
+
+        if self.request.method == 'POST':
+            formset = AdditionalNumberFormSet(self.request.POST, instance=self.object)
+        else:
+            formset = AdditionalNumberFormSet(instance=self.object)
+
+        context['formset'] = formset
+        return context
+
+
     def form_valid(self, form):
-        response = super().form_valid(form)
-        new_user = self.object
+        context_data = self.get_context_data()
+        formset = context_data['formset']
+        
+        self.object = form.save()
 
-        if new_user is None:
-            return response
+        if formset.is_valid():
+            formset.instance = self.object
+            additional_number = formset.save()
+            self.object.additional_user_number.set(additional_number)
 
-        request_form = dict(self.request.POST)
-        phones = request_form.get('phone', [])[1:] # slice first phone
-        comments = request_form.get('comments', [])
+        self.object.save()
 
-        if phones and comments:
-
-            bulk = [
-                AdditionalUserNumber(
-                    user_ref=new_user,
-                    phone=CleanData.phone_clener(phones[i]),
-                    comment=comments[i]
-                ) for i in range(0, len(phones))
-            ]
-
-            AdditionalUserNumber.objects.bulk_create(bulk)
-            new_user.additional_number.set(bulk)
-            new_user.save()
-
-        return response
+        return super().form_valid(form)
 

@@ -147,6 +147,8 @@ LANGUAGE_CODE = 'ru-ru'
 
 TIME_ZONE = 'UTC'
 
+TIME_ZONE_MANAGER = 'Asia/Almaty'
+
 USE_I18N = True
 
 USE_TZ = True
