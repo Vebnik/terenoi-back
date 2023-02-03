@@ -198,6 +198,7 @@ class LessonHomework(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
     homework = models.FileField(upload_to='homework-for-lesson/', verbose_name='Домашнее задание к уроку',
                                 **NULLABLE)
+    students = models.ForeignKey(User, on_delete=models.CASCADE, related_name='homework_student', verbose_name='Ученик',**NULLABLE)
     text_homework = models.TextField(**NULLABLE, verbose_name='Текстовое домашнее задание')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')

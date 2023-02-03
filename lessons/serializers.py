@@ -1267,25 +1267,26 @@ class HomeworksSerializer(serializers.ModelSerializer):
             for les in lessons_list:
                 student_data = []
                 check = False
-                homeworks = LessonHomework.objects.filter(lesson=les)
-                serializer_homework = LessonHomeworkSerializer(homeworks, many=True)
                 for student_item in les.students.all():
-                    serializer_student = UserNameSerializer(student_item)
-                    if serializer_homework.data:
-                        rate = LessonRateHomework.objects.filter(lesson=les)
-                        serializer_rate = LessonRateHomeworkSerializer(rate, many=True)
-                        if serializer_rate.data:
-                            check = True
-                        data_lesson.append({
-                            'student': serializer_student.data,
-                            'lesson_id': les.pk,
-                            'lesson_count': les.lesson_number,
-                            'topic': les.topic,
-                            'homework': serializer_homework.data,
-                            'rate': serializer_rate.data,
-                            'deadline': les.deadline,
-                            'check': check
-                        })
+                    homeworks = LessonHomework.objects.filter(lesson=les, students=student_item)
+                    if homeworks:
+                        serializer_homework = LessonHomeworkSerializer(homeworks, many=True)
+                        serializer_student = UserNameSerializer(student_item)
+                        if serializer_homework.data:
+                            rate = LessonRateHomework.objects.filter(lesson=les)
+                            serializer_rate = LessonRateHomeworkSerializer(rate, many=True)
+                            if serializer_rate.data:
+                                check = True
+                            data_lesson.append({
+                                'student': serializer_student.data,
+                                'lesson_id': les.pk,
+                                'lesson_count': les.lesson_number,
+                                'topic': les.topic,
+                                'homework': serializer_homework.data,
+                                'rate': serializer_rate.data,
+                                'deadline': les.deadline,
+                                'check': check
+                            })
 
         return data_lesson
 
@@ -1342,10 +1343,10 @@ class FastLessonCreateSerializer(serializers.ModelSerializer):
             return request.user
         return None
 
-    def get_date(self, instance):
-        import pytz
-        current_timezone = pytz.timezone(pytz.UTC)
-        return instance.date.astimezone(current_timezone)
+    # def get_date(self, instance):
+    #     import pytz
+    #     current_timezone = pytz.timezone(pytz.UTC)
+    #     return instance.date.astimezone(current_timezone)
 
     def get_group(self, instance):
         import pytz
