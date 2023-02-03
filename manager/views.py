@@ -8,7 +8,7 @@ from authapp.models import AdditionalUserNumber
 from authapp.models import User
 from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm
 from manager.mixins import UserAccessMixin, PagePaginateByMixin
-from manager.service import CleanData
+from manager.service import Utils
 
 
 # Dashboard page
@@ -121,7 +121,10 @@ class UsersCreateView(UserAccessMixin, CreateView):
     #     user_pk = self.model.objects.all().order_by('-id').first().pk
     #     return reverse('manager:users_detail', user_pk)
 
-
+    # TODO Переписать на formset
+    # TODO Взять реализацию формы и формсета из isa_day_62
+    # FIXME Переделать создание доп формы с номером в соответсвии с формсетом
+    # TODO Очистка номера
     def form_valid(self, form):
         response = super().form_valid(form)
         new_user = self.object
@@ -138,7 +141,7 @@ class UsersCreateView(UserAccessMixin, CreateView):
             bulk = [
                 AdditionalUserNumber(
                     user_ref=new_user, 
-                    phone=CleanData.phone_clener(phones[i]), 
+                    phone=Utils.phone_clener(phones[i]), 
                     comment=comments[i]
                 ) for i in range(0, len(phones))
             ]
@@ -149,12 +152,12 @@ class UsersCreateView(UserAccessMixin, CreateView):
 
         return response
 
+
 class UsersUpdateView(UserAccessMixin, UpdateView):
     model = User
     template_name = 'manager/users_create.html'
     form_class = StudentCreateForm
     success_url = reverse_lazy('manager:users')
-
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -172,7 +175,7 @@ class UsersUpdateView(UserAccessMixin, UpdateView):
             bulk = [
                 AdditionalUserNumber(
                     user_ref=new_user,
-                    phone=CleanData.phone_clener(phones[i]),
+                    phone=Utils.phone_clener(phones[i]),
                     comment=comments[i]
                 ) for i in range(0, len(phones))
             ]
