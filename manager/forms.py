@@ -18,6 +18,8 @@ class StudentSearchForm(StyleFormMixin, forms.Form):
 
 class StudentCreateForm(StyleFormMixin, forms.ModelForm):
 
+  template_name = 'manager/forms/user_create_form.html'
+
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
@@ -39,11 +41,11 @@ class StudentCreateForm(StyleFormMixin, forms.ModelForm):
 
     widgets = {
       'birth_date': forms.DateInput(attrs={'type': 'date'}),
-      'password': forms.DateInput(attrs={'type': 'password'}),
+      'password': forms.DateInput(attrs={'type': 'password'})
     }
 
   
-class AdditionalUserNumberForm(StyleFormMixin, forms.ModelForm):
+class AdditionalNumberForm(StyleFormMixin, forms.ModelForm):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 

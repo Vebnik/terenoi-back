@@ -3,10 +3,11 @@ from django.http import HttpRequest
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DetailView
 from pytils import translit
+from django.forms import inlineformset_factory
 
 from authapp.models import AdditionalUserNumber
 from authapp.models import User
-from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm
+from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm, AdditionalNumberForm
 from manager.mixins import UserAccessMixin, PagePaginateByMixin
 from manager.service import Utils
 
@@ -117,9 +118,14 @@ class UsersCreateView(UserAccessMixin, CreateView):
     model = User
     success_url = reverse_lazy('manager:users')
 
-    # def get_success_url(self):
-    #     user_pk = self.model.objects.all().order_by('-id').first().pk
-    #     return reverse('manager:users_detail', user_pk)
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+
+        AdditionalNumberFormSet = inlineformset_factory(
+            self.model, AdditionalUserNumber, form=AdditionalNumberForm, extra=1
+        )
+
+        return context
 
     # TODO Переписать на formset
     # TODO Взять реализацию формы и формсета из isa_day_62

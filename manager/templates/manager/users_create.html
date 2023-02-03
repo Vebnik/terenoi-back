@@ -39,29 +39,7 @@
             </div>
             <form method="post" id="userCreateForm" class="mt-75" enctype="multipart/form-data">
                 {% csrf_token %}
-                <div id="userCreateFormBody" class="mb-50"
-                     style="display: grid; grid-template-columns: auto auto auto; grid-column-gap: 50px;">
-                    {{ form.as_p }}
-                    <div class="" style="display: flex; align-items: center;">
-                        <label class="form-check-label mb-50" for="customSwitch10"></label>
-                        <div class="form-check form-switch form-check-primary">
-                            <input type="checkbox" class="form-check-input" id="passwordGeneration" checked
-                                   name="is_pass_generation">
-                            <label class="form-check-label" for="customSwitch10">
-                                Сгенерировать пароль
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <span id="addPhoneBtn" class="btn btn-link mb-50">
-                <i data-feather="plus"></i>Добавить номер телефона
-            </span>
-                <div class="mt-3">
-                    <button type="submit" class="btn btn-primary">Сохранить</button>
-                    <a href="{% url 'manager:users' %}">
-                        <span class="btn btn-outline-secondary">Отмена</span>
-                    </a>
-                </div>
+                {{ form }}
             </form>
             <!--/ form -->
 

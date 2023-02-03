@@ -1,0 +1,44 @@
+
+
+<div id="userCreateFormBody" class="mb-50" style="display: grid; grid-template-columns: auto auto auto; grid-column-gap: 50px;">
+
+  {% for field in form %}
+    <div style="margin: 5px;">
+      {{ field.label_tag }}      
+      {% if field.field.widget.input_type != 'input' %}
+        {{ field }}
+      {% else %}
+        <input
+          type="{{ field.field.widget.input_type }}" 
+          name="{{ field.html_name }}" 
+          value="{% if field.value %}{{ field.value }}{% endif %}" 
+          maxlength="{{ field.field.widget.attrs.maxlength }}" 
+          class="form-control {% if field.errors %} is-invalid {% endif %}" 
+          required
+          id="{{ field.id_for_label }}"
+        >
+      {% endif %}
+    </div>
+  {% endfor %}
+
+  <div class="" style="display: flex; align-items: center;">
+    <label class="form-check-label mb-50" for="customSwitch10"></label>
+    <div class="form-check form-switch form-check-primary">
+      <input type="checkbox" class="form-check-input" id="passwordGeneration" checked name="is_pass_generation">
+      <label class="form-check-label" for="customSwitch10">
+        Сгенерировать пароль
+      </label>
+    </div>
+  </div>
+</div>
+
+<span id="addPhoneBtn" class="btn btn-link mb-50">
+  <i data-feather="plus"></i>Добавить номер телефона
+</span>
+
+<div class="mt-3">
+  <button type="submit" class="btn btn-primary">Сохранить</button>
+  <a href="{% url 'manager:users' %}">
+    <span class="btn btn-outline-secondary">Отмена</span>
+  </a>
+</div>
