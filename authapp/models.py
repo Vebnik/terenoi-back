@@ -1,10 +1,11 @@
 from pathlib import Path
 
-import pytz
+import pytz, re
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 NULLABLE = {'blank': True, 'null': True}
 
@@ -59,6 +60,7 @@ class User(AbstractUser):
         (CANCELED, 'Отказ'),
     )
 
+    password = models.CharField(_('password'), max_length=128, **NULLABLE)
     additional_user_number = models.ManyToManyField(to='AdditionalUserNumber', verbose_name='Дополнительный номер', **NULLABLE)
     middle_name = models.CharField(max_length=32, verbose_name='Отчество', **NULLABLE)
     status = models.CharField(max_length=8, verbose_name='Статус', choices=STATUS_CHOICES, default=ACTIVE)
@@ -79,7 +81,7 @@ class User(AbstractUser):
     student_class = models.CharField(max_length=50, verbose_name='Класс ученика', **NULLABLE)
     alfa_id = models.BigIntegerField(verbose_name='Номер пользователя из alfa/amo crm', **NULLABLE)
     is_recruiting = models.BooleanField(default=False, verbose_name='Набор открыт')
-    is_pass_generation = models.BooleanField(default=False, verbose_name='Сгенерировать пароль')
+    is_pass_generation = models.BooleanField(default=True, verbose_name='Сгенерировать пароль')
     is_verified = models.BooleanField(default=False, verbose_name='Верефицирован')
     is_online = models.BooleanField(default=False, verbose_name='Онлайн')
     is_crm = models.BooleanField(default=False, verbose_name='Из alfa/amo crm')
@@ -96,8 +98,13 @@ class User(AbstractUser):
         return ''
 
     def save(self, *args, **kwargs):
-        super(User, self).save(*args, **kwargs)
 
+        if self.phone:
+            self.phone = re.sub(r'[^\d]', '', self.phone)
+
+        if self.password is None and self.is_pass_generation:
+            self.password = User.objects.make_random_password()
+            
         if 'pbkdf2_sha256' not in self.password:
             password = make_password(self.password)
             self.password = password
