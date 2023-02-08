@@ -34,6 +34,7 @@ class StudentCreateForm(StyleFormMixin, forms.ModelForm):
       'middle_name',
       'email',
       'password',
+      'is_pass_generation'
       )
 
     widgets = {

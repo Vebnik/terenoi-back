@@ -136,6 +136,7 @@ class UsersCreateView(UserAccessMixin, CreateView):
     def form_valid(self, form):
         context_data = self.get_context_data()
         formset = context_data['formset']
+        is_pass_generation = self.request.POST.dict().get('is_pass_generation', False)
         
         self.object = form.save()
 
@@ -147,8 +148,6 @@ class UsersCreateView(UserAccessMixin, CreateView):
         self.object.save()
 
         return super().form_valid(form)
-
-    # TODO Очистка номера
 
 
 class UsersUpdateView(UserAccessMixin, UpdateView):
