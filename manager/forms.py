@@ -23,9 +23,6 @@ class StudentCreateForm(StyleFormMixin, forms.ModelForm):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-    for key in self.fields:
-      self.fields[key].required = True 
-
   class Meta:
     model = User
     fields = (
@@ -37,11 +34,12 @@ class StudentCreateForm(StyleFormMixin, forms.ModelForm):
       'middle_name',
       'email',
       'password',
+      'is_pass_generation'
       )
 
     widgets = {
       'birth_date': forms.DateInput(attrs={'type': 'date'}),
-      'password': forms.DateInput(attrs={'type': 'password'})
+      'password': forms.TextInput(attrs={'type': 'password'})
     }
 
   

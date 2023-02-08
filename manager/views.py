@@ -9,7 +9,6 @@ from authapp.models import AdditionalUserNumber
 from authapp.models import User
 from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm, AdditionalNumberForm
 from manager.mixins import UserAccessMixin, PagePaginateByMixin
-from manager.service import Utils
 
 
 # Dashboard page
@@ -147,8 +146,6 @@ class UsersCreateView(UserAccessMixin, CreateView):
         self.object.save()
 
         return super().form_valid(form)
-
-    # TODO Очистка номера
 
 
 class UsersUpdateView(UserAccessMixin, UpdateView):

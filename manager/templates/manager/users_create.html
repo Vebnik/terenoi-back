@@ -43,27 +43,37 @@
                 <div id="userCreateFormBody" class="mb-50" style="display: grid; grid-template-columns: auto auto auto; grid-column-gap: 50px;">
 
                     {% for field in form %}
+                    {% if field.html_name != 'is_pass_generation' %}
                       <div style="margin: 5px;">
-                        {{ field.label_tag }}      
-                        {% if field.field.widget.input_type != 'input' %}
+                           
+                        {% if field.field.widget.input_type != 'text' and field.field.widget.input_type != 'password' and field.html_name != 'is_pass_generation' %}
+                            {{ field.label_tag }}
                           {{ field }}
                         {% else %}
-                          <input
-                            type="{{ field.field.widget.input_type }}" 
-                            name="{{ field.html_name }}" 
-                            value="{% if field.value %}{{ field.value }}{% endif %}" 
-                            maxlength="{{ field.field.widget.attrs.maxlength }}" 
-                            class="form-control {% if field.errors %} is-invalid {% endif %}" 
-                            required
-                            id="{{ field.id_for_label }}"
-                          >
+                            {{ field.label_tag }}
+                            <input
+                                type="{{ field.field.widget.input_type }}" 
+                                name="{{ field.html_name }}" 
+                                value="{% if field.value %}{{ field.value }}{% endif %}" 
+                                maxlength="{{ field.field.widget.attrs.maxlength }}" 
+                                class="form-control {% if field.errors %}is-invalid{% endif %}" 
+                                {% if field.field.widget.input_type != 'password' %}required{% endif %}
+                                id="{{ field.id_for_label }}"
+                            >
+                            <small>
+                                {{ field.help_text }}
+                            </small>
+                            <div class="invalid-feedback">
+                                {{ field.errors }}
+                            </div>
                         {% endif %}
                       </div>
+                    {% endif %}
                     {% endfor %}
                     
                     <div class="" style="display: flex; align-items: center; margin-top: 10px;">
                         <div class="form-check form-switch form-check-primary">
-                            <input type="checkbox" class="form-check-input" id="passwordGeneration" checked name="is_pass_generation">
+                            <input type="checkbox" class="form-check-input" id="id_is_pass_generation" name="is_pass_generation">
                             <label class="form-check-label" for="customSwitch10">
                             Сгенерировать пароль
                           </label>
@@ -72,12 +82,14 @@
 
                     {% for form in formset %}
                         {{form.non_field_errors}}
-                        {{form.errors}}
                         {% for field in form %}
                             {% if not field.is_hidden and 'DELETE' not in field.html_name %}
                                 <div style="margin: 5px;">
                                     {{ field.label_tag }}   
                                     {{ field }}
+                                    <div class="invalid-feedback">
+                                        {{ field.errors }}
+                                    </div>
                                 </div>
                             {% endif %}
                         {% endfor %}
