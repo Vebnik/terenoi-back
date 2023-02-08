@@ -1,8 +1,6 @@
 import datetime
 from authapp.models import User, Group
 from lessons.models import Lesson
-from lessons.services import current_date
-from django.conf import settings
 import pytz
 
 
@@ -12,11 +10,14 @@ def is_free_date_user(user, date, type):
     else:
         lesson_dates = Lesson.objects.filter(teacher=user).all().values('date')
     for lesson_date in lesson_dates:
+        dt = lesson_date.get('date')
+        dt_plus_hour = dt + datetime.timedelta(hours=1)
+        dt_minus_hour = dt - datetime.timedelta(hours=1)
         utc = pytz.UTC
         start_time = date.replace(tzinfo=utc)
-        if lesson_date.get('date') <= start_time < lesson_date.get('date') + datetime.timedelta(hours=1):
+        if dt <= start_time < dt_plus_hour:
             return False
-        if lesson_date.get('date') - datetime.timedelta(hours=1) < start_time <= lesson_date.get('date'):
+        if dt_minus_hour < start_time <= dt:
             return False
     return True
 
