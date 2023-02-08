@@ -1,14 +1,17 @@
 from django.db.models import Q
-from django.http import HttpRequest
-from django.urls import reverse_lazy, reverse
+from django.http import HttpRequest, HttpResponseRedirect
+from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DetailView
 from pytils import translit
 from django.forms import inlineformset_factory
 
 from authapp.models import AdditionalUserNumber
 from authapp.models import User
+
 from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm, AdditionalNumberForm
 from manager.mixins import UserAccessMixin, PagePaginateByMixin
+
+from profileapp.models import ManagerToUser
 
 
 # Dashboard page
@@ -109,6 +112,26 @@ class UserDetailView(UserAccessMixin, DetailView):
     model = User
     template_name = 'manager/users_detail.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # FIXME code smell Nikita
+        try: manager = ManagerToUser.objects.get(user=kwargs.get('object'))
+        except Exception: manager = False
+
+        context['manager'] = manager
+        return context
+
+    def post(self, *args, **kwargs):
+        status = self.request.POST.dict().get('status')
+        user = self.get_object()
+
+        if user.valid_status(status):
+            user.status = status
+            user.save()
+
+        return HttpResponseRedirect(reverse_lazy('manager:users_detail', kwargs={'pk': kwargs.get('pk')}))
+
 
 # Create user
 class UsersCreateView(UserAccessMixin, CreateView):
@@ -186,3 +209,53 @@ class UsersUpdateView(UserAccessMixin, UpdateView):
 
         return super().form_valid(form)
 
+
+class UsersManagerUpdateView(UserAccessMixin, UpdateView):
+    model = User
+    template_name = 'manager/user_update_manager.html'
+    form_class = StudentCreateForm
+    success_url = reverse_lazy('manager:users')
+
+    def dispatch(self, request, *args, **kwargs):
+        self.success_url = reverse_lazy('manager:users_detail', kwargs={'pk': kwargs.get('pk')})
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+
+        AdditionalNumberFormSet = inlineformset_factory(
+            self.model, AdditionalUserNumber, form=AdditionalNumberForm, extra=0
+        )
+
+        if self.request.method == 'POST':
+            formset = AdditionalNumberFormSet(self.request.POST, instance=self.object)
+        else:
+            formset = AdditionalNumberFormSet(instance=self.object)
+
+        context['formset'] = formset
+        context['managers'] = User.objects.filter(is_staff=True)
+
+        return context
+
+
+    def form_valid(self, form):
+        context_data = self.get_context_data()
+        formset = context_data['formset']
+
+        manager_pk = self.request.POST.dict().get('manager')
+        manager = User.objects.get(pk=manager_pk)
+        
+        self.object = form.save()
+
+        if manager:
+            m2u = ManagerToUser(user=self.object, manager=manager)
+            m2u.save()
+
+        if formset.is_valid():
+            formset.instance = self.object
+            additional_number = formset.save()
+            self.object.additional_user_number.set(additional_number)
+
+        self.object.save()
+
+        return super().form_valid(form)

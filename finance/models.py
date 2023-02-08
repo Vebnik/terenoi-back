@@ -217,3 +217,37 @@ class TeacherBankData(models.Model):
     class Meta:
         verbose_name = 'Реквизиты учителя'
         verbose_name_plural = 'Реквизиты учителей'
+
+
+class StudentSubscription(models.Model):
+
+    IND = 'Индивидуальный'
+    OTO = 'Парный'
+    GRP = 'Групповой'
+
+    SELECT_PLAN_TYPE = (
+        (IND, 'Индивидуальный'),
+        (OTO, 'Парный'),
+        (GRP, 'Групповой'),
+    )
+
+    LES = 'Поурочная'
+    MNT = 'Помесячная'
+    WEK = 'Недельная'
+
+    SELECT_BILLING = (
+        (LES, 'Поурочная'),
+        (MNT, 'Помесячная'),
+        (WEK, 'Недельная'),
+    )
+
+    title = models.CharField(verbose_name="Название", max_length=50)
+    plan_type = models.CharField(
+        verbose_name="Тип плана", choices=SELECT_PLAN_TYPE, default=IND,  max_length=50)
+    billing = models.CharField(
+        verbose_name='Тарификация', choices=SELECT_BILLING, default=LES, max_length=50)
+    lesson_count = models.IntegerField(verbose_name='Кол-во уроков')
+    lesson_duration = models.IntegerField(verbose_name='Длительность урока, мин.')
+    lesson_cost = models.IntegerField(verbose_name='Цена за 1 урок')
+    subscription_cost = models.IntegerField(verbose_name='Стоимость абонемента')
+    

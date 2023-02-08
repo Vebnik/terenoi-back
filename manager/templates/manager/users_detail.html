@@ -4,10 +4,31 @@
     <div class="row">
         <div class="col-4">
             <div class="card">
-                <div class="card-body py-2 my-25">
+                
+                <form method="post" id="changeStatusForm" style="display: none;">
+                    {% csrf_token %}
+                    <button type="submit" id="changeStatusFormBtn">Сохранить</button>
+                </form>
 
-                    <div class="d-flex mt-75">
+                <div class="text-center">
+                    <img style="margin-bottom: 10px; border-radius: 10px;" src="{% if object.avatar %}/media/{{ object.avatar }}{% else %}/media/user_avatar/man_avatar.png{% endif %}" alt="..." width="100%" height="100%">
+                    <strong>{{ object.get_full_name }}</strong>
+                    <br>
+                    <select name="status" form="changeStatusForm" id="userStatusSelect" class="form-control mx-auto" style="max-width: max-content; border: 1px solid rgb(121, 224, 117);">
+                        <option value="{{ object.status }}">{{ object.status }}</option>
+                        <option value="Активный">Активный</option>
+                        <option value="На паузе">На паузе</option>
+                        <option value="Архивный">Архивный</option>
+                        <option value="Отказ">Отказ</option>
+                    </select>
+                </div>
+                
+                <div class="card-body py-2 my-25">
+                    <div class="d-flex mt-75" style="justify-content: space-between;">
                         <h4 class="mb-0 ml-50"> Общие данные </h4>
+                        <a  href="{% url 'manager:users_update_manager' object.pk %}" class="">
+                            <i data-feather="edit"></i>
+                        </a>
                     </div>
                     <hr>
                     <strong>ФИО:</strong> {{ object.get_full_name }} {{ object.middle_name|default:'' }}<br>
@@ -16,12 +37,75 @@
                     <strong>Номер телефона:</strong> {{ object.phone }} <br>
                     <strong>Дата рождения:</strong> {{ object.birth_date|date:"d.m.Y" }} <br>
                     <strong>Пол:</strong> {{ object.get_gender_display }} <br>
-                    <strong>Менеджер:</strong> - <br>
+                    <strong>Менеджер:</strong> {% if manager %}{{ manager.manager.get_full_name }}{% else %} - {% endif %}<br>
 
                 </div>
             </div>
         </div>
         <div class="col-8">
+            <div style="display: flex; justify-content: space-between;">
+                {% if object %}
+
+                <ul class="nav nav-pills mb-2">
+
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i data-feather="grid" class="font-medium-3 me-50"></i>
+                            <span class="fw-bold">Главная</span>
+                        </a>
+                    </li>
+                </ul>
+
+
+                <div style="display: flex; height: 42px;">
+                    <a 
+                        class="btn btn-outline-primary" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#createAbonement"
+                        title="Создать Абонемент" class="btn btn-outline-primary" href="#" style="margin-right: 5px; width: 50px; padding: 10px; padding-right: 5px;">
+                        <i data-feather="shopping-bag" class="font-medium-3 me-50"></i>
+                    </a>
+                    <a title="Создать Расписание" class="btn btn-outline-primary" href="#" style="margin-right: 5px; width: 50px; padding: 10px; padding-right: 5px;">
+                        <i data-feather="calendar" class="font-medium-3 me-50"></i>
+                    </a>
+                    <a title="Создать Что-то ещё" class="btn btn-outline-primary" href="#" style="margin-right: 5px; width: 50px; padding: 10px; padding-right: 5px;">
+                        <i data-feather="box" class="font-medium-3 me-50"></i>
+                    </a>
+                </div>
+                    
+                {% else %}
+                <ul class="nav nav-pills mb-2">
+
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i data-feather="user" class="font-medium-3 me-50"></i>
+                            <span class="fw-bold">Главная</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i data-feather="lock" class="font-medium-3 me-50"></i>
+                            <span class="fw-bold">Абонемент</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i data-feather="bookmark" class="font-medium-3 me-50"></i>
+                            <span class="fw-bold">Регулярные занятия</span>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i data-feather="bell" class="font-medium-3 me-50"></i>
+                            <span class="fw-bold">Бонусные уроки</span>
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+            </div>
             <div class="row">
                 <div class="col-lg-6 col-sm-6">
                     <div class="card">
@@ -87,4 +171,16 @@
         </div>
     </div>
 
+    <!-- MODALS -->
+    {% include 'manager/includes/manager_detail_modals.html' %}
+    <!-- MODALS -->
+    
 {% endblock content %}
+
+{% block js_extends %}
+    <script>
+        document.querySelector('#userStatusSelect').addEventListener('change', (ev) => {
+            document.querySelector('#changeStatusFormBtn').click()
+        })
+    </script>
+{% endblock js_extends %}

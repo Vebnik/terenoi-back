@@ -26,6 +26,7 @@ class StudentCreateForm(StyleFormMixin, forms.ModelForm):
   class Meta:
     model = User
     fields = (
+      'avatar',
       'birth_date', 
       'gender', 
       'phone', 

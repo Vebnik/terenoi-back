@@ -134,6 +134,11 @@ class User(AbstractUser):
             'Отказ': 'danger'
         }.get(self.status)
 
+    def valid_status(self, status):
+        return status in [
+            self.ACTIVE, self.PAUSE, self.ARCHIVE, self.CANCELED
+        ]
+
     def get_absolute_url(self):
         return '/manager/users/'
 
