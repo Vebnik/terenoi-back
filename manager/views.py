@@ -9,7 +9,6 @@ from authapp.models import AdditionalUserNumber
 from authapp.models import User
 from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm, AdditionalNumberForm
 from manager.mixins import UserAccessMixin, PagePaginateByMixin
-from manager.service import Utils
 
 
 # Dashboard page
@@ -136,7 +135,6 @@ class UsersCreateView(UserAccessMixin, CreateView):
     def form_valid(self, form):
         context_data = self.get_context_data()
         formset = context_data['formset']
-        is_pass_generation = self.request.POST.dict().get('is_pass_generation', False)
         
         self.object = form.save()
 
