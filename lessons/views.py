@@ -70,11 +70,11 @@ class AllUserClassesListView(generics.ListAPIView):
                 lesson_list = lesson_shedule.values('date').union(lesson_query.values('date')).order_by('-date')
             date_list = []
             for item in lesson_list:
-                date = current_date(user=self.request.user, date=item.get('date')).date()
+                date = item.get('date').date()
                 if date in date_list:
                     pass
                 else:
-                    date_list.append(current_date(user=self.request.user, date=item.get('date')).date())
+                    date_list.append(date)
 
             queryset = date_list
             return queryset
@@ -313,7 +313,6 @@ class LessonHomeworksAdd(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         self.kwargs.get('pk')
         student = self.request.user
-        print(student)
         lesson = self.get_object()
         if self.request.FILES.getlist('homework'):
             for material in self.request.FILES.getlist('homework'):
@@ -606,13 +605,12 @@ class LessonUserStatusUpdateView(generics.UpdateAPIView):
             return StudentStatusUpdate
 
     def update(self, request, *args, **kwargs):
+        lesson = Lesson.objects.filter(pk=int(self.kwargs.get('pk'))).first()
         if self.request.user.is_teacher:
-            lesson = Lesson.objects.filter(pk=int(self.kwargs.get('pk'))).first()
-            lesson.teacher_entry_date = current_date(user=self.request.user, date=datetime.datetime.now())
+            lesson.teacher_entry_date = datetime.datetime.now()
             lesson.save()
         else:
-            lesson = Lesson.objects.filter(pk=int(self.kwargs.get('pk'))).first()
-            lesson.student_entry_date = current_date(user=self.request.user, date=datetime.datetime.now())
+            lesson.student_entry_date = datetime.datetime.now()
             lesson.save()
         return super(LessonUserStatusUpdateView, self).update(request, *args, **kwargs)
 
@@ -737,9 +735,11 @@ class FastLessonCreateView(generics.CreateAPIView):
 
         if self.request.data.get('group'):
             date = datetime.datetime.strptime(self.request.data.get('date'), settings.REST_FRAMEWORK.get('DATETIME_FORMAT'))
-            start_time = current_date(self.request.user, date)
-            server_time = current_date(self.request.user, datetime.datetime.utcnow())
-            if start_time < server_time:
+            server_time = datetime.datetime.now()
+            if date.date() < server_time.date():
+                return Response({"message": "Прошедшие дата и время не могут быть выбраны"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            elif date.date() == server_time.date() and date.time() < server_time.time():
                 return Response({"message": "Прошедшие дата и время не могут быть выбраны"},
                                 status=status.HTTP_400_BAD_REQUEST)
 
