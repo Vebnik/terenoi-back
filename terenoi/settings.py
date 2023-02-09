@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'notifications',
     'profileapp',
     'settings',
+    'courses'
 ]
 
 MIDDLEWARE = [
