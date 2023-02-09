@@ -64,14 +64,24 @@
                 </select>
               </div>
               <div class="col-12 mt-2 pt-50" style="display: flex;justify-content: right;">
-                  <button type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">
+                  <button id="submitBtnForm" type="submit" disabled class="btn btn-primary me-1 waves-effect waves-float waves-light">
                     Сохранить
-                  </button>
-                  <button type="reset" class="btn btn-outline-secondary waves-effect" data-bs-dismiss="modal" aria-label="Close">
-                      Отмена
-                  </button>
+                  </button>   
+                  <a href="#">
+                    <button id="discardBtnForm" type="reset" disabled class="btn btn-outline-secondary waves-effect" data-bs-dismiss="modal" aria-label="Close">
+                        Отмена
+                    </button> 
+                  </a>         
               </div>
           </form>
       </div>
   </div>
 </div>
+
+<script>
+  document.querySelector('#editAbonementForm')
+    .addEventListener('change', (ev) => {
+      document.querySelector('#submitBtnForm').disabled = false
+      document.querySelector('#discardBtnForm').disabled = false
+    })
+</script>

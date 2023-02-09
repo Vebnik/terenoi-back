@@ -151,11 +151,14 @@
     </a></li>
 </ul>
 <ul class="main-search-list-defaultlist-other-list d-none">
-    <li class="auto-suggestion justify-content-between"><a
-            class="d-flex align-items-center justify-content-between w-100 py-50">
-        <div class="d-flex justify-content-start"><span class="me-75" data-feather="alert-circle"></span><span>No results found.</span>
-        </div>
-    </a></li>
+    <li class="auto-suggestion justify-content-between">
+        <a class="d-flex align-items-center justify-content-between w-100 py-50">
+            <div class="d-flex justify-content-start">
+                <span class="me-75" data-feather="alert-circle"></span>
+                <span>No results found.</span>
+            </div>
+        </a>
+    </li>
 </ul>
 <!-- END: Header-->
 
@@ -220,6 +223,9 @@
 <script src="{% static 'app-assets/vendors/js/extensions/toastr.min.js' %}"></script>
 <script src="{% static 'app-assets/vendors/js/forms/select/select2.full.min.js' %}"></script>
 
+<script src="{% static 'app-assets/vendors/js/pickers/pickadate/picker.js' %}"></script>
+<script src="{% static 'app-assets/vendors/js/pickers/flatpickr/flatpickr.min.js' %}"></script>
+<script src="{% static 'app-assets/vendors/js/pickers/pickadate/picker.date.js' %}"></script>
 <!-- END: Page Vendor JS-->
 
 <!-- BEGIN: Theme JS-->
@@ -229,7 +235,7 @@
 
 <!-- BEGIN: Page JS-->
 <script src="{% static 'app-assets/js/scripts/pages/app-invoice.js' %}"></script>
-<script src="{% static 'app-assets/js/scripts/forms/form-select2.js' %}"></script>
+<script src="{% static 'app-assets/js/scripts/forms/pickers/form-pickers.js' %}"></script>
 <!-- END: Page JS-->
 
 {% block js_extends %}

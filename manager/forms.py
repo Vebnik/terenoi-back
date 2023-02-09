@@ -8,6 +8,8 @@ from authapp.models import AdditionalUserNumber
 
 from finance.models import StudentSubscription
 
+from lessons.models import Schedule
+
 
 class StudentFilterForm(forms.Form):
   lessons_residue = forms.IntegerField(max_value=10, min_value=0)
@@ -77,3 +79,9 @@ class SubscriptionForm(StyleFormMixin, forms.ModelForm):
     fields = '__all__'
     exclude = ('student', 'payment_methods', )
 
+
+class ScheduleForm(StyleFormMixin, forms.ModelForm):
+
+  class Meta:
+    model = Schedule
+    fields = '__all__'

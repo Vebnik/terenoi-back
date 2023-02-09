@@ -13,7 +13,9 @@ from manager.views import (
     UserDetailView, 
     UsersManagerUpdateView,
     SubscriptionCreateView,
-    SubscriptionUpdateView
+    SubscriptionUpdateView,
+    ScheduleCreateView,
+    ScheduleUpdateView,
     )
 
 app_name = ManagerConfig.name
@@ -36,4 +38,7 @@ urlpatterns = [
 
     path('users/subscription/create/', SubscriptionCreateView.as_view(), name='sub_create'),
     path('users/subscription/update/<int:pk>/', SubscriptionUpdateView.as_view(), name='sub_update'),
+
+    path('users/schedule/create/', ScheduleCreateView.as_view(), name='schedule_create'),
+    path('users/schedule/update/<int:pk>/', ScheduleUpdateView.as_view(), name='schedule_update'),
 ]

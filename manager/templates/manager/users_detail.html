@@ -17,12 +17,12 @@
                     <strong>{{ object.get_full_name }}</strong>
                     <br>
                     <div class="btn-group">
-                        <button class="badge btn-{{ object.get_status_color }} waves-effect waves-float waves-light" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="badge badge-light-{{ object.get_status_color }}" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" style="border: none; margin-top: 10px">
                             {{ object.status }}
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton2" style="">
                             {% for status in object.get_exclude_status %}
-                                <a class="dropdown-item changeStatusBtn" >{{ status }}</a>
+                                <a class="dropdown-item changeStatusBtn">{{ status }}</a>
                             {% endfor %}
                         </div>
                     </div>
@@ -155,7 +155,6 @@
     </script>
 
     <script>
-
         const lessonsCount = document.querySelector('#id_lesson_count')
         const lessonDuration = document.querySelector('#id_lesson_duration')
         const lessonCost = document.querySelector('#id_lesson_cost')
@@ -168,7 +167,6 @@
 
         lessonsCount.addEventListener('change', (ev) => compareSubscription())
         lessonCost.addEventListener('change', (ev) => compareSubscription())
-
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"/>

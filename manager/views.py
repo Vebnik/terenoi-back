@@ -8,12 +8,21 @@ from django.forms import inlineformset_factory
 from authapp.models import AdditionalUserNumber
 from authapp.models import User
 
-from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm, AdditionalNumberForm, SubscriptionForm
+from manager.forms import (
+    StudentFilterForm, 
+    StudentSearchForm, 
+    StudentCreateForm, 
+    AdditionalNumberForm, 
+    SubscriptionForm,
+    ScheduleForm,
+    )
 from manager.mixins import UserAccessMixin, PagePaginateByMixin
 
 from profileapp.models import ManagerToUser
+
 from finance.models import StudentSubscription, PaymentMethod
 
+from lessons.models import Schedule, ScheduleSettings
 
 
 # Dashboard page
@@ -117,21 +126,22 @@ class UserDetailView(UserAccessMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-
         try: 
             manager = ManagerToUser.objects.get(user=kwargs.get('object'))
         except Exception as ex: 
             manager = False
 
         try:
-            subscription: StudentSubscription = context.get('object').subscription
+            subscription = context.get('object').subscription
             subscription_form = SubscriptionForm(initial=subscription.__dict__)
+            schedule_form = ScheduleForm()
         except:
             subscription_form = SubscriptionForm()
 
         context['manager'] = manager
         context['subscription_form'] = subscription_form
         context['payment_methods'] = PaymentMethod.get_methods()
+        context['schedule_form'] = schedule_form
 
         return context
 
@@ -173,6 +183,9 @@ class UsersCreateView(UserAccessMixin, CreateView):
         formset = context_data['formset']
         
         self.object = form.save()
+
+        m2u = ManagerToUser(user=self.object, manager=self.request.user)
+        m2u.save()
 
         if formset.is_valid():
             formset.instance = self.object
@@ -318,6 +331,64 @@ class SubscriptionUpdateView(UserAccessMixin, UpdateView):
                 self.object.payment_methods = method
 
             self.object.student = user
+            user.subscription = self.object
+
+            self.object.save()
+            user.save()
+
+        return response
+
+
+class ScheduleCreateView(UserAccessMixin, CreateView):
+
+    model = Schedule
+    form_class = SubscriptionForm
+    success_url = reverse_lazy('manager:users')
+
+    def dispatch(self, request, *args, **kwargs):
+
+        print(request.POST.dict())
+
+        return HttpResponseRedirect(reverse_lazy('manager:users_detail', kwargs={'pk': request.POST.dict().get('pk')}))
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        pk = self.request.POST.dict().get('pk')
+        select_method = self.request.POST.dict().get('payment_method')
+
+        if form.is_valid():
+            user = User.objects.get(pk=pk)
+            method = PaymentMethod(title=select_method)
+            method.save()
+
+            self.object.student = user
+            self.object.payment_methods = method
+            user.subscription = self.object
+
+            self.object.save()
+            user.save()
+
+        return response
+
+
+class ScheduleUpdateView(UserAccessMixin, CreateView):
+
+    model = Schedule
+    form_class = ScheduleForm
+    success_url = reverse_lazy('manager:users')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        pk = self.request.POST.dict().get('pk')
+        select_method = self.request.POST.dict().get('payment_method')
+
+        if form.is_valid():
+            user = User.objects.get(pk=pk)
+            method = PaymentMethod(title=select_method)
+            method.save()
+
+            self.object.student = user
+            self.object.payment_methods = method
             user.subscription = self.object
 
             self.object.save()
