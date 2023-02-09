@@ -16,6 +16,7 @@
                       </span>
                     </div>
                 </a>
+
                 <!-- upload and reset button -->
                 <div class="d-flex align-items-end mt-75 ms-1">
                     <div>
@@ -127,3 +128,15 @@
 {% block js_extends %}
     <script src="{% static 'assets/js/manager_create_user_form_validation.js' %}"></script>
 {% endblock %}
+
+
+<div class="btn-group">
+    <div>
+        <label for="">Пол</label>
+        <input class="form-select" type="text" id="dropdownMenuButton2" data-bs-toggle="dropdown" readonly style="cursor: pointer"/>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
+            <a class="dropdown-item changeStatusBtn">Мужской</a>
+            <a class="dropdown-item changeStatusBtn">Женский</a>
+        </div>
+    </div>
+</div>

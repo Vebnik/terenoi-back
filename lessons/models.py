@@ -13,7 +13,8 @@ NULLABLE = {'blank': True, 'null': True}
 
 
 class Schedule(models.Model):
-    title = models.CharField(max_length=50, verbose_name='Название')
+    lesson_duration = models.PositiveSmallIntegerField(verbose_name='Длительность урока, мин', default=0)
+    title = models.CharField(max_length=50, verbose_name='Название', **NULLABLE)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='schedule_teacher',
                                 limit_choices_to={'is_teacher': True})
     group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='schedule_group',

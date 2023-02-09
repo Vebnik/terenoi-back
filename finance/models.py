@@ -241,13 +241,17 @@ class StudentSubscription(models.Model):
         (WEK, 'Недельная'),
     )
     
-    payment_methods = models.ForeignKey(verbose_name='Метод оплаты', to='PaymentMethod', on_delete=models.CASCADE, **NULLABLE)
+    payment_methods = models.ForeignKey(verbose_name='Метод оплаты', to='PaymentMethod', 
+        on_delete=models.CASCADE, **NULLABLE
+        )
     student = models.ForeignKey(to=User, on_delete=models.CASCADE, **NULLABLE)
     title = models.CharField(verbose_name="Название", max_length=50)
     plan_type = models.CharField(
-        verbose_name="Тип плана", choices=SELECT_PLAN_TYPE, default=IND,  max_length=50)
+        verbose_name="Тип плана", choices=SELECT_PLAN_TYPE, default=IND,  max_length=50
+        )
     billing = models.CharField(
-        verbose_name='Тарификация', choices=SELECT_BILLING, default=LES, max_length=50)
+        verbose_name='Тарификация', choices=SELECT_BILLING, default=LES, max_length=50
+        )
     lesson_count = models.IntegerField(verbose_name='Кол-во уроков')
     lesson_duration = models.IntegerField(verbose_name='Длительность урока, мин')
     lesson_cost = models.IntegerField(verbose_name='Цена за 1 урок')

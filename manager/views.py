@@ -17,6 +17,7 @@ from manager.forms import (
     ScheduleForm,
     )
 from manager.mixins import UserAccessMixin, PagePaginateByMixin
+from manager.service import Utils
 
 from profileapp.models import ManagerToUser
 
@@ -126,22 +127,18 @@ class UserDetailView(UserAccessMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        try: 
-            manager = ManagerToUser.objects.get(user=kwargs.get('object'))
-        except Exception as ex: 
-            manager = False
-
         try:
             subscription = context.get('object').subscription
             subscription_form = SubscriptionForm(initial=subscription.__dict__)
-            schedule_form = ScheduleForm()
+            manager = ManagerToUser.objects.get(user=kwargs.get('object'))
         except:
+            manager = False
             subscription_form = SubscriptionForm()
 
-        context['manager'] = manager
         context['subscription_form'] = subscription_form
+        context['schedule_form'] = ScheduleForm()
+        context['manager'] = manager
         context['payment_methods'] = PaymentMethod.get_methods()
-        context['schedule_form'] = schedule_form
 
         return context
 
@@ -340,36 +337,27 @@ class SubscriptionUpdateView(UserAccessMixin, UpdateView):
 
 
 class ScheduleCreateView(UserAccessMixin, CreateView):
-
     model = Schedule
-    form_class = SubscriptionForm
+    form_class = ScheduleForm
     success_url = reverse_lazy('manager:users')
-
-    def dispatch(self, request, *args, **kwargs):
-
-        print(request.POST.dict())
-
-        return HttpResponseRedirect(reverse_lazy('manager:users_detail', kwargs={'pk': request.POST.dict().get('pk')}))
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        pk = self.request.POST.dict().get('pk')
-        select_method = self.request.POST.dict().get('payment_method')
+        user = User.objects.get(pk=self.request.POST.dict().get('pk'))
+        datetime = Utils.serialize_date(self.request.POST.dict())
 
         if form.is_valid():
-            user = User.objects.get(pk=pk)
-            method = PaymentMethod(title=select_method)
-            method.save()
-
-            self.object.student = user
-            self.object.payment_methods = method
-            user.subscription = self.object
-
-            self.object.save()
+            shedule_setting = ScheduleSettings(
+                shedule=self.object,
+                near_lesson=datetime.get('start_date'),
+                last_lesson=datetime.get('end_date'),
+            )
+            
+            user.shedule = shedule_setting
+            shedule_setting.save()
             user.save()
-
+    
         return response
-
 
 class ScheduleUpdateView(UserAccessMixin, CreateView):
 

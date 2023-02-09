@@ -92,47 +92,18 @@
               </div>
               <form id="editScheduleForm" action="{% url 'manager:schedule_create' %}" class="row gy-1 pt-75" method="post">
                   {% csrf_token %}
-                  <input hidden name="pk" value={{ object.pk }} />
-                  <div class="col-12" id="id_weekday">
-                    <div>
-                      <label class="form-label" for="modalEditUserEmail">Выбор дней недели</label>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                      <input value="Понедельник" name="weekday_1" class="form-check-input" type="checkbox" id="inlineRadio1" checked>
-                      <label class="form-check-label" for="inlineRadio1">Понедельник</label>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                      <input value="Вторинк" name="weekday_2" class="form-check-input" type="checkbox" id="inlineRadio2">
-                      <label class="form-check-label" for="inlineRadio2">Вторинк</label>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                      <input value="Среда" name="weekday_3" class="form-check-input" type="checkbox" id="inlineRadio3">
-                      <label class="form-check-label" for="inlineRadio3">Среда</label>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                      <input value="Четверг" name="weekday_4" class="form-check-input" type="checkbox" id="inlineRadio4">
-                      <label class="form-check-label" for="inlineRadio4">Четверг</label>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                      <input value="Пятница" name="weekday_5" class="form-check-input" type="checkbox" id="inlineRadio5">
-                      <label class="form-check-label" for="inlineRadio5">Пятница</label>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                      <input value="Суббота" name="weekday_6" class="form-check-input" type="checkbox" id="inlineRadio6">
-                      <label class="form-check-label" for="inlineRadio6">Суббота</label>
-                    </div>
-                    <div style="">
-                      <input value="Воскресение" name="weekday_7" class="form-check-input" type="checkbox" id="inlineRadio7">
-                      <label class="form-check-label" for="inlineRadio7">Воскресение</label>
-                    </div>
+                  <input hidden name="pk" value="{{ object.pk }}"/>
+                  <div class="col-12">
+                    {{ schedule_form.weekday.label_tag|cut:":" }}
+                    {{ schedule_form.weekday }}
                   </div>
                   <div class="col-12 col-md-6">
                     <label>Начало урока</label>
                     <input placeholder="Например, c 14:00"  name="lesson_start" type="text" id="fp-time" class="form-control flatpickr-time text-start flatpickr-input active" placeholder="HH:MM" readonly="readonly">
-                </div>
+                  </div>
                   <div class="col-12 col-md-6">
-                    <label class="form-check-label" for="inlineRadio7">Длительность урока, мин</label>
-                    <input name="lesson_duration" value="" required class="form-control" type="number" placeholder="Например, 60">
+                    {{ schedule_form.lesson_duration.label_tag|cut:":" }}
+                    {{ schedule_form.lesson_duration }}
                   </div>
                   <div class="col-12 col-md-6">
                     {{ schedule_form.subject.label_tag|cut:":" }}
@@ -147,7 +118,7 @@
                     <input placeholder="Например, действует c 06.02.23 по 03.03.23" name="date_range" type="text" id="fp-range" class="form-control flatpickr-range flatpickr-input active" placeholder="YYYY-MM-DD to YYYY-MM-DD" readonly="readonly">
                   </div>
                   <div class="col-12 text-center mt-2 pt-50" style="display: flex;justify-content: right;">
-                      <button type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">
+                      <button id="submitBtnSubForm" type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">
                         Сохранить
                       </button>
                       <button type="reset" class="btn btn-outline-secondary waves-effect" data-bs-dismiss="modal" aria-label="Close">

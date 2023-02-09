@@ -60,6 +60,7 @@ class User(AbstractUser):
         (CANCELED, 'Отказ'),
     )
 
+    schedule = models.ForeignKey(to='lessons.ScheduleSettings', on_delete=models.CASCADE, **NULLABLE)
     subscription = models.ForeignKey(to='finance.StudentSubscription', on_delete=models.CASCADE, **NULLABLE)
     password = models.CharField(_('password'), max_length=128, **NULLABLE)
     additional_user_number = models.ManyToManyField(to='AdditionalUserNumber', verbose_name='Дополнительный номер', **NULLABLE)

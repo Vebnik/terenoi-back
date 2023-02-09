@@ -85,3 +85,4 @@ class ScheduleForm(StyleFormMixin, forms.ModelForm):
   class Meta:
     model = Schedule
     fields = '__all__'
+    exclude = ('title', 'group', )
