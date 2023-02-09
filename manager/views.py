@@ -8,10 +8,12 @@ from django.forms import inlineformset_factory
 from authapp.models import AdditionalUserNumber
 from authapp.models import User
 
-from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm, AdditionalNumberForm
+from manager.forms import StudentFilterForm, StudentSearchForm, StudentCreateForm, AdditionalNumberForm, SubscriptionForm
 from manager.mixins import UserAccessMixin, PagePaginateByMixin
 
 from profileapp.models import ManagerToUser
+from finance.models import StudentSubscription, PaymentMethod
+
 
 
 # Dashboard page
@@ -115,11 +117,22 @@ class UserDetailView(UserAccessMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # FIXME code smell Nikita
-        try: manager = ManagerToUser.objects.get(user=kwargs.get('object'))
-        except Exception: manager = False
+
+        try: 
+            manager = ManagerToUser.objects.get(user=kwargs.get('object'))
+        except Exception as ex: 
+            manager = False
+
+        try:
+            subscription: StudentSubscription = context.get('object').subscription
+            subscription_form = SubscriptionForm(initial=subscription.__dict__)
+        except:
+            subscription_form = SubscriptionForm()
 
         context['manager'] = manager
+        context['subscription_form'] = subscription_form
+        context['payment_methods'] = PaymentMethod.get_methods()
+
         return context
 
     def post(self, *args, **kwargs):
@@ -259,3 +272,55 @@ class UsersManagerUpdateView(UserAccessMixin, UpdateView):
         self.object.save()
 
         return super().form_valid(form)
+
+
+class SubscriptionCreateView(UserAccessMixin, CreateView):
+    model = StudentSubscription
+    form_class = SubscriptionForm
+    success_url = reverse_lazy('manager:users')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        pk = self.request.POST.dict().get('pk')
+        select_method = self.request.POST.dict().get('payment_method')
+
+        if form.is_valid():
+            user = User.objects.get(pk=pk)
+            method = PaymentMethod(title=select_method)
+            method.save()
+
+            self.object.student = user
+            self.object.payment_methods = method
+            user.subscription = self.object
+
+            self.object.save()
+            user.save()
+
+        return response
+
+
+class SubscriptionUpdateView(UserAccessMixin, UpdateView):
+    model = StudentSubscription
+    form_class = SubscriptionForm
+    success_url = reverse_lazy('manager:users')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        pk = self.request.POST.dict().get('pk')
+        select_method = self.request.POST.dict().get('payment_method')
+
+        if form.is_valid():
+            user = User.objects.get(pk=pk)
+            method = PaymentMethod(title=select_method)
+
+            if self.object.payment_methods.title != method.title:
+                method.save()
+                self.object.payment_methods = method
+
+            self.object.student = user
+            user.subscription = self.object
+
+            self.object.save()
+            user.save()
+
+        return response

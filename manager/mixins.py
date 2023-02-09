@@ -35,6 +35,8 @@ class StyleFormMixin:
                 field.widget.attrs['class'] = 'form-control select2 select2-multiple'
             elif isinstance(field.widget, forms.widgets.Select):
                 field.widget.attrs['class'] = 'form-control select2'
+            # elif isinstance(field.widget, forms.widgets.RadioSelect):
+            #     field.widget.attrs['class'] = 'form-control'
             else:
                 field.widget.attrs['class'] = 'form-control'
 

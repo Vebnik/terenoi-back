@@ -7,20 +7,25 @@
                 
                 <form method="post" id="changeStatusForm" style="display: none;">
                     {% csrf_token %}
+                    <input name="status" value="" id="newStatusInput"/>
                     <button type="submit" id="changeStatusFormBtn">Сохранить</button>
                 </form>
 
                 <div class="text-center">
-                    <img style="margin-bottom: 10px; border-radius: 10px;" src="{% if object.avatar %}/media/{{ object.avatar }}{% else %}/media/user_avatar/man_avatar.png{% endif %}" alt="..." width="100%" height="100%">
+                    <img width="130" height="130" style="margin-top: 20px; margin-bottom: 10px; border-radius: 10px;" src="{% if object.avatar %}/media/{{ object.avatar }}{% else %}/media/user_avatar/man_avatar.png{% endif %}" alt="..." width="100%" height="100%">
+                    <br>
                     <strong>{{ object.get_full_name }}</strong>
                     <br>
-                    <select name="status" form="changeStatusForm" id="userStatusSelect" class="form-control mx-auto" style="max-width: max-content; border: 1px solid rgb(121, 224, 117);">
-                        <option value="{{ object.status }}">{{ object.status }}</option>
-                        <option value="Активный">Активный</option>
-                        <option value="На паузе">На паузе</option>
-                        <option value="Архивный">Архивный</option>
-                        <option value="Отказ">Отказ</option>
-                    </select>
+                    <div class="btn-group">
+                        <button class="badge btn-{{ object.get_status_color }} waves-effect waves-float waves-light" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ object.status }}
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton2" style="">
+                            {% for status in object.get_exclude_status %}
+                                <a class="dropdown-item changeStatusBtn" >{{ status }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="card-body py-2 my-25">
@@ -31,156 +36,141 @@
                         </a>
                     </div>
                     <hr>
-                    <strong>ФИО:</strong> {{ object.get_full_name }} {{ object.middle_name|default:'' }}<br>
-                    <strong>Роль:</strong> {% if object.is_student %}студент{% elif object.is_teacher %}учитель{% else %}менеджер{% endif %} <br>
-                    <strong>Почта:</strong> {{ object.email }} <br>
-                    <strong>Номер телефона:</strong> {{ object.phone }} <br>
-                    <strong>Дата рождения:</strong> {{ object.birth_date|date:"d.m.Y" }} <br>
-                    <strong>Пол:</strong> {{ object.get_gender_display }} <br>
-                    <strong>Менеджер:</strong> {% if manager %}{{ manager.manager.get_full_name }}{% else %} - {% endif %}<br>
-
+                    <div style="margin-bottom: 10px;">
+                        <strong >ФИО:</strong> {{ object.get_full_name }} {{ object.middle_name|default:'' }}<br>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Роль:</strong> {% if object.is_student %}студент{% elif object.is_teacher %}учитель{% else %}менеджер{% endif %} <br>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Почта:</strong> {{ object.email }} <br>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Номер телефона:</strong> {{ object.phone }} <br>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Дата рождения:</strong> {{ object.birth_date|date:"d.m.Y" }} <br>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Пол:</strong> {{ object.get_gender_display }} <br>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Менеджер:</strong> {% if manager %}{{ manager.manager.get_full_name }}{% else %} - {% endif %}<br>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="col-8">
             <div style="display: flex; justify-content: space-between;">
-                {% if object %}
-
                 <ul class="nav nav-pills mb-2">
-
                     <li class="nav-item">
-                        <a class="nav-link active" href="#">
+                        <a class="nav-link {% if 'subscription' not in request.path and 'schedule' not in request.path %}active{% endif %}" href="{% url 'manager:users_detail' object.pk %}">
                             <i data-feather="grid" class="font-medium-3 me-50"></i>
                             <span class="fw-bold">Главная</span>
                         </a>
                     </li>
-                </ul>
-
-
-                <div style="display: flex; height: 42px;">
-                    <a 
-                        class="btn btn-outline-primary" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#createAbonement"
-                        title="Создать Абонемент" class="btn btn-outline-primary" href="#" style="margin-right: 5px; width: 50px; padding: 10px; padding-right: 5px;">
-                        <i data-feather="shopping-bag" class="font-medium-3 me-50"></i>
-                    </a>
-                    <a title="Создать Расписание" class="btn btn-outline-primary" href="#" style="margin-right: 5px; width: 50px; padding: 10px; padding-right: 5px;">
-                        <i data-feather="calendar" class="font-medium-3 me-50"></i>
-                    </a>
-                    <a title="Создать Что-то ещё" class="btn btn-outline-primary" href="#" style="margin-right: 5px; width: 50px; padding: 10px; padding-right: 5px;">
-                        <i data-feather="box" class="font-medium-3 me-50"></i>
-                    </a>
-                </div>
-                    
-                {% else %}
-                <ul class="nav nav-pills mb-2">
-
+                    {% if object.subscription %}
                     <li class="nav-item">
-                        <a class="nav-link active" href="#">
-                            <i data-feather="user" class="font-medium-3 me-50"></i>
-                            <span class="fw-bold">Главная</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i data-feather="lock" class="font-medium-3 me-50"></i>
+                        <a class="nav-link {% if 'subscription' in request.path %}active{% endif %}" href="{% url 'manager:users_detail_subscription' object.pk %}">
+                            <i data-feather="shopping-bag" class="font-medium-3 me-50"></i>
                             <span class="fw-bold">Абонемент</span>
                         </a>
                     </li>
+                    {% endif %}         
 
+                    {% if object.schedule %}
                     <li class="nav-item">
                         <a class="nav-link" href="#">
-                            <i data-feather="bookmark" class="font-medium-3 me-50"></i>
+                            <i data-feather="calendar" class="font-medium-3 me-50"></i>
                             <span class="fw-bold">Регулярные занятия</span>
                         </a>
                     </li>
-                    
+                    {% endif %}
+
+                    {% if object.gift %}
                     <li class="nav-item">
                         <a class="nav-link" href="#">
                             <i data-feather="bell" class="font-medium-3 me-50"></i>
                             <span class="fw-bold">Бонусные уроки</span>
                         </a>
                     </li>
+                    {% endif %}
                 </ul>
+
+
+                <div style="display: flex; height: 42px;">
+                    {% if not object.subscription %}
+                    <a 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#createAbonement"
+                        title="Создать Абонемент" class="btn btn-outline-primary" href="#" style="margin-right: 5px; width: 50px; padding: 10px; padding-right: 5px;">
+                        <i data-feather="shopping-bag" class="font-medium-3 me-50"></i>
+                    </a>
+                    {% endif %}
+
+                    {% if not object.schedule %}
+                    <a
+                        data-bs-toggle="modal" 
+                        data-bs-target="#createSchedule"
+                        title="Создать Расписание" class="btn btn-outline-primary" href="#" style="margin-right: 5px; width: 50px; padding: 10px; padding-right: 5px;">
+                        <i data-feather="calendar" class="font-medium-3 me-50"></i>
+                    </a>
+                    {% endif %}
+
+                    {% if not object.gift %}
+                    <a title="Создать Что-то ещё" class="btn btn-outline-primary" href="#" style="margin-right: 5px; width: 50px; padding: 10px; padding-right: 5px;">
+                        <i data-feather="gift" class="font-medium-3 me-50"></i>
+                    </a>
+                    {% endif %}
+                </div>
+
+            </div>
+            <section>
+                {% if 'subscription' in request.path %}
+                    {% include 'manager/includes/manage_detail_subscription.html' %}
+                {% elif 'schedule' in request.path %}
+                    {% include 'manager/includes/manage_detail_schedule.html' %}
+                {% else %}
+                    {% include 'manager/includes/manage_detail_general.html' %}
                 {% endif %}
-            </div>
-            <div class="row">
-                <div class="col-lg-6 col-sm-6">
-                    <div class="card">
-                        <div class="card-body d-flex align-items-center justify-content-between">
-                            <div>
-                                <h3 class="fw-bolder mb-75">0</h3>
-                                <span>Уроков осталось</span>
-                            </div>
-                            <div class="avatar bg-light-primary p-50">
-                      <span class="avatar-content">
-                          <i data-feather="book-open" class="font-medium-4"></i>
-                      </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6 col-sm-6">
-                    <div class="card">
-                        <div class="card-body d-flex align-items-center justify-content-between">
-                            <div>
-                                <h3 class="fw-bolder mb-75">0</h3>
-                                <span>Осталось на счете</span>
-                            </div>
-                            <div class="avatar bg-light-success p-50">
-                      <span class="avatar-content">
-                          <i data-feather="dollar-sign" class="font-medium-4"></i>
-                      </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6 col-sm-6">
-                    <div class="card">
-                        <div class="card-body d-flex align-items-center justify-content-between">
-                            <div>
-                                <h3 class="fw-bolder mb-75">0%</h3>
-                                <span>Посещаемость</span>
-                            </div>
-                            <div class="avatar bg-light-danger p-50">
-                      <span class="avatar-content">
-                          <i data-feather="user-check" class="font-medium-4"></i>
-                      </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6 col-sm-6">
-                    <div class="card">
-                        <div class="card-body d-flex align-items-center justify-content-between">
-                            <div>
-                                <h3 class="fw-bolder mb-75">0</h3>
-                                <span>Пройденных уроков</span>
-                            </div>
-                            <div class="avatar bg-light-warning p-50">
-                      <span class="avatar-content">
-                          <i data-feather="check-circle" class="font-medium-4"></i>
-                      </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </section>
         </div>
     </div>
 
     <!-- MODALS -->
     {% include 'manager/includes/manager_detail_modals.html' %}
     <!-- MODALS -->
-    
+
 {% endblock content %}
 
 {% block js_extends %}
+
     <script>
-        document.querySelector('#userStatusSelect').addEventListener('change', (ev) => {
-            document.querySelector('#changeStatusFormBtn').click()
-        })
+        for (const el of document.querySelectorAll('.changeStatusBtn')) {
+           el.addEventListener('click', ev => {
+                document.querySelector('#newStatusInput').value = ev.target.text
+                document.querySelector('#changeStatusFormBtn').click()
+           })
+        }
     </script>
+
+    <script>
+
+        const lessonsCount = document.querySelector('#id_lesson_count')
+        const lessonDuration = document.querySelector('#id_lesson_duration')
+        const lessonCost = document.querySelector('#id_lesson_cost')
+        const subscriptionCost = document.querySelector('#id_subscription_cost')
+
+        function compareSubscription() {
+            const newCost = lessonsCount.value * lessonCost.value
+            subscriptionCost.value = newCost
+        }
+
+        lessonsCount.addEventListener('change', (ev) => compareSubscription())
+        lessonCost.addEventListener('change', (ev) => compareSubscription())
+
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"/>
+
 {% endblock js_extends %}

@@ -218,6 +218,8 @@
 <script src="{% static 'app-assets/vendors/js/forms/repeater/jquery.repeater.min.js' %}"></script>
 <script src="{% static 'app-assets/vendors/js/pickers/flatpickr/flatpickr.min.js' %}"></script>
 <script src="{% static 'app-assets/vendors/js/extensions/toastr.min.js' %}"></script>
+<script src="{% static 'app-assets/vendors/js/forms/select/select2.full.min.js' %}"></script>
+
 <!-- END: Page Vendor JS-->
 
 <!-- BEGIN: Theme JS-->
@@ -227,11 +229,12 @@
 
 <!-- BEGIN: Page JS-->
 <script src="{% static 'app-assets/js/scripts/pages/app-invoice.js' %}"></script>
+<script src="{% static 'app-assets/js/scripts/forms/form-select2.js' %}"></script>
 <!-- END: Page JS-->
-
 
 {% block js_extends %}
 {% endblock %}
+
 <!-- CUSTOM JS -->
 <script src="{% static 'assets/js/manager_user_checkbox.js' %}"></script>
 <script src="{% static 'assets/js/manager_user_paginate.js' %}"></script>

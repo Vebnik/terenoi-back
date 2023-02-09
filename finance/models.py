@@ -240,14 +240,40 @@ class StudentSubscription(models.Model):
         (MNT, 'Помесячная'),
         (WEK, 'Недельная'),
     )
-
+    
+    payment_methods = models.ForeignKey(verbose_name='Метод оплаты', to='PaymentMethod', on_delete=models.CASCADE, **NULLABLE)
+    student = models.ForeignKey(to=User, on_delete=models.CASCADE, **NULLABLE)
     title = models.CharField(verbose_name="Название", max_length=50)
     plan_type = models.CharField(
         verbose_name="Тип плана", choices=SELECT_PLAN_TYPE, default=IND,  max_length=50)
     billing = models.CharField(
         verbose_name='Тарификация', choices=SELECT_BILLING, default=LES, max_length=50)
     lesson_count = models.IntegerField(verbose_name='Кол-во уроков')
-    lesson_duration = models.IntegerField(verbose_name='Длительность урока, мин.')
+    lesson_duration = models.IntegerField(verbose_name='Длительность урока, мин')
     lesson_cost = models.IntegerField(verbose_name='Цена за 1 урок')
     subscription_cost = models.IntegerField(verbose_name='Стоимость абонемента')
     
+
+class PaymentMethod(models.Model):
+
+    KSPP = 'Kaspi pay'
+    KSPT = 'Kaspi Tilek личный'
+    SRBR = 'Серикболсын Сбер'
+    HLTK = 'Халык Тилек'
+    KNNR = 'Киргизстан Нурсултан'
+    UZUL = 'Узбекистан Юлиана'
+
+    title = models.CharField(verbose_name='Метод оплаты', max_length=50)
+
+    class Meta:
+        verbose_name = 'Способ оплаты'
+
+    @classmethod
+    def valid_methods(cls, method):
+        return method in cls.get_methods()
+
+    @classmethod
+    def get_methods(cls):
+        return [
+            cls.KSPP, cls.KNNR, cls.HLTK, cls.KSPT, cls.UZUL, cls.SRBR
+        ]

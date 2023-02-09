@@ -60,6 +60,7 @@ class User(AbstractUser):
         (CANCELED, 'Отказ'),
     )
 
+    subscription = models.ForeignKey(to='finance.StudentSubscription', on_delete=models.CASCADE, **NULLABLE)
     password = models.CharField(_('password'), max_length=128, **NULLABLE)
     additional_user_number = models.ManyToManyField(to='AdditionalUserNumber', verbose_name='Дополнительный номер', **NULLABLE)
     middle_name = models.CharField(max_length=32, verbose_name='Отчество', **NULLABLE)
@@ -134,10 +135,13 @@ class User(AbstractUser):
             'Отказ': 'danger'
         }.get(self.status)
 
+    def get_exclude_status(self):
+        stauses = [self.ACTIVE, self.PAUSE, self.ARCHIVE, self.CANCELED]
+        stauses.remove(self.status)
+        return stauses
+
     def valid_status(self, status):
-        return status in [
-            self.ACTIVE, self.PAUSE, self.ARCHIVE, self.CANCELED
-        ]
+        return status in [self.ACTIVE, self.PAUSE, self.ARCHIVE, self.CANCELED]
 
     def get_absolute_url(self):
         return '/manager/users/'
