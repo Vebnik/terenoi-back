@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import Q
 
 from authapp.models import User
-from courses.models import Courses, LessonCourse
+from courses.models import Courses, LessonCourse, CourseWishList
 
 
 class LessonCourseInline(admin.TabularInline):
@@ -30,8 +30,6 @@ class CoursesAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-
-# @admin.register(LessonCourse)
-# class LessonCourseAdmin(admin.ModelAdmin):
-#     list_display = ('course', 'title', 'author')
-#     list_filter = ('course', 'author',)
+@admin.register(CourseWishList)
+class CourseWishListAdmin(admin.ModelAdmin):
+    list_display = ('course', 'user')

@@ -28,6 +28,10 @@ class Courses(models.Model):
             return f'{settings.BACK_URL}{settings.MEDIA_URL}{self.img}'
         return ''
 
+    def get_minutes(self):
+        minutes = (self.time_duration.hour * 60) + self.time_duration.minute
+        return minutes
+
 
 class LessonCourse(models.Model):
     course = models.ForeignKey(Courses, on_delete=models.CASCADE, verbose_name='Курс')
@@ -58,3 +62,23 @@ class LessonCourse(models.Model):
         if my_file.is_file():
             return f'{settings.BACK_URL}{settings.MEDIA_URL}{self.video}'
         return ''
+
+    def get_minutes(self):
+        minutes = (self.time_duration.hour * 60) + self.time_duration.minute
+        return minutes
+
+
+class CourseWishList(models.Model):
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE, verbose_name='Курс')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+
+    class Meta:
+        verbose_name = 'Вишлист'
+        verbose_name_plural = 'Вишлист'
+
+    def save(self, *args, **kwargs):
+        wish = CourseWishList.objects.filter(course=self.course, user=self.user)
+        if not wish:
+            super(CourseWishList, self).save(*args, **kwargs)
+
+
