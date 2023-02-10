@@ -1,9 +1,10 @@
 from django.db.models import Q
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
-from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DetailView
+from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DetailView, View
 from pytils import translit
 from django.forms import inlineformset_factory
+import json
 
 from authapp.models import AdditionalUserNumber
 from authapp.models import User
@@ -128,15 +129,24 @@ class UserDetailView(UserAccessMixin, DetailView):
         context = super().get_context_data(**kwargs)
 
         try:
+            manager = ManagerToUser.objects.get(user=kwargs.get('object'))
+        except Exception as ex:
+            manager = False
+
+        try:
             subscription = context.get('object').subscription
             subscription_form = SubscriptionForm(initial=subscription.__dict__)
-            manager = ManagerToUser.objects.get(user=kwargs.get('object'))
-        except:
-            manager = False
+        except Exception as ex:
             subscription_form = SubscriptionForm()
 
+        try:
+            schedule = context.get('object').schedule
+            schedule_form = ScheduleForm(initial={**schedule.shedule.__dict__, 'weekday': schedule.shedule})
+        except Exception as ex:
+            schedule_form = ScheduleForm()
+
         context['subscription_form'] = subscription_form
-        context['schedule_form'] = ScheduleForm()
+        context['schedule_form'] = schedule_form
         context['manager'] = manager
         context['payment_methods'] = PaymentMethod.get_methods()
 
@@ -270,7 +280,7 @@ class UsersManagerUpdateView(UserAccessMixin, UpdateView):
         
         self.object = form.save()
 
-        if manager:
+        if manager and not ManagerToUser.objects.filter(user=self.object, manager=manager):
             m2u = ManagerToUser(user=self.object, manager=manager)
             m2u.save()
 
@@ -341,7 +351,14 @@ class ScheduleCreateView(UserAccessMixin, CreateView):
     form_class = ScheduleForm
     success_url = reverse_lazy('manager:users')
 
+    def dispatch(self, request, *args, **kwargs):
+
+        print(request.POST)
+
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
+        print('form_valid is valid')
         response = super().form_valid(form)
         user = User.objects.get(pk=self.request.POST.dict().get('pk'))
         datetime = Utils.serialize_date(self.request.POST.dict())
@@ -352,34 +369,64 @@ class ScheduleCreateView(UserAccessMixin, CreateView):
                 near_lesson=datetime.get('start_date'),
                 last_lesson=datetime.get('end_date'),
             )
-            
-            user.shedule = shedule_setting
+
+            user.schedule = shedule_setting
             shedule_setting.save()
             user.save()
     
         return response
 
-class ScheduleUpdateView(UserAccessMixin, CreateView):
 
+class ScheduleUpdateView(UserAccessMixin, UpdateView):
+    template_name = 'manager/users_detail.html'
     model = Schedule
     form_class = ScheduleForm
     success_url = reverse_lazy('manager:users')
+    
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+        schedule_pk = self.request.get_full_path().split('/')[-2]
+        user = User.objects.get(schedule__shedule=Schedule.objects.get(pk=schedule_pk))
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        pk = self.request.POST.dict().get('pk')
-        select_method = self.request.POST.dict().get('payment_method')
+        try:
+            manager = ManagerToUser.objects.get(user=user)
+        except Exception as ex:
+            manager = False
+        
+        context['manager'] = manager
+        context['object'] = user
 
-        if form.is_valid():
-            user = User.objects.get(pk=pk)
-            method = PaymentMethod(title=select_method)
-            method.save()
+        return context
 
-            self.object.student = user
-            self.object.payment_methods = method
-            user.subscription = self.object
+class ScheduleGetTecherView(UserAccessMixin, View):
 
-            self.object.save()
-            user.save()
+    def dispatch(self, request, *args, **kwargs):
+        if request.method == 'GET' and 'to' in kwargs.get('date'):
+            date = Utils.serialize_only_date(kwargs.get('date'))
+            data = []
 
-        return response
+            queryset = ScheduleSettings.objects.filter(
+                near_lesson__gte=date.get('start_date'),
+                last_lesson__lte=date.get('end_date'),
+                shedule__subject__pk=kwargs.get('subject'),
+                )
+
+            for setting in queryset:
+                data.append({
+                    'schedule_setting_id': setting.pk,
+                    'teacher': {
+                        'id': setting.shedule.teacher.pk,
+                        'name': setting.shedule.teacher.get_full_name(),
+                    },
+                    'group': {
+                        'id': setting.shedule.group.pk if setting.shedule.group else None,
+                        'title': setting.shedule.group.title if setting.shedule.group else None,
+                    }
+                })
+
+            return JsonResponse({'data': data })
+
+        return JsonResponse({'data': []})

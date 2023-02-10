@@ -79,7 +79,7 @@
 
 
 {% comment %} Create schedule {% endcomment %}
-<div class="modal fade fade" id="createSchedule" tabindex="-1" style="display: none;" aria-modal="true" role="dialog">
+<div class="modal fade" id="createSchedule" tabindex="-1" style="display: none;" aria-modal="true" role="dialog">
   <div class="modal-dialog modal-lg modal-dialog-centered modal-edit-user">
       <div class="modal-content">
           <div class="modal-header bg-transparent">
@@ -105,18 +105,33 @@
                     {{ schedule_form.lesson_duration.label_tag|cut:":" }}
                     {{ schedule_form.lesson_duration }}
                   </div>
+                  {% if object.subscription.plan_type == object.subscription.IND %}
+                  <div class="col-12">
+                    <label>Выбор периода</label>
+                    <input placeholder="Например, действует c 06.02.23 по 03.03.23" name="date_range" type="text" id="fp-range" class="form-control flatpickr-range flatpickr-input active" placeholder="YYYY-MM-DD to YYYY-MM-DD" readonly="readonly">
+                  </div>
+                  {% endif %}
                   <div class="col-12 col-md-6">
                     {{ schedule_form.subject.label_tag|cut:":" }}
                     {{ schedule_form.subject }}
                   </div>
                   <div class="col-12 col-md-6">
                     {{ schedule_form.teacher.label_tag|cut:":" }}
-                    {{ schedule_form.teacher }}
+                    <select class="form-control select2" id="id_teacher" name="teacher">
+
+                    </select>
+                  </div>
+                  {% if object.subscription.plan_type != object.subscription.IND %}
+                  <div class="col-12">
+                    {{ schedule_form.group.label_tag|cut:":" }}
+                    {{ schedule_form.group }}
                   </div>
                   <div class="col-12">
-                    <label>Выбор периода</label>
-                    <input placeholder="Например, действует c 06.02.23 по 03.03.23" name="date_range" type="text" id="fp-range" class="form-control flatpickr-range flatpickr-input active" placeholder="YYYY-MM-DD to YYYY-MM-DD" readonly="readonly">
+                    <span id="addGropuBtn" class="btn btn-link mb-50" style="cursor: pointer; font-size: 13px; display: flex; padding: 0">
+                      <i data-feather="plus" style="margin-right: 10px; font-size: 20px" ></i> Добавить группу
+                    </span>
                   </div>
+                  {% endif %}
                   <div class="col-12 text-center mt-2 pt-50" style="display: flex;justify-content: right;">
                       <button id="submitBtnSubForm" type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">
                         Сохранить

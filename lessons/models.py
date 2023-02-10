@@ -13,6 +13,7 @@ NULLABLE = {'blank': True, 'null': True}
 
 
 class Schedule(models.Model):
+    lesson_start = models.TimeField(verbose_name='Начало урока', default=datetime.time(12, 00))
     lesson_duration = models.PositiveSmallIntegerField(verbose_name='Длительность урока, мин', default=0)
     title = models.CharField(max_length=50, verbose_name='Название', **NULLABLE)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='schedule_teacher',
@@ -40,6 +41,9 @@ class ScheduleSettings(models.Model):
     count = models.IntegerField(verbose_name='Кол-во уроков', **NULLABLE)
     near_lesson = models.DateTimeField(**NULLABLE, verbose_name='Ближайший урок')
     last_lesson = models.DateTimeField(**NULLABLE, verbose_name='Последний урок')
+
+    def get_str_time(self):
+        return f'{self.near_lesson} to {self.last_lesson}'
 
 
 class Lesson(models.Model):

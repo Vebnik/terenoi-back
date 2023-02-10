@@ -5,7 +5,7 @@
         <div class="col-4">
             <div class="card">
 
-                <form method="post" id="changeStatusForm" style="display: none;">
+                <form method="post" id="changeStatusForm" style="display: none;" action="{% url 'manager:users_detail' object.pk %}">
                     {% csrf_token %}
                     <input name="status" value="" id="newStatusInput"/>
                     <button type="submit" id="changeStatusFormBtn">Сохранить</button>
@@ -40,7 +40,7 @@
                         <strong >ФИО:</strong> {{ object.get_full_name }} {{ object.middle_name|default:'' }}<br>
                     </div>
                     <div style="margin-bottom: 10px;">
-                        <strong>Роль:</strong> {% if object.is_student %}студент{% elif object.is_teacher %}учитель{% else %}менеджер{% endif %} <br>
+                        <strong>Роль:</strong> {% if object.is_student %}Студент{% elif object.is_teacher %}Учитель{% else %}Менеджер{% endif %} <br>
                     </div>
                     <div style="margin-bottom: 10px;">
                         <strong>Почта:</strong> {{ object.email }} <br>
@@ -80,7 +80,7 @@
 
                     {% if object.schedule %}
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {% if 'schedule' in request.path %}active{% endif %}" href="{% url 'manager:schedule_update' object.schedule.shedule.pk %}">
                             <i data-feather="calendar" class="font-medium-3 me-50"></i>
                             <span class="fw-bold">Регулярные занятия</span>
                         </a>
@@ -88,7 +88,7 @@
                     {% endif %}
 
                     {% if object.gift %}
-                    <li class="nav-item">
+                    <li class="nav-item {% if 'gift' in request.path %}active{% endif %}">
                         <a class="nav-link" href="#">
                             <i data-feather="bell" class="font-medium-3 me-50"></i>
                             <span class="fw-bold">Бонусные уроки</span>

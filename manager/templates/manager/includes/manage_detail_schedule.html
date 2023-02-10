@@ -1,0 +1,57 @@
+<div>
+  <div class="modal-content">
+    <div class="modal-header bg-transparent"></div>
+    <div class="modal-body pb-5 px-sm-5 pt-50">
+        <div class="mb-2">
+            <h1 class="mb-1">Редактирование занятия</h1>
+        </div>
+        <form id="editScheduleForm" class="row gy-1 pt-75" method="post">
+            {% csrf_token %}
+            <input hidden name="pk" value="{{ object.pk }}"/>
+
+            <div class="col-12">
+              {{ form.weekday.label_tag|cut:":" }}
+              {{ form.weekday }}
+            </div>
+            <div class="col-12 col-md-6">
+              <label>Начало урока</label>
+              <input 
+                value="{{form.lesson_start.value}}" placeholder="Например, c 14:00"  name="lesson_start" type="text" id="fp-time" class="form-control flatpickr-time text-start flatpickr-input active" placeholder="HH:MM" readonly="readonly">
+            </div>
+            <div class="col-12 col-md-6">
+              {{ form.lesson_duration.label_tag|cut:":" }}
+              {{ form.lesson_duration }}
+            </div>
+            <div class="col-12 col-md-6">
+              {{ form.subject.label_tag|cut:":" }}
+              {{ form.subject }}
+            </div>
+            <div class="col-12 col-md-6">
+              {{ form.teacher.label_tag|cut:":" }}
+              {{ form.teacher }}
+            </div>
+            <div class="col-12">
+              <label>Выбор периода</label>
+              <input
+              value="{{ object.schedule.get_str_time }}" placeholder="Например, действует c 06.02.23 по 03.03.23" name="date_range" type="text" id="fp-range" class="form-control flatpickr-range flatpickr-input active" placeholder="YYYY-MM-DD to YYYY-MM-DD" readonly="readonly">
+            </div>
+            <div class="col-12 text-center mt-2 pt-50" style="display: flex;justify-content: right;">
+                <button id="submitBtnForm" form="editScheduleForm" type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">
+                  Сохранить
+                </button>
+                <button id="discardBtnForm" type="reset" class="btn btn-outline-secondary waves-effect" data-bs-dismiss="modal" aria-label="Close">
+                  Отмена
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+
+<script>
+  document.querySelector('#editScheduleForm')
+    .addEventListener('change', (ev) => {
+      document.querySelector('#submitBtnForm').disabled = false
+      document.querySelector('#discardBtnForm').disabled = false
+    })
+</script>

@@ -244,3 +244,6 @@ class AdditionalUserNumber(models.Model):
 
     def __str__(self) -> str:
         return f'{self.phone} {self.comment}'
+
+    class Meta:
+        verbose_name = 'Дполнительные номера'
