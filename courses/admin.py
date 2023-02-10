@@ -7,6 +7,7 @@ from django.utils.html import format_html
 from authapp.models import User
 from courses.models import Courses, LessonCourse, CourseWishList, PurchasedCourses, PurchasedCoursesRequest, \
     CourseLikeList
+from notifications.models import CourseNotification
 
 
 class LessonCourseInline(admin.TabularInline):
@@ -85,6 +86,7 @@ class PurchasedCoursesRequestAdmin(admin.ModelAdmin):
         req.is_resolved = True
         PurchasedCourses.objects.get_or_create(user=req.user, course=req.course)
         req.save()
+        CourseNotification.objects.create(to_user=req.user, course=req.course, type=CourseNotification.COURSE_OPEN)
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
     def process_reject(self, request, pk, *args, **kwargs):

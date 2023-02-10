@@ -121,12 +121,13 @@ class DeleteCourseLikeView(APIView):
 
 class LikeView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = CourseLikeListSerializer
-    queryset = CourseWishList.objects.all()
+    queryset = CourseLikeList.objects.all()
 
     def get_serializer(self, *args, **kwargs):
-        print()
         return CourseLikeListSerializer(self.queryset, context={'pk': self.kwargs.get('pk'), 'user': self.request.user})
+
+    def get(self, request, *args, **kwargs):
+        return Response(data=self.get_serializer().data, status=status.HTTP_404_NOT_FOUND)
 
 
 class PurchasedCourseRetrieveView(generics.RetrieveAPIView):

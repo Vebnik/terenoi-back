@@ -12,10 +12,11 @@ urlpatterns = [
     path('<int:pk>/lessons/', LessonsCourseAllView.as_view(), name='all_course_lessons'),
     path('lesson/<int:pk>/', LessonCourseRetrieveView.as_view(), name='course_lesson'),
 
+    path('<int:pk>/like/', LikeView.as_view(), name='all_likes_in_course'),
+
     path('wishlist/add/', AddCourseWishListView.as_view(), name='add_wishlist'),
     path('wishlist/delete/', DeleteCourseWishListView.as_view(), name='delete_wishlist'),
 
-    path('<int:pk>/like/', LikeView.as_view(), name='all_likes_in_course'),
     path('like/add/', AddCourseLikeView.as_view(), name='add_like'),
     path('like/delete/', DeleteCourseLikeView.as_view(), name='delete_like'),
 

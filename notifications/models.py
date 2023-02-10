@@ -130,3 +130,16 @@ class LessonRateNotification(AbstractNotification):
         verbose_name = 'Уведомление по оценке урока'
         verbose_name_plural = 'Уведомления по оценке урока'
 
+
+class CourseNotification(AbstractNotification):
+    COURSE_OPEN = 'CRS_OPEN'
+
+    CHOICES_NOTIFICATIONS = (
+        (COURSE_OPEN, 'Курс открыт'),
+    )
+    type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE, verbose_name='Курс', **NULLABLE)
+
+    class Meta:
+        verbose_name = 'Уведомление о доступе к курсу'
+        verbose_name_plural = 'Уведомления о доступах к курсам'
