@@ -1,6 +1,6 @@
 from django.contrib import admin
 from notifications.models import Notification, PaymentNotification, ManagerNotification, HomeworkNotification, \
-    LessonRateNotification
+    LessonRateNotification, CourseNotification
 
 
 @admin.register(Notification)
@@ -26,3 +26,8 @@ class HomeworkNotificationAdmin(admin.ModelAdmin):
 @admin.register(LessonRateNotification)
 class LessonRateNotificationAdmin(admin.ModelAdmin):
     list_display = ('to_user', 'type', 'is_read', 'created_at')
+
+
+@admin.register(CourseNotification)
+class CourseNotificationAdmin(admin.ModelAdmin):
+    list_display = ('to_user','course', 'type', 'is_read', 'created_at')

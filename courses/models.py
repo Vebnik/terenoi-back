@@ -32,6 +32,12 @@ class Courses(models.Model):
         minutes = (self.time_duration.hour * 60) + self.time_duration.minute
         return minutes
 
+    def get_materials(self):
+        my_file = Path(f'{settings.MEDIA_ROOT}/{self.materials}')
+        if my_file.is_file():
+            return f'{settings.BACK_URL}{settings.MEDIA_URL}{self.materials}'
+        return ''
+
 
 class LessonCourse(models.Model):
     course = models.ForeignKey(Courses, on_delete=models.CASCADE, verbose_name='Курс')
@@ -67,6 +73,12 @@ class LessonCourse(models.Model):
         minutes = (self.time_duration.hour * 60) + self.time_duration.minute
         return minutes
 
+    def get_materials(self):
+        my_file = Path(f'{settings.MEDIA_ROOT}/{self.materials}')
+        if my_file.is_file():
+            return f'{settings.BACK_URL}{settings.MEDIA_URL}{self.materials}'
+        return ''
+
 
 class CourseWishList(models.Model):
     course = models.ForeignKey(Courses, on_delete=models.CASCADE, verbose_name='Курс')
@@ -82,3 +94,36 @@ class CourseWishList(models.Model):
             super(CourseWishList, self).save(*args, **kwargs)
 
 
+class CourseLikeList(models.Model):
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE, verbose_name='Курс')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+
+    class Meta:
+        verbose_name = 'Лайк'
+        verbose_name_plural = 'Лайки'
+
+    def save(self, *args, **kwargs):
+        wish = CourseLikeList.objects.filter(course=self.course, user=self.user)
+        if not wish:
+            super(CourseLikeList, self).save(*args, **kwargs)
+
+
+class PurchasedCourses(models.Model):
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE, verbose_name='Курс')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+
+    class Meta:
+        verbose_name = 'Купленный курс'
+        verbose_name_plural = 'Купленные курсы'
+
+
+class PurchasedCoursesRequest(models.Model):
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE, verbose_name='Курс')
+    manager = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='Менеджер', related_name='course_manager',
+                                **NULLABLE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='course_user')
+    is_resolved = models.BooleanField(verbose_name='Решен', default=False)
+
+    class Meta:
+        verbose_name = 'Запрос на покупку курса'
+        verbose_name_plural = 'Запросы на покупку курсов'

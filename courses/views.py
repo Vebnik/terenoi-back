@@ -3,9 +3,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from authapp.models import User
-from courses.models import Courses, LessonCourse, CourseWishList
+from courses.models import Courses, LessonCourse, CourseWishList, PurchasedCourses, PurchasedCoursesRequest, \
+    CourseLikeList
 from courses.serializers import CourseSerializer, CourseRetrieveSerializer, LessonsCourseAllSerializer, \
-    LessonsCourseRetrieveSerializer, WishListSerializer
+    LessonsCourseRetrieveSerializer, CourseLikeListSerializer
+from notifications.models import ManagerNotification
 
 
 class AllCoursesListView(generics.ListAPIView):
@@ -58,6 +60,25 @@ class AddCourseWishListView(APIView):
             return Response(data=data, status=status.HTTP_404_NOT_FOUND)
 
 
+class AddCourseLikeView(APIView):
+    """Добавление курса в вишлист"""
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def post(self, request):
+        user = self.get_object()
+        course = Courses.objects.filter(pk=self.request.data.get('pk')).first()
+        if course:
+            CourseLikeList.objects.create(user=user, course=course)
+            data = {'message': True}
+            return Response(data=data, status=status.HTTP_201_CREATED)
+        else:
+            data = {'message': False}
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+
 class DeleteCourseWishListView(APIView):
     """Удаление курса из вишлиста"""
     permission_classes = [IsAuthenticated]
@@ -78,13 +99,56 @@ class DeleteCourseWishListView(APIView):
             return Response(data=data, status=status.HTTP_404_NOT_FOUND)
 
 
-class WishListView(generics.RetrieveAPIView):
+class DeleteCourseLikeView(APIView):
+    """Удаление курса из вишлиста"""
     permission_classes = [IsAuthenticated]
-    serializer_class = WishListSerializer
-    queryset = CourseWishList.objects.all()
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def delete(self, request):
+        user = self.get_object()
+        course = Courses.objects.filter(pk=self.request.data.get('pk')).first()
+        like = CourseLikeList.objects.filter(user=user, course=course)
+        if course and like:
+            like.delete()
+            data = {'message': True}
+            return Response(data=data, status=status.HTTP_201_CREATED)
+        else:
+            data = {'message': False}
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+
+class LikeView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = CourseLikeList.objects.all()
 
     def get_serializer(self, *args, **kwargs):
-        return WishListSerializer(self.queryset, context={'pk': self.kwargs.get('pk')})
+        return CourseLikeListSerializer(self.queryset, context={'pk': self.kwargs.get('pk'), 'user': self.request.user})
+
+    def get(self, request, *args, **kwargs):
+        return Response(data=self.get_serializer().data, status=status.HTTP_404_NOT_FOUND)
 
 
+class PurchasedCourseRetrieveView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CourseLikeListSerializer
+    queryset = Courses.objects.all()
 
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request, *args, **kwargs):
+        user = self.get_object()
+        course = Courses.objects.filter(pk=int(self.kwargs.get('pk'))).first()
+        purchased = PurchasedCourses.objects.filter(user=user, course=course)
+        if purchased:
+            data = {'message': 'Курс уже приобретен'}
+            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            manager = User.objects.filter(is_superuser=True).first()
+            ManagerNotification.objects.create(manager=manager, to_user=user, course=course,
+                                               type=ManagerNotification.REQUEST_BUY_COURSE)
+            PurchasedCoursesRequest.objects.create(manager=manager, user=user, course=course)
+            data = {'message': True}
+            return Response(data=data, status=status.HTTP_201_CREATED)
