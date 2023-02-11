@@ -86,7 +86,7 @@ class DeleteCourseWishListView(APIView):
     def get_object(self):
         return User.objects.get(username=self.request.user)
 
-    def delete(self, request):
+    def post(self, request):
         user = self.get_object()
         course = Courses.objects.filter(pk=self.request.data.get('pk')).first()
         wish = CourseWishList.objects.filter(user=user, course=course)
@@ -106,7 +106,7 @@ class DeleteCourseLikeView(APIView):
     def get_object(self):
         return User.objects.get(username=self.request.user)
 
-    def delete(self, request):
+    def post(self, request):
         user = self.get_object()
         course = Courses.objects.filter(pk=self.request.data.get('pk')).first()
         like = CourseLikeList.objects.filter(user=user, course=course)
