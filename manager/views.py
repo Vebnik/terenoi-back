@@ -7,7 +7,7 @@ from django.forms import inlineformset_factory
 import json
 
 from authapp.models import AdditionalUserNumber
-from authapp.models import User
+from authapp.models import User, Group
 
 from manager.forms import (
     StudentFilterForm, 
@@ -351,28 +351,38 @@ class ScheduleCreateView(UserAccessMixin, CreateView):
     form_class = ScheduleForm
     success_url = reverse_lazy('manager:users')
 
-    def dispatch(self, request, *args, **kwargs):
-
-        print(request.POST)
-
-        return super().dispatch(request, *args, **kwargs)
-
     def form_valid(self, form):
-        print('form_valid is valid')
         response = super().form_valid(form)
-        user = User.objects.get(pk=self.request.POST.dict().get('pk'))
-        datetime = Utils.serialize_date(self.request.POST.dict())
+        form_data = self.request.POST.dict()
+        user = User.objects.get(pk=form_data.get('pk'))
+        start_datetime = Utils.serialize_date(form_data)
+        count_lesson = int(form_data.get('lesson_count', 4))
 
         if form.is_valid():
-            shedule_setting = ScheduleSettings(
-                shedule=self.object,
-                near_lesson=datetime.get('start_date'),
-                last_lesson=datetime.get('end_date'),
+            group = Group(
+                title=f'user-{user.pk}',
+                description=f"individual user {user.pk}",
             )
 
+            group.save()
+            group.students.set([user])
+            group.save()
+            self.object.group = group
+
+            shedule_setting = ScheduleSettings(
+                shedule=self.object,
+                near_lesson=start_datetime,
+                count=count_lesson
+            )
+
+            self.object.title = f'user-{user.pk}'
+            self.object.save()
+
             user.schedule = shedule_setting
+
             shedule_setting.save()
             user.save()
+            self.object.save()
     
         return response
 
@@ -382,37 +392,58 @@ class ScheduleUpdateView(UserAccessMixin, UpdateView):
     model = Schedule
     form_class = ScheduleForm
     success_url = reverse_lazy('manager:users')
-    
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-    
-    def get_context_data(self, **kwargs):
-        context =  super().get_context_data(**kwargs)
-        schedule_pk = self.request.get_full_path().split('/')[-2]
-        user = User.objects.get(schedule__shedule=Schedule.objects.get(pk=schedule_pk))
-
-        try:
-            manager = ManagerToUser.objects.get(user=user)
-        except Exception as ex:
-            manager = False
         
-        context['manager'] = manager
-        context['object'] = user
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        form_data = self.request.POST.dict()
+        user = User.objects.get(pk=form_data.get('pk'))
+        start_datetime = Utils.serialize_date(form_data)
+        count_lesson = int(form_data.get('lesson_count', 4))
 
-        return context
+        if user.schedule.near_lesson == start_datetime:
+            return response
+
+        if form.is_valid():
+            if not self.object.group:
+                group = Group(
+                    title=f'user-{user.pk}',
+                    description=f"individual user {user.pk}",
+                )
+                
+                group.save()
+                group.students.set([user])
+                group.save()
+                self.object.group = group
+
+            shedule_setting = ScheduleSettings(
+                shedule=self.object,
+                near_lesson=start_datetime,
+                count=count_lesson
+            )
+
+            self.object.title = f'user-{user.pk}'
+            self.object.save()
+
+            user.schedule = shedule_setting
+
+            shedule_setting.save()
+            user.save()
+            self.object.save()
+    
+        return response
+
 
 class ScheduleGetTecherView(UserAccessMixin, View):
 
     def dispatch(self, request, *args, **kwargs):
-        if request.method == 'GET' and 'to' in kwargs.get('date'):
+        if request.method == 'GET':
             date = Utils.serialize_only_date(kwargs.get('date'))
             data = []
 
             queryset = ScheduleSettings.objects.filter(
-                near_lesson__gte=date.get('start_date'),
-                last_lesson__lte=date.get('end_date'),
+                near_lesson__gte=date,
                 shedule__subject__pk=kwargs.get('subject'),
-                )
+            )
 
             for setting in queryset:
                 data.append({

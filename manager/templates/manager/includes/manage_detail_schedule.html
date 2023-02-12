@@ -30,11 +30,17 @@
               {{ form.teacher.label_tag|cut:":" }}
               {{ form.teacher }}
             </div>
-            <div class="col-12">
-              <label>Выбор периода</label>
+            {% if object.subscription.plan_type == object.subscription.IND %}
+            <div class="col-12 col-md-6">
+              <label>Выбор Старта</label>
               <input
-              value="{{ object.schedule.get_str_time }}" placeholder="Например, действует c 06.02.23 по 03.03.23" name="date_range" type="text" id="fp-range" class="form-control flatpickr-range flatpickr-input active" placeholder="YYYY-MM-DD to YYYY-MM-DD" readonly="readonly">
+                value="{{ object.schedule.near_lesson }}"
+                placeholder="Например, c 06.02.23" 
+                name="date_start"
+                type="text" id="fp-range" 
+                class="form-control flatpickr-basic flatpickr-input active" readonly="readonly" required>
             </div>
+            {% endif %}
             <div class="col-12 text-center mt-2 pt-50" style="display: flex;justify-content: right;">
                 <button id="submitBtnForm" form="editScheduleForm" type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">
                   Сохранить
