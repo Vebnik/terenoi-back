@@ -77,6 +77,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
     rate = serializers.SerializerMethodField()
     deadline_days = serializers.SerializerMethodField()
     homeworks = serializers.SerializerMethodField()
+    current_date = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
@@ -84,6 +85,9 @@ class UserLessonsSerializer(serializers.ModelSerializer):
             'pk', 'teacher', 'teacher_avatar', 'students', 'topic', 'subject', 'materials', 'deadline',
             'current_date', 'homeworks',
             'teacher_status', 'student_status', 'lesson_status', 'record_link', 'rate', 'deadline_days')
+
+    def get_current_date(self, instance):
+        return instance.date
 
     def _user(self):
         request = self.context.get('request', None)
