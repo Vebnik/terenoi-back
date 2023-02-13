@@ -82,7 +82,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = (
             'pk', 'teacher', 'teacher_avatar', 'students', 'topic', 'subject', 'materials', 'deadline',
-            'date', 'homeworks',
+            'current_date', 'homeworks',
             'teacher_status', 'student_status', 'lesson_status', 'record_link', 'rate', 'deadline_days')
 
     def _user(self):
