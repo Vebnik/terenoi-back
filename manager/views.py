@@ -360,27 +360,41 @@ class ScheduleCreateView(UserAccessMixin, CreateView):
         form_data = self.request.POST.dict()
 
         user = User.objects.get(pk=form_data.get('pk'))
-        start_datetime = Utils.serialize_date(form_data)
         count = int(form_data.get('count', 4))
 
         if form.is_valid():
-            group = Group(
-                title=f'user-{user.pk}',
-                description=f"individual user {user.pk}",
-            )
+
+            if not self.object.group:
+                start_datetime = Utils.serialize_date(form_data)
+            else:
+                start_datetime = Utils.serialize_date(form_data)
+
+            if not self.object.group:
+                group = Group(
+                    title=form_data.get('group_name', f'user-{user.pk}'),
+                    description=f"Group for user user-{user.pk}",
+                )
 
             group.save()
-            group.students.set([user])
+
+            if not self.object.group:
+                group.students.set([user])
+            else:
+                group.students.add([user])
+
             group.save()
+            
+            if not self.object.group:
+                shedule_setting = ScheduleSettings(
+                    shedule=self.object,
+                    near_lesson=start_datetime,
+                    count=count,
+                    lesson_duration=form_data.get('lesson_duration', 60),
+                )
+            else:
+                shedule_setting = self.object.group.students.first().schedule
+
             self.object.group = group
-
-            shedule_setting = ScheduleSettings(
-                shedule=self.object,
-                near_lesson=start_datetime,
-                count=count,
-                lesson_duration=form_data.get('lesson_duration', 60),
-            )
-
             self.object.title = f'user-{user.pk}'
             self.object.save()
 
@@ -432,7 +446,6 @@ class ScheduleGetTecherView(UserAccessMixin, View):
             queryset = None
 
             for key, value in request.GET.dict().items():
-
                 if key == 'date' and value:
                     date = Utils.normalize_date(value)
                     if queryset is not None: queryset = queryset.filter(date__date=date)
@@ -453,9 +466,13 @@ class ScheduleGetTecherView(UserAccessMixin, View):
                     if queryset is not None: queryset = queryset.distinct().filter(schedule__weekday__in=weekdays)
                     else: queryset = Lesson.objects.distinct().filter(schedule__weekday__in=weekdays)
                     print('weekday', queryset)
-            
             try:
-                teachers = [{'pk': item.teacher.pk, 'fullname': item.teacher.get_full_name()} for item in queryset]
+                teachers = [{
+                    'pk': item.teacher.pk, 
+                    'fullname': item.teacher.get_full_name(),
+                    'group_pk': item.group.pk,
+                    'group_name': item.group.title,
+                    } for item in queryset]
                 return JsonResponse({'data': teachers})
             except Exception as ex:
                 return JsonResponse({'data': [], 'error': ex})

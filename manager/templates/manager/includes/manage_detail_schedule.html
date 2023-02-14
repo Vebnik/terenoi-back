@@ -30,7 +30,6 @@
             {{ schedule_form.lesson_duration.label_tag|cut:":" }}
             <input title="Смена в абонементе" value="{{ object.subscription.lesson_duration }}" type="number" name="lesson_duration" max="3600" class="form-control" required="" id="id_lesson_duration" readonly="">
           </div>
-          {% if object.subscription.plan_type == object.subscription.IND %}
           <div class="col-12 col-md-6">
             <label>Старт</label>
             <input 
@@ -40,7 +39,6 @@
               type="text" id="fp-range" 
               class="form-control flatpickr-basic flatpickr-input active" readonly="readonly" required>
           </div>
-          {% endif %}
           <div class="col-12 col-md-6">
             {{ schedule_form.count.label_tag|cut:":" }}
             <input title="Смена в абонементе" value="{{ object.subscription.lesson_count }}" type="number" name="count" max="3600" class="form-control" required="" id="id_count" readonly="">
@@ -57,11 +55,6 @@
           <div class="col-12">
             {{ schedule_form.group.label_tag|cut:":" }}
             {{ schedule_form.group }}
-          </div>
-          <div class="col-12">
-            <span id="addGropuBtn" class="btn btn-link mb-50" style="cursor: pointer; font-size: 13px; display: flex; padding: 0">
-              <i data-feather="plus" style="margin-right: 10px; font-size: 20px" ></i> Добавить группу
-            </span>
           </div>
           {% endif %}
           <div class="col-12 text-center mt-2 pt-50" style="display: flex;justify-content: right;">

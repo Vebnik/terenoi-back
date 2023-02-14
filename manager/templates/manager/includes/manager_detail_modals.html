@@ -123,12 +123,12 @@
                     {{ schedule_form.subject.label_tag|cut:":" }}
                     {{ schedule_form.subject }}
                   </div>
-                  <div class="col-12 col-md-6">
+                  <div class="col-12 {% if object.subscription.plan_type == object.subscription.IND %}col-md-6{% endif %}">
                     {{ schedule_form.teacher.label_tag|cut:":" }}
                     {{ schedule_form.teacher }}
                   </div>
                   {% if object.subscription.plan_type != object.subscription.IND %}
-                  <div class="col-12">
+                  <div class="col-12" id="bottomModalElement">
                     {{ schedule_form.group.label_tag|cut:":" }}
                     {{ schedule_form.group }}
                   </div>
