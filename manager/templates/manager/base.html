@@ -243,31 +243,9 @@
 <!-- CUSTOM JS -->
 <script src="{% static 'assets/js/manager_user_checkbox.js' %}"></script>
 <script src="{% static 'assets/js/manager_user_paginate.js' %}"></script>
+<script src="{% static 'assets/js/manager_modals.js' %}"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
-<script>
-    function get_teachers(date, subject) {
-        fetch(`/manager/users/api/teacher/${date}/${subject}/`)
-            .then(res => res.json())
-            .then(data => {
-                for(const item of data.data){
-                    $('#id_teacher').append($('<option>', { value: item.teacher.id, text: item.teacher.name }))
-                }
-             })
-    }
-
-    $('#id_subject').change(() => {
-        const time = $('#fp-time').val()
-        const subject = $('#id_subject').val()
-        const date = $('#fp-range').val()
-        
-        if (time && subject && date){
-            get_teachers(date, subject)
-        }
-    })
-  
-</script>
 
 <!-- END CUSTOM JS -->
 

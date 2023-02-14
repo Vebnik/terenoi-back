@@ -80,7 +80,7 @@
 
                     {% if object.schedule %}
                     <li class="nav-item">
-                        <a class="nav-link {% if 'schedule' in request.path %}active{% endif %}" href="{% url 'manager:schedule_update' object.schedule.shedule.pk %}">
+                        <a class="nav-link {% if 'schedule' in request.path %}active{% endif %}" href="{% url 'manager:users_detail_schedule' object.pk %}">
                             <i data-feather="calendar" class="font-medium-3 me-50"></i>
                             <span class="fw-bold">Регулярные занятия</span>
                         </a>
@@ -170,4 +170,5 @@
         lessonsCount.addEventListener('change', (ev) => compareSubscription())
         lessonCost.addEventListener('change', (ev) => compareSubscription())
     </script>
+    
 {% endblock js_extends %}

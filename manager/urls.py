@@ -45,5 +45,5 @@ urlpatterns = [
     path('users/schedule/create/', ScheduleCreateView.as_view(), name='schedule_create'),
     path('users/schedule/update/<int:pk>/', ScheduleUpdateView.as_view(), name='schedule_update'),
 
-    path('users/api/teacher/<str:date>/<int:subject>/', ScheduleGetTecherView.as_view()),
+    path('users/api/teacher/', ScheduleGetTecherView.as_view()),
 ]

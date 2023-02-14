@@ -99,15 +99,15 @@
                   </div>
                   <div class="col-12 col-md-6">
                     <label>Начало урока</label>
-                    <input placeholder="Например, c 14:00"  name="lesson_start" type="text" id="fp-time" class="form-control flatpickr-time text-start flatpickr-input active" readonly="readonly">
+                    <input required="" placeholder="Например, c 14:00"  name="lesson_start" type="text" id="fp-time" class="form-control flatpickr-time text-start flatpickr-input active" readonly="readonly" required>
                   </div>
                   <div class="col-12 col-md-6">
                     {{ schedule_form.lesson_duration.label_tag|cut:":" }}
-                    {{ schedule_form.lesson_duration }}
+                    <input title="Смена в абонементе" value="{{ object.subscription.lesson_duration }}" type="number" name="lesson_duration" max="3600" class="form-control" required="" id="id_lesson_duration" readonly="">
                   </div>
                   {% if object.subscription.plan_type == object.subscription.IND %}
                   <div class="col-12 col-md-6">
-                    <label>Выбор Старта</label>
+                    <label>Старт</label>
                     <input 
                       placeholder="Например, c 06.02.23" 
                       name="date_start"
@@ -116,12 +116,8 @@
                   </div>
                   {% endif %}
                   <div class="col-12 col-md-6">
-                    <label>Количество уроков</label>
-                    <input 
-                      placeholder="Например, 4" 
-                      name="lesson_count"
-                      type="number"
-                      class="form-control" required>
+                    {{ schedule_form.count.label_tag|cut:":" }}
+                    <input title="Смена в абонементе" value="{{ object.subscription.lesson_count }}" type="number" name="count" max="3600" class="form-control" required="" id="id_count" readonly="">
                   </div>
                   <div class="col-12 col-md-6">
                     {{ schedule_form.subject.label_tag|cut:":" }}
@@ -129,9 +125,7 @@
                   </div>
                   <div class="col-12 col-md-6">
                     {{ schedule_form.teacher.label_tag|cut:":" }}
-                    <select class="form-control select2" id="id_teacher" name="teacher">
-
-                    </select>
+                    {{ schedule_form.teacher }}
                   </div>
                   {% if object.subscription.plan_type != object.subscription.IND %}
                   <div class="col-12">
@@ -145,12 +139,15 @@
                   </div>
                   {% endif %}
                   <div class="col-12 text-center mt-2 pt-50" style="display: flex;justify-content: right;">
+
                       <button id="submitBtnSubForm" type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">
                         Сохранить
                       </button>
+
                       <button type="reset" class="btn btn-outline-secondary waves-effect" data-bs-dismiss="modal" aria-label="Close">
-                          Отмена
+                        Отмена
                       </button>
+
                   </div>
               </form>
           </div>

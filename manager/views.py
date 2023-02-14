@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DetailView, View
@@ -8,7 +8,6 @@ import json
 
 from authapp.models import AdditionalUserNumber
 from authapp.models import User, Group
-
 from manager.forms import (
     StudentFilterForm, 
     StudentSearchForm, 
@@ -19,12 +18,11 @@ from manager.forms import (
     )
 from manager.mixins import UserAccessMixin, PagePaginateByMixin
 from manager.service import Utils
-
 from profileapp.models import ManagerToUser
-
 from finance.models import StudentSubscription, PaymentMethod
-
-from lessons.models import Schedule, ScheduleSettings
+from lessons.models import Schedule, ScheduleSettings, Lesson
+from settings.models import WeekDays
+from profileapp.models import Subject
 
 
 # Dashboard page
@@ -135,13 +133,19 @@ class UserDetailView(UserAccessMixin, DetailView):
 
         try:
             subscription = context.get('object').subscription
-            subscription_form = SubscriptionForm(initial=subscription.__dict__)
+            subscription_form = SubscriptionForm(instance=subscription)
         except Exception as ex:
             subscription_form = SubscriptionForm()
 
         try:
-            schedule = context.get('object').schedule
-            schedule_form = ScheduleForm(initial={**schedule.shedule.__dict__, 'weekday': schedule.shedule})
+            schedule_settings: ScheduleSettings = context.get('object').schedule
+            schedule: Schedule = schedule_settings.shedule
+            schedule_form = ScheduleForm(instance=schedule, initial={ **schedule_settings.__dict__ })
+
+            context['schedule_settings'] = {
+                'lesson_start': schedule_settings.near_lesson.time(),
+                'date_start': schedule_settings.near_lesson.date().strftime('%Y-%m-%d'),
+            }
         except Exception as ex:
             schedule_form = ScheduleForm()
 
@@ -354,9 +358,10 @@ class ScheduleCreateView(UserAccessMixin, CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         form_data = self.request.POST.dict()
+
         user = User.objects.get(pk=form_data.get('pk'))
         start_datetime = Utils.serialize_date(form_data)
-        count_lesson = int(form_data.get('lesson_count', 4))
+        count = int(form_data.get('count', 4))
 
         if form.is_valid():
             group = Group(
@@ -372,7 +377,8 @@ class ScheduleCreateView(UserAccessMixin, CreateView):
             shedule_setting = ScheduleSettings(
                 shedule=self.object,
                 near_lesson=start_datetime,
-                count=count_lesson
+                count=count,
+                lesson_duration=form_data.get('lesson_duration', 60),
             )
 
             self.object.title = f'user-{user.pk}'
@@ -396,68 +402,60 @@ class ScheduleUpdateView(UserAccessMixin, UpdateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         form_data = self.request.POST.dict()
+
         user = User.objects.get(pk=form_data.get('pk'))
         start_datetime = Utils.serialize_date(form_data)
-        count_lesson = int(form_data.get('lesson_count', 4))
+        count = int(form_data.get('count'))
+        lesson_duration = form_data.get('lesson_duration')
 
-        if user.schedule.near_lesson == start_datetime:
-            return response
 
-        if form.is_valid():
-            if not self.object.group:
-                group = Group(
-                    title=f'user-{user.pk}',
-                    description=f"individual user {user.pk}",
-                )
-                
-                group.save()
-                group.students.set([user])
-                group.save()
-                self.object.group = group
+        if form.is_valid():                    
+            # TODO Обновелние старого ScheduleSettings
 
-            shedule_setting = ScheduleSettings(
-                shedule=self.object,
-                near_lesson=start_datetime,
-                count=count_lesson
-            )
+            user.schedule.lesson_duration = lesson_duration
+            user.schedule.count = count
+            user.schedule.near_lesson = start_datetime
+            user.schedule.shedule = self.object
 
-            self.object.title = f'user-{user.pk}'
             self.object.save()
-
-            user.schedule = shedule_setting
-
-            shedule_setting.save()
+            user.schedule.save()
             user.save()
-            self.object.save()
     
         return response
-
-
+    
+# TODO drf
 class ScheduleGetTecherView(UserAccessMixin, View):
 
     def dispatch(self, request, *args, **kwargs):
         if request.method == 'GET':
-            date = Utils.serialize_only_date(kwargs.get('date'))
-            data = []
+        
+            queryset = None
 
-            queryset = ScheduleSettings.objects.filter(
-                near_lesson__gte=date,
-                shedule__subject__pk=kwargs.get('subject'),
-            )
+            for key, value in request.GET.dict().items():
 
-            for setting in queryset:
-                data.append({
-                    'schedule_setting_id': setting.pk,
-                    'teacher': {
-                        'id': setting.shedule.teacher.pk,
-                        'name': setting.shedule.teacher.get_full_name(),
-                    },
-                    'group': {
-                        'id': setting.shedule.group.pk if setting.shedule.group else None,
-                        'title': setting.shedule.group.title if setting.shedule.group else None,
-                    }
-                })
-
-            return JsonResponse({'data': data })
-
-        return JsonResponse({'data': []})
+                if key == 'date' and value:
+                    date = Utils.normalize_date(value)
+                    if queryset is not None: queryset = queryset.filter(date__date=date)
+                    else: queryset = Lesson.objects.filter(date__date=date)
+                    print('date', queryset)
+                if key == 'subject' and value:
+                    if queryset is not None: queryset = queryset.distinct().filter(subject=Subject.objects.get(pk=value))
+                    else: queryset = Lesson.objects.distinct().filter(subject=Subject.objects.get(pk=value))
+                    print('subject', queryset)
+                if key == 'time' and value:
+                    time = Utils.normalize_time(value)
+                    if queryset is not None: queryset = queryset.filter(date__time=time)
+                    else: queryset = Lesson.objects.filter(date__time=time)
+                    print('time', queryset)
+                if key == 'weekday' and value:
+                    value = [*map(lambda el: el-1 if el>0 else el, map(int, value.split(',')))]       
+                    weekdays = [WeekDays.objects.get(number=day_num) for day_num in value]
+                    if queryset is not None: queryset = queryset.distinct().filter(schedule__weekday__in=weekdays)
+                    else: queryset = Lesson.objects.distinct().filter(schedule__weekday__in=weekdays)
+                    print('weekday', queryset)
+            
+            try:
+                teachers = [{'pk': item.teacher.pk, 'fullname': item.teacher.get_full_name()} for item in queryset]
+                return JsonResponse({'data': teachers})
+            except Exception as ex:
+                return JsonResponse({'data': [], 'error': ex})

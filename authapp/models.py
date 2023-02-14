@@ -74,8 +74,8 @@ class User(AbstractUser):
     bio = models.TextField(verbose_name='О себе', **NULLABLE)
     gender = models.TextField(max_length=10, choices=GENDER_CHOICES, **NULLABLE, verbose_name='Пол')
     time_zone = models.CharField(max_length=32, choices=TIMEZONES, default='Asia/Almaty', verbose_name='Часовой пояс')
-    is_student = models.BooleanField(default=True, verbose_name='Ученик')
-    is_teacher = models.BooleanField(default=False, verbose_name='Учитель')
+    is_student = models.BooleanField(default=True, verbose_name='Ученик', db_index=True)
+    is_teacher = models.BooleanField(default=False, verbose_name='Учитель', db_index=True)
     education = models.CharField(max_length=255, verbose_name='Образование', **NULLABLE)
     experience = models.TextField(verbose_name='Опыт работы', **NULLABLE)
     english_level = models.CharField(max_length=50, choices=LEVEL_CHOICES, default=BEGINNER,

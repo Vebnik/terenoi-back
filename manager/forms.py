@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.widgets import DateInput
 from django.utils.translation import gettext_lazy as _
 
 from manager.mixins import StyleFormMixin
@@ -81,6 +82,9 @@ class SubscriptionForm(StyleFormMixin, forms.ModelForm):
 
 
 class ScheduleForm(StyleFormMixin, forms.ModelForm):
+
+  lesson_duration = forms.IntegerField(max_value=3600, required=True, label='Длительность урока, мин')
+  count = forms.IntegerField(max_value=3600, required=True, label='Количество уроков')
 
   class Meta:
     model = Schedule
