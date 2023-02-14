@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from courses.models import Courses, LessonCourse, CourseWishList, CourseLikeList, PurchasedCourses
+from django.conf import settings
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -98,7 +99,7 @@ class LessonsCourseAllSerializer(serializers.ModelSerializer):
                 path_blur_img, path_blur_img_return = f'{path_list[0]}-blur.{path_list[1]}', f'{path_list_return[0]}-blur.{path_list_return[1]}'
                 with open(path_blur_img, 'wb') as img:
                     img.write(img_byte_arr)
-                    return path_blur_img_return
+                    return f'{settings.BACK_URL}{path_blur_img_return}'
 
     def get_time_duration(self, instance):
         return instance.get_minutes()
