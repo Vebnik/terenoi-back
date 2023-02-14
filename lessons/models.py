@@ -153,7 +153,7 @@ class Lesson(models.Model):
                 start_date=self.date,
                 lesson=self
             )
-            # tasks.create_webinar_and_users_celery.delay(webinar.pk)
+            tasks.create_webinar_and_users_celery.delay(webinar.pk)
 
 
 class Feedback(models.Model):
