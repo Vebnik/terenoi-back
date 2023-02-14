@@ -10,7 +10,7 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Courses
         fields = (
-            'pk', 'img', 'title', 'description', 'time_duration',)
+            'id', 'img', 'title', 'description', 'time_duration',)
 
     def get_img(self, instance):
         return instance.get_course_img()
@@ -71,7 +71,7 @@ class LessonsCourseAllSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LessonCourse
-        fields = ('pk', 'img', 'title', 'time_duration')
+        fields = ('id', 'img', 'title', 'time_duration')
 
     def _user(self):
         request = self.context.get('request', None)
