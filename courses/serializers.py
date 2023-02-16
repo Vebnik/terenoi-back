@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from courses.models import Courses, LessonCourse, CourseWishList, CourseLikeList, PurchasedCourses
+from courses.models import Courses, LessonCourse, CourseWishList, CourseLikeList, PurchasedCourses, \
+    PurchasedCoursesRequest
 from django.conf import settings
 
 
@@ -21,11 +22,13 @@ class CourseSerializer(serializers.ModelSerializer):
 
 class CourseRetrieveSerializer(serializers.ModelSerializer):
     img = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
     time_duration = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
     materials = serializers.SerializerMethodField()
     is_purchased = serializers.SerializerMethodField()
     is_wishlist = serializers.SerializerMethodField()
+    course_purchase_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Courses
@@ -39,6 +42,10 @@ class CourseRetrieveSerializer(serializers.ModelSerializer):
 
     def get_img(self, instance):
         return instance.get_course_img()
+
+    def get_avatar(self, instance):
+        user = instance.author
+        return user.get_avatar()
 
     def get_time_duration(self, instance):
         return instance.get_minutes()
@@ -61,6 +68,13 @@ class CourseRetrieveSerializer(serializers.ModelSerializer):
         user = self._user()
         wish = CourseWishList.objects.filter(course=instance, user=user)
         if wish:
+            return True
+        return False
+
+    def get_course_purchase_status(self, instance):
+        user = self._user()
+        request_purchase = PurchasedCoursesRequest.objects.filter(user=user, course=instance, is_resolved=False).first()
+        if request_purchase:
             return True
         return False
 
@@ -110,6 +124,7 @@ class LessonsCourseRetrieveSerializer(serializers.ModelSerializer):
     video = serializers.SerializerMethodField()
     time_duration = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = LessonCourse
@@ -117,6 +132,10 @@ class LessonsCourseRetrieveSerializer(serializers.ModelSerializer):
 
     def get_img(self, instance):
         return instance.get_lesson_img()
+
+    def get_avatar(self, instance):
+        user = instance.author
+        return user.get_avatar()
 
     def get_video(self, instance):
         return instance.get_video()
@@ -138,7 +157,7 @@ class CourseLikeListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CourseLikeList
-        fields = ('count','is_like')
+        fields = ('count', 'is_like')
 
     def get_count(self, instance):
         wish_count = CourseLikeList.objects.filter(course__pk=int(self.context.get('pk'))).count()
