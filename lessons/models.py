@@ -41,6 +41,9 @@ class ScheduleSettings(models.Model):
     near_lesson = models.DateTimeField(**NULLABLE, verbose_name='Ближайший урок')
     last_lesson = models.DateTimeField(**NULLABLE, verbose_name='Последний урок')
 
+    def __str__(self) -> str:
+        return f'{self.shedule}'
+
     def get_str_time(self):
         return f'{self.near_lesson} to {self.last_lesson}'
 

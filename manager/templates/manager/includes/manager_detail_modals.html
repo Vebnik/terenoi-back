@@ -58,7 +58,7 @@
                     <label for="id_payment_method">Способ оплаты</label>
                     <select name="payment_method" class="form-control form-select" id="id_payment_method">
                       {% for method in payment_methods %}
-                      <option value="{{ method }}" selected>{{ method }}</option>
+                      <option value="{{ method.pk }}">{{ method.title }}</option>
                       {% endfor %}
                     </select>
                   </div>

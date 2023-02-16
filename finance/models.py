@@ -256,21 +256,20 @@ class StudentSubscription(models.Model):
     lesson_duration = models.IntegerField(verbose_name='Длительность урока, мин')
     lesson_cost = models.IntegerField(verbose_name='Цена за 1 урок')
     subscription_cost = models.IntegerField(verbose_name='Стоимость абонемента')
+
+    def __str__(self) -> str:
+        return self.title
     
 
 class PaymentMethod(models.Model):
-
-    KSPP = 'Kaspi pay'
-    KSPT = 'Kaspi Tilek личный'
-    SRBR = 'Серикболсын Сбер'
-    HLTK = 'Халык Тилек'
-    KNNR = 'Киргизстан Нурсултан'
-    UZUL = 'Узбекистан Юлиана'
 
     title = models.CharField(verbose_name='Метод оплаты', max_length=50)
 
     class Meta:
         verbose_name = 'Способ оплаты'
+
+    def __str__(self) -> str:
+        return self.title
 
     @classmethod
     def valid_methods(cls, method):
@@ -279,5 +278,5 @@ class PaymentMethod(models.Model):
     @classmethod
     def get_methods(cls):
         return [
-            cls.KSPP, cls.KNNR, cls.HLTK, cls.KSPT, cls.UZUL, cls.SRBR
+            item.title for item in cls.objects.all()
         ]

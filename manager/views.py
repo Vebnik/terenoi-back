@@ -133,6 +133,7 @@ class UserDetailView(UserAccessMixin, DetailView):
 
         try:
             subscription = context.get('object').subscription
+            print(subscription.all())
             subscription_form = SubscriptionForm(instance=subscription)
         except Exception as ex:
             subscription_form = SubscriptionForm()
@@ -152,7 +153,7 @@ class UserDetailView(UserAccessMixin, DetailView):
         context['subscription_form'] = subscription_form
         context['schedule_form'] = schedule_form
         context['manager'] = manager
-        context['payment_methods'] = PaymentMethod.get_methods()
+        context['payment_methods'] = PaymentMethod.objects.all()
 
         return context
 
@@ -306,16 +307,16 @@ class SubscriptionCreateView(UserAccessMixin, CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         pk = self.request.POST.dict().get('pk')
-        select_method = self.request.POST.dict().get('payment_method')
+        select_method_pk = self.request.POST.dict().get('payment_method')
 
         if form.is_valid():
             user = User.objects.get(pk=pk)
-            method = PaymentMethod(title=select_method)
+            method = PaymentMethod.objects.get(pk=select_method_pk)
             method.save()
 
             self.object.student = user
             self.object.payment_methods = method
-            user.subscription = self.object
+            user.subscription.add(self.object)
 
             self.object.save()
             user.save()
@@ -360,7 +361,7 @@ class ScheduleCreateView(UserAccessMixin, CreateView):
         form_data = self.request.POST.dict()
 
         user = User.objects.get(pk=form_data.get('pk'))
-        count = int(form_data.get('count', 4))
+        count = int(form_data.get('count'))
 
         if form.is_valid():
 
@@ -389,7 +390,7 @@ class ScheduleCreateView(UserAccessMixin, CreateView):
                     shedule=self.object,
                     near_lesson=start_datetime,
                     count=count,
-                    lesson_duration=form_data.get('lesson_duration', 60),
+                    lesson_duration=form_data.get('lesson_duration'),
                 )
             else:
                 shedule_setting = self.object.group.students.first().schedule
@@ -398,9 +399,9 @@ class ScheduleCreateView(UserAccessMixin, CreateView):
             self.object.title = f'user-{user.pk}'
             self.object.save()
 
-            user.schedule = shedule_setting
-
             shedule_setting.save()
+            user.schedule.add(shedule_setting)
+
             user.save()
             self.object.save()
     
@@ -450,22 +451,18 @@ class ScheduleGetTecherView(UserAccessMixin, View):
                     date = Utils.normalize_date(value)
                     if queryset is not None: queryset = queryset.filter(date__date=date)
                     else: queryset = Lesson.objects.filter(date__date=date)
-                    print('date', queryset)
                 if key == 'subject' and value:
                     if queryset is not None: queryset = queryset.distinct().filter(subject=Subject.objects.get(pk=value))
                     else: queryset = Lesson.objects.distinct().filter(subject=Subject.objects.get(pk=value))
-                    print('subject', queryset)
                 if key == 'time' and value:
                     time = Utils.normalize_time(value)
                     if queryset is not None: queryset = queryset.filter(date__time=time)
                     else: queryset = Lesson.objects.filter(date__time=time)
-                    print('time', queryset)
                 if key == 'weekday' and value:
                     value = [*map(lambda el: el-1 if el>0 else el, map(int, value.split(',')))]       
                     weekdays = [WeekDays.objects.get(number=day_num) for day_num in value]
                     if queryset is not None: queryset = queryset.distinct().filter(schedule__weekday__in=weekdays)
                     else: queryset = Lesson.objects.distinct().filter(schedule__weekday__in=weekdays)
-                    print('weekday', queryset)
             try:
                 teachers = [{
                     'pk': item.teacher.pk, 

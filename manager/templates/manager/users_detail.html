@@ -69,7 +69,7 @@
                             <span class="fw-bold">Главная</span>
                         </a>
                     </li>
-                    {% if object.subscription %}
+                    {% if object.subscription.all %}
                     <li class="nav-item">
                         <a class="nav-link {% if 'subscription' in request.path %}active{% endif %}" href="{% url 'manager:users_detail_subscription' object.pk %}">
                             <i data-feather="shopping-bag" class="font-medium-3 me-50"></i>
@@ -78,7 +78,7 @@
                     </li>
                     {% endif %}         
 
-                    {% if object.schedule %}
+                    {% if object.schedule.all %}
                     <li class="nav-item">
                         <a class="nav-link {% if 'schedule' in request.path %}active{% endif %}" href="{% url 'manager:users_detail_schedule' object.pk %}">
                             <i data-feather="calendar" class="font-medium-3 me-50"></i>
@@ -99,7 +99,7 @@
 
 
                 <div style="display: flex; height: 42px;">
-                    {% if not object.subscription %}
+                    {% if not object.subscription.all %}
                     <a 
                         data-bs-toggle="modal" 
                         data-bs-target="#createAbonement"
@@ -108,7 +108,7 @@
                     </a>
                     {% endif %}
 
-                    {% if not object.schedule %}
+                    {% if not object.schedule.all %}
                     <a
                         data-bs-toggle="modal" 
                         data-bs-target="#createSchedule"
