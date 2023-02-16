@@ -5,7 +5,7 @@
         <div class="mb-2">
             <h1 class="mb-1">Редактирование занятия</h1>
         </div>
-        <form id="editScheduleForm" action="{% url 'manager:schedule_update' object.schedule.shedule.pk %}" class="row gy-1 pt-75" method="post">
+        <form id="editScheduleForm" action="{% url 'manager:schedule_update' schedule.shedule.pk %}" class="row gy-1 pt-75" method="post">
           {% csrf_token %}
           <input hidden name="pk" value="{{ object.pk }}"/>
           <div class="col-12 hidden">
@@ -28,7 +28,7 @@
           </div>
           <div class="col-12 col-md-6">
             {{ schedule_form.lesson_duration.label_tag|cut:":" }}
-            <input title="Смена в абонементе" value="{{ object.subscription.lesson_duration }}" type="number" name="lesson_duration" max="3600" class="form-control" required="" id="id_lesson_duration" readonly="">
+            <input title="Смена в абонементе" value="{{ subscription.lesson_duration }}" type="number" name="lesson_duration" max="3600" class="form-control" required="" id="id_lesson_duration" readonly="">
           </div>
           <div class="col-12 col-md-6">
             <label>Старт</label>
@@ -41,7 +41,7 @@
           </div>
           <div class="col-12 col-md-6">
             {{ schedule_form.count.label_tag|cut:":" }}
-            <input title="Смена в абонементе" value="{{ object.subscription.lesson_count }}" type="number" name="count" max="3600" class="form-control" required="" id="id_count" readonly="">
+            <input title="Смена в абонементе" value="{{ subscription.lesson_count }}" type="number" name="count" max="3600" class="form-control" required="" id="id_count" readonly="">
           </div>
           <div class="col-12 col-md-6">
             {{ schedule_form.subject.label_tag|cut:":" }}
@@ -51,7 +51,7 @@
             {{ schedule_form.teacher.label_tag|cut:":" }}
             {{ schedule_form.teacher }}
           </div>
-          {% if object.subscription.plan_type != object.subscription.IND %}
+          {% if subscription.plan_type != subscription.IND %}
           <div class="col-12">
             {{ schedule_form.group.label_tag|cut:":" }}
             {{ schedule_form.group }}

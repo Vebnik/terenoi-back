@@ -60,8 +60,9 @@ class User(AbstractUser):
         (CANCELED, 'Отказ'),
     )
 
-    schedule = models.ManyToManyField(verbose_name='Расписания', to='lessons.ScheduleSettings', **NULLABLE)
-    subscription = models.ManyToManyField(verbose_name='Подписки', to='finance.StudentSubscription', **NULLABLE)
+    # schedule = models.ManyToManyField(verbose_name='Расписания', to='lessons.ScheduleSettings', **NULLABLE)
+    # subscription = models.ManyToManyField(verbose_name='Подписки', to='finance.StudentSubscription', **NULLABLE)
+
     password = models.CharField(_('password'), max_length=128, **NULLABLE)
     additional_user_number = models.ManyToManyField(to='AdditionalUserNumber', verbose_name='Дополнительный номер', **NULLABLE)
     middle_name = models.CharField(max_length=32, verbose_name='Отчество', **NULLABLE)

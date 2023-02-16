@@ -4,7 +4,7 @@
           <div class="mb-2" style="margin-top: 20px">
               <h1 class="mb-1">Редактирование абонемента</h1>
           </div>
-          <form id="editAbonementForm" action="{% url 'manager:sub_update' object.subscription.pk %}" class="row gy-1 pt-75" method="post">
+          <form id="editAbonementForm" action="{% url 'manager:sub_update' subscription.pk %}" class="row gy-1 pt-75" method="post">
               <input value="{{ object.pk }}" required name="pk" type="text" hidden>
               {% csrf_token %}
               <div class="col-12">
@@ -21,17 +21,17 @@
                   </div>
                   <div style="margin-bottom: 10px;">
                     <input value="Поурочная" required name="billing" class="form-check-input" type="radio" id="inlineRadio1" 
-                    {% if object.subscription.billing == 'Поурочная' %}checked{% endif %}>
+                    {% if subscription.billing == 'Поурочная' %}checked{% endif %}>
                     <label class="form-check-label" for="inlineRadio1">Поурочная</label>
                   </div>
                   <div style="margin-bottom: 10px;">
                     <input value="Помесячная" required name="billing" class="form-check-input" type="radio" id="inlineRadio2"
-                    {% if object.subscription.billing == 'Помесячная' %}checked{% endif %}>
+                    {% if subscription.billing == 'Помесячная' %}checked{% endif %}>
                     <label class="form-check-label" for="inlineRadio2">Помесечная</label>
                   </div>
                   <div style="">
                     <input value="Недельная" required name="billing" class="form-check-input" type="radio" id="inlineRadio3"
-                    {% if object.subscription.billing == 'Недельная' %}checked{% endif %}>
+                    {% if subscription.billing == 'Недельная' %}checked{% endif %}>
                     <label class="form-check-label" for="inlineRadio3">Недельная</label>
                   </div>
               </div>
@@ -55,10 +55,10 @@
                 <label for="id_payment_method">Способ оплаты</label>
                 <select name="payment_method" class="form-control form-select" id="id_payment_method">
                   {% for method in payment_methods %}
-                    {% if method == object.subscription.payment_methods.title %}
-                    <option value="{{ method }}" selected>{{ method }}</option>
+                    {% if method.title == subscription.payment_methods.title %}
+                    <option value="{{ method.pk }}" selected>{{ method.title }}</option>
                     {% else %}
-                    <option value="{{ method }}">{{ method }}</option>
+                    <option value="{{ method.pk }}">{{ method.title }}</option>
                     {% endif %}
                   {% endfor %}
                 </select>

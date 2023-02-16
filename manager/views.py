@@ -125,6 +125,7 @@ class UserDetailView(UserAccessMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user: User = context.get('object')
 
         try:
             manager = ManagerToUser.objects.get(user=kwargs.get('object'))
@@ -132,14 +133,16 @@ class UserDetailView(UserAccessMixin, DetailView):
             manager = False
 
         try:
-            subscription = context.get('object').subscription
-            print(subscription.all())
+            subscription = user.studentsubscription_set.get(is_active=True)
+            context['subscription'] = subscription
             subscription_form = SubscriptionForm(instance=subscription)
         except Exception as ex:
             subscription_form = SubscriptionForm()
 
         try:
-            schedule_settings: ScheduleSettings = context.get('object').schedule
+            schedule_settings: ScheduleSettings = \
+                user.group_students.first().schedule_group.get(is_completed=False).schedulesettings_set.first()
+            context['schedule'] = schedule_settings
             schedule: Schedule = schedule_settings.shedule
             schedule_form = ScheduleForm(instance=schedule, initial={ **schedule_settings.__dict__ })
 
@@ -332,14 +335,14 @@ class SubscriptionUpdateView(UserAccessMixin, UpdateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         pk = self.request.POST.dict().get('pk')
-        select_method = self.request.POST.dict().get('payment_method')
+        select_method_pk = self.request.POST.dict().get('payment_method')
 
         if form.is_valid():
             user = User.objects.get(pk=pk)
-            method = PaymentMethod(title=select_method)
+            method = PaymentMethod.objects.get(pk=select_method_pk)
+            method.save()
 
-            if self.object.payment_methods.title != method.title:
-                method.save()
+            if self.object.payment_methods.pk != method.pk:
                 self.object.payment_methods = method
 
             self.object.student = user
@@ -438,7 +441,7 @@ class ScheduleUpdateView(UserAccessMixin, UpdateView):
     
         return response
     
-# TODO drf
+
 class ScheduleGetTecherView(UserAccessMixin, View):
 
     def dispatch(self, request, *args, **kwargs):

@@ -5,15 +5,24 @@ window.addEventListener('load', () => {
         .then(res => res.json())
         .then(data => {
 
-          [...document.querySelector('#id_teacher').children].forEach(el => el.remove());
-          [...document.querySelector('#id_group').children].forEach(el => el.remove());
 
-          $('#id_teacher').append($('<option>', { value: '', text: '---------' }))
-          $('#id_group').append($('<option>', { value: '', text: '---------' }))
+          if (document.querySelector('#id_group')){
+            [...document.querySelector('#id_teacher').children].forEach(el => el.remove());
+            [...document.querySelector('#id_group').children].forEach(el => el.remove());
+
+            $('#id_teacher').append($('<option>', { value: '', text: '---------' }))
+            $('#id_group').append($('<option>', { value: '', text: '---------' }))
+          } else {
+            [...document.querySelector('#id_teacher').children].forEach(el => el.remove());
+            $('#id_teacher').append($('<option>', { value: '', text: '---------' }))
+          }
 
             for(const item of data.data){
                 $('#id_teacher').append($('<option>', { value: item.pk, text: item.fullname }))
-                $('#id_group').append($('<option>', { value: item.group_pk, text: item.group_name }))
+                
+                if (document.querySelector('#id_group')) {
+                  $('#id_group').append($('<option>', { value: item.group_pk, text: item.group_name }))
+                }
             }
          })
   }

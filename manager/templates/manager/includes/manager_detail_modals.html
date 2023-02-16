@@ -103,9 +103,9 @@
                   </div>
                   <div class="col-12 col-md-6">
                     {{ schedule_form.lesson_duration.label_tag|cut:":" }}
-                    <input title="Смена в абонементе" value="{{ object.subscription.lesson_duration }}" type="number" name="lesson_duration" max="3600" class="form-control" required="" id="id_lesson_duration" readonly="">
+                    <input title="Смена в абонементе" value="{{ subscription.lesson_duration }}" type="number" name="lesson_duration" max="3600" class="form-control" required="" id="id_lesson_duration" readonly="">
                   </div>
-                  {% if object.subscription.plan_type == object.subscription.IND %}
+                  {% if subscription.plan_type == subscription.IND %}
                   <div class="col-12 col-md-6">
                     <label>Старт</label>
                     <input 
@@ -117,17 +117,17 @@
                   {% endif %}
                   <div class="col-12 col-md-6">
                     {{ schedule_form.count.label_tag|cut:":" }}
-                    <input title="Смена в абонементе" value="{{ object.subscription.lesson_count }}" type="number" name="count" max="3600" class="form-control" required="" id="id_count" readonly="">
+                    <input title="Смена в абонементе" value="{{ subscription.lesson_count }}" type="number" name="count" max="3600" class="form-control" required="" id="id_count" readonly="">
                   </div>
                   <div class="col-12 col-md-6">
                     {{ schedule_form.subject.label_tag|cut:":" }}
                     {{ schedule_form.subject }}
                   </div>
-                  <div class="col-12 {% if object.subscription.plan_type == object.subscription.IND %}col-md-6{% endif %}">
+                  <div class="col-12 {% if subscription.plan_type == subscription.IND %}col-md-6{% endif %}">
                     {{ schedule_form.teacher.label_tag|cut:":" }}
                     {{ schedule_form.teacher }}
                   </div>
-                  {% if object.subscription.plan_type != object.subscription.IND %}
+                  {% if subscription.plan_type != subscription.IND %}
                   <div class="col-12" id="bottomModalElement">
                     {{ schedule_form.group.label_tag|cut:":" }}
                     {{ schedule_form.group }}
