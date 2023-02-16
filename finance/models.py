@@ -241,7 +241,7 @@ class StudentSubscription(models.Model):
         (WEK, 'Недельная'),
     )
     
-    is_active = models.BooleanField(verbose_name='Активная подписка', default=True)
+    is_active = models.BooleanField(verbose_name='Активная подписка', default=True, **NULLABLE)
     payment_methods = models.ForeignKey(verbose_name='Метод оплаты', to='PaymentMethod', 
         on_delete=models.CASCADE, **NULLABLE
         )

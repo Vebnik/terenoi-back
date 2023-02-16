@@ -133,10 +133,12 @@ class UserDetailView(UserAccessMixin, DetailView):
             manager = False
 
         try:
-            subscription = user.studentsubscription_set.get(is_active=True)
+            subscription = user.studentsubscription_set.all().get(is_active=True)
+            print(subscription)
             context['subscription'] = subscription
             subscription_form = SubscriptionForm(instance=subscription)
         except Exception as ex:
+            print(ex)
             subscription_form = SubscriptionForm()
 
         try:
@@ -319,7 +321,6 @@ class SubscriptionCreateView(UserAccessMixin, CreateView):
 
             self.object.student = user
             self.object.payment_methods = method
-            user.subscription.add(self.object)
 
             self.object.save()
             user.save()
@@ -403,8 +404,6 @@ class ScheduleCreateView(UserAccessMixin, CreateView):
             self.object.save()
 
             shedule_setting.save()
-            user.schedule.add(shedule_setting)
-
             user.save()
             self.object.save()
     
@@ -429,14 +428,13 @@ class ScheduleUpdateView(UserAccessMixin, UpdateView):
 
         if form.is_valid():                    
             # TODO Обновелние старого ScheduleSettings
-
-            user.schedule.lesson_duration = lesson_duration
-            user.schedule.count = count
-            user.schedule.near_lesson = start_datetime
-            user.schedule.shedule = self.object
+            schedule_settings: ScheduleSettings = self.object.schedulesettings_set.first()
+            schedule_settings.lesson_duration = lesson_duration
+            schedule_settings.count = count
+            schedule_settings.near_lesson = start_datetime
+            schedule_settings.shedule = self.object
 
             self.object.save()
-            user.schedule.save()
             user.save()
     
         return response
