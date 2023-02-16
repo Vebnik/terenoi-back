@@ -72,8 +72,8 @@ class User(AbstractUser):
     bio = models.TextField(verbose_name='О себе', **NULLABLE)
     gender = models.TextField(max_length=10, choices=GENDER_CHOICES, **NULLABLE, verbose_name='Пол')
     time_zone = models.CharField(max_length=32, choices=TIMEZONES, default='Asia/Almaty', verbose_name='Часовой пояс')
-    is_student = models.BooleanField(default=True, verbose_name='Ученик')
-    is_teacher = models.BooleanField(default=False, verbose_name='Учитель')
+    is_student = models.BooleanField(default=True, verbose_name='Ученик', db_index=True)
+    is_teacher = models.BooleanField(default=False, verbose_name='Учитель', db_index=True)
     education = models.CharField(max_length=255, verbose_name='Образование', **NULLABLE)
     experience = models.TextField(verbose_name='Опыт работы', **NULLABLE)
     english_level = models.CharField(max_length=50, choices=LEVEL_CHOICES, default=BEGINNER,
@@ -133,6 +133,14 @@ class User(AbstractUser):
             'Архивный': 'secondary',
             'Отказ': 'danger'
         }.get(self.status)
+
+    def get_exclude_status(self):
+        stauses = [self.ACTIVE, self.PAUSE, self.ARCHIVE, self.CANCELED]
+        stauses.remove(self.status)
+        return stauses
+
+    def valid_status(self, status):
+        return status in [self.ACTIVE, self.PAUSE, self.ARCHIVE, self.CANCELED]
 
     def get_absolute_url(self):
         return '/manager/users/'
@@ -234,3 +242,6 @@ class AdditionalUserNumber(models.Model):
 
     def __str__(self) -> str:
         return f'{self.phone} {self.comment}'
+
+    class Meta:
+        verbose_name = 'Дполнительные номера'

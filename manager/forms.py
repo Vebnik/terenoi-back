@@ -1,9 +1,15 @@
 from django import forms
+from django.forms.widgets import DateInput
 from django.utils.translation import gettext_lazy as _
 
 from manager.mixins import StyleFormMixin
+
 from authapp.models import User
 from authapp.models import AdditionalUserNumber
+
+from finance.models import StudentSubscription
+
+from lessons.models import Schedule
 
 
 class StudentFilterForm(forms.Form):
@@ -26,6 +32,7 @@ class StudentCreateForm(StyleFormMixin, forms.ModelForm):
   class Meta:
     model = User
     fields = (
+      'avatar',
       'birth_date', 
       'gender', 
       'phone', 
@@ -53,3 +60,33 @@ class AdditionalNumberForm(StyleFormMixin, forms.ModelForm):
   class Meta:
     model = AdditionalUserNumber
     fields = ('phone', 'comment')
+
+
+class SubscriptionForm(StyleFormMixin, forms.ModelForm):
+
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+
+    # self.fields['billing'].widget.attrs['class'] = 'form-check-input'
+    self.fields['plan_type'].widget.attrs['class'] = 'form-control form-select'
+    self.fields['title'].widget.attrs['placeholder'] = 'Напиример, Стандарт'
+    self.fields['lesson_count'].widget.attrs['placeholder'] = 'Например, 8'
+    self.fields['lesson_duration'].widget.attrs['placeholder'] = 'Например, 60'
+    self.fields['lesson_cost'].widget.attrs['placeholder'] = 'Например, 3000'
+    self.fields['subscription_cost'].widget.attrs['placeholder'] = 'Например, 60'
+
+  class Meta:
+    model = StudentSubscription
+    fields = '__all__'
+    exclude = ('student', 'payment_methods', )
+
+
+class ScheduleForm(StyleFormMixin, forms.ModelForm):
+
+  lesson_duration = forms.IntegerField(max_value=3600, required=True, label='Длительность урока, мин')
+  count = forms.IntegerField(max_value=3600, required=True, label='Количество уроков')
+
+  class Meta:
+    model = Schedule
+    fields = '__all__'
+    exclude = ('title', )

@@ -3,7 +3,7 @@
 {% block content %}
     <div class="card">
         <div class="card-header border-bottom">
-            <h4 class="card-title">Создание пользователя </h4>
+            <h4 class="card-title">Редактирование пользователя </h4>
         </div>
         <div class="card-body py-2 my-25">
 
@@ -16,7 +16,6 @@
                       </span>
                     </div>
                 </a>
-
                 <!-- upload and reset button -->
                 <div class="d-flex align-items-end mt-75 ms-1">
                     <div>
@@ -44,32 +43,32 @@
                 <div id="userCreateFormBody" class="mb-50" style="display: grid; grid-template-columns: auto auto auto; grid-column-gap: 50px;">
 
                     {% for field in form %}
-                    {% if field.html_name != 'is_pass_generation' and  field.html_name != 'avatar' %}
-                      <div style="margin: 5px;">
-                           
-                        {% if field.field.widget.input_type != 'text' and field.field.widget.input_type != 'password' and field.html_name != 'is_pass_generation' %}
-                            {{ field.label_tag }}
-                            {{ field }}
-                        {% else %}
-                            {{ field.label_tag }}
-                            <input
-                                type="{{ field.field.widget.input_type }}" 
-                                name="{{ field.html_name }}" 
-                                value="{% if field.value %}{{ field.value }}{% endif %}" 
-                                maxlength="{{ field.field.widget.attrs.maxlength }}" 
-                                class="form-control {% if field.errors %}is-invalid{% endif %}" 
-                                {% if field.field.widget.input_type != 'password' %}required{% endif %}
-                                id="{{ field.id_for_label }}"
-                            >
-                            <small>
-                                {{ field.help_text }}
-                            </small>
-                            <div class="invalid-feedback">
-                                {{ field.errors }}
-                            </div>
-                        {% endif %}
-                      </div>
-                    {% endif %}
+                      {% if field.html_name != 'is_pass_generation' and  field.html_name != 'avatar' %}
+                        <div style="margin: 5px;">
+                            
+                          {% if field.field.widget.input_type != 'text' and field.field.widget.input_type != 'password' and field.html_name != 'is_pass_generation' %}
+                              {{ field.label_tag }}
+                              {{ field }}
+                          {% else %}
+                              {{ field.label_tag }}
+                              <input
+                                  type="{{ field.field.widget.input_type }}" 
+                                  name="{{ field.html_name }}" 
+                                  value="{% if field.value %}{{ field.value }}{% endif %}" 
+                                  maxlength="{{ field.field.widget.attrs.maxlength }}" 
+                                  class="form-control {% if field.errors %}is-invalid{% endif %}" 
+                                  {% if field.field.widget.input_type != 'password' %}required{% endif %}
+                                  id="{{ field.id_for_label }}"
+                              >
+                              <small>
+                                  {{ field.help_text }}
+                              </small>
+                              <div class="invalid-feedback">
+                                  {{ field.errors }}
+                              </div>
+                          {% endif %}
+                        </div>
+                      {% endif %}
                     {% endfor %}
                     
                     <div class="" style="display: flex; align-items: center; margin-top: 10px;">
@@ -79,6 +78,17 @@
                             Сгенерировать пароль
                           </label>
                         </div>
+                    </div>
+
+                    <div style="margin: 5px;">
+                      <label>
+                        Ответственый менеджер
+                      </label>
+                      <select name="manager" class="form-control select2" id="id_manager">
+                        {% for manager in managers %}
+                          <option value="{{ manager.pk }}">{{ manager.get_full_name }} </option>
+                        {% endfor %}
+                      </select>
                     </div>
 
                     {% for form in formset %}
@@ -128,15 +138,3 @@
 {% block js_extends %}
     <script src="{% static 'assets/js/manager_create_user_form_validation.js' %}"></script>
 {% endblock %}
-
-
-<div class="btn-group">
-    <div>
-        <label for="">Пол</label>
-        <input class="form-select" type="text" id="dropdownMenuButton2" data-bs-toggle="dropdown" readonly style="cursor: pointer"/>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
-            <a class="dropdown-item changeStatusBtn">Мужской</a>
-            <a class="dropdown-item changeStatusBtn">Женский</a>
-        </div>
-    </div>
-</div>

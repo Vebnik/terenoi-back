@@ -13,7 +13,7 @@ NULLABLE = {'blank': True, 'null': True}
 
 
 class Schedule(models.Model):
-    title = models.CharField(max_length=50, verbose_name='Название')
+    title = models.CharField(max_length=50, verbose_name='Название', **NULLABLE)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='schedule_teacher',
                                 limit_choices_to={'is_teacher': True})
     group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='schedule_group',
@@ -36,9 +36,16 @@ class Schedule(models.Model):
 
 class ScheduleSettings(models.Model):
     shedule = models.ForeignKey(Schedule, **NULLABLE, on_delete=models.CASCADE, verbose_name='Расписание')
+    lesson_duration = models.PositiveSmallIntegerField(verbose_name='Длительность урока, мин', default=0)
     count = models.IntegerField(verbose_name='Кол-во уроков', **NULLABLE)
     near_lesson = models.DateTimeField(**NULLABLE, verbose_name='Ближайший урок')
     last_lesson = models.DateTimeField(**NULLABLE, verbose_name='Последний урок')
+
+    def __str__(self) -> str:
+        return f'{self.shedule}'
+
+    def get_str_time(self):
+        return f'{self.near_lesson} to {self.last_lesson}'
 
 
 class Lesson(models.Model):
@@ -149,7 +156,7 @@ class Lesson(models.Model):
                 start_date=self.date,
                 lesson=self
             )
-            tasks.create_webinar_and_users_celery.delay(webinar.pk)
+            # tasks.create_webinar_and_users_celery.delay(webinar.pk)
 
 
 class Feedback(models.Model):

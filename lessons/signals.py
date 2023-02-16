@@ -9,6 +9,7 @@ from lessons.models import ScheduleSettings, Lesson, Schedule
 
 @receiver(post_save, sender=ScheduleSettings)
 def add_schedule_settings(sender, instance, **kwargs):
+
     lesson = Lesson.objects.filter(group=instance.shedule.group, teacher=instance.shedule.teacher,
                                    date=instance.near_lesson)
 

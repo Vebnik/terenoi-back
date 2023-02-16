@@ -7,7 +7,7 @@
     <td aria-colindex="1" role="cell" class="">
         <div class="media-body align-items-center" style="display: flex;">
             {% if student.avatar %}
-                <img style="border-radius: 50%; margin-right: 10px;" width="32px" height="32px"
+                <img style="border-radius: 50%; margin-right: 10px;" width="40px" height="40px"
                      src="/media/{{ student.avatar }}" alt="avatar">
             {% else %}
                 <div class="avatar bg-light-primary p-50 me-1">
@@ -51,7 +51,6 @@
         <div class="dropdown b-dropdown btn-group">
             <button aria-haspopup="true" aria-expanded="false" type="button"
                     class="btn dropdown-toggle btn-link dropdown-toggle-no-caret">
-{#                {% include 'manager/svg_includes/triple_dot.html' %}#}
                 <a href="{% url 'manager:users_update' student.pk %}" class="">
                     <i data-feather="edit"></i>
                 </a>
