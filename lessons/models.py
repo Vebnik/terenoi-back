@@ -1,7 +1,7 @@
 import datetime
 
 from django.db import models
-
+from django.conf import settings
 from authapp.models import User, Webinar, Group
 from lessons import tasks
 from notifications.models import Notification
@@ -156,7 +156,8 @@ class Lesson(models.Model):
                 start_date=self.date,
                 lesson=self
             )
-            # tasks.create_webinar_and_users_celery.delay(webinar.pk)
+            if settings.ENV_TYPE != 'local':
+                tasks.create_webinar_and_users_celery.delay(webinar.pk)
 
 
 class Feedback(models.Model):
