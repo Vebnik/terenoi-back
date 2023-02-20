@@ -957,7 +957,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
                     if date in date_list:
                         pass
                     else:
-                        date_list.append(date.date())
+                        date_list.append(date.today())
 
                 for date in date_list:
                     lessons = Lesson.objects.filter(group__students=self._student(), teacher=instance,
