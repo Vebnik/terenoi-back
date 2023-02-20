@@ -61,7 +61,7 @@ class User(AbstractUser):
     )
 
     password = models.CharField(_('password'), max_length=128, **NULLABLE)
-    additional_user_number = models.ManyToManyField(to='AdditionalUserNumber', verbose_name='Дополнительный номер', **NULLABLE)
+    additional_user_number = models.ManyToManyField(to='AdditionalUserNumber', verbose_name='Дополнительный номер', blank=True)
     middle_name = models.CharField(max_length=32, verbose_name='Отчество', **NULLABLE)
     status = models.CharField(max_length=8, verbose_name='Статус', choices=STATUS_CHOICES, default=ACTIVE)
     avatar = models.ImageField(upload_to='user_avatar/', verbose_name='Avatar', **NULLABLE)
