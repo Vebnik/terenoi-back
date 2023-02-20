@@ -73,9 +73,12 @@ class Lesson(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='lesson_group',
                               **NULLABLE)
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, verbose_name='Расписание', **NULLABLE)
+
     topic = models.CharField(verbose_name='Тема урока', **NULLABLE, max_length=255)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     date = models.DateTimeField(verbose_name='Дата урока')
+    duration = models.IntegerField(verbose_name='Длительность урока, мин', default=60)
+
     transfer_date = models.DateTimeField(verbose_name='Дата переноса', **NULLABLE)
     transfer_comment = models.TextField(verbose_name='Комментарий к переносу или отмене урока', **NULLABLE)
     teacher_status = models.BooleanField(verbose_name='Статус учителя', default=False)

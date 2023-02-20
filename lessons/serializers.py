@@ -83,7 +83,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = (
             'pk', 'teacher', 'teacher_avatar', 'students', 'topic', 'subject', 'materials', 'deadline',
-            'current_date', 'homeworks',
+            'current_date', 'homeworks', 'duration',
             'teacher_status', 'student_status', 'lesson_status', 'record_link', 'rate', 'deadline_days')
 
     def get_current_date(self, instance):
