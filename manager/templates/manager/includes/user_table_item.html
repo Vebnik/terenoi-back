@@ -1,8 +1,9 @@
 <tr role="row" class="">
-    <th class="sorting_disabled dt-checkboxes-cell dt-checkboxes-select-all" rowspan="1" colspan="1"
-        style="width: 30px;" data-col="1" aria-label="">
-        <div class="form-check"><input class="form-check-input" type="checkbox" value="" id="checkboxSelectAll"><label
-                class="form-check-label" for="checkboxSelectAll"></label></div>
+    <th class="sorting_disabled dt-checkboxes-cell dt-checkboxes-select-all" rowspan="1" colspan="1" style="width: 30px;" data-col="1" aria-label="">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="checkboxSelectAll">
+            <label class="form-check-label" for="checkboxSelectAll"></label>
+        </div>
     </th>
     <td aria-colindex="1" role="cell" class="">
         <div class="media-body align-items-center" style="display: flex;">
@@ -48,30 +49,13 @@
     </span>
     </td>
     <td aria-colindex="6" role="cell" class="">
-        <div class="dropdown b-dropdown btn-group">
+        <div class="">
             <button aria-haspopup="true" aria-expanded="false" type="button"
                     class="btn dropdown-toggle btn-link dropdown-toggle-no-caret">
                 <a href="{% url 'manager:users_update' student.pk %}" class="">
                     <i data-feather="edit"></i>
                 </a>
             </button>
-            <ul role="menu" tabindex="-1" class="dropdown-menu" aria-labelledby="__BVID__3291__BV_toggle_">
-                <li role="presentation">
-                    <a href="/apps/users/view/50" class="dropdown-item" role="menuitem" target="_self">
-                        <span class="align-middle ml-50">Details</span>
-                    </a>
-                </li>
-                <li role="presentation">
-                    <a href="/apps/users/edit/50" class="dropdown-item" role="menuitem" target="_self">
-                        <span class="align-middle ml-50">Edit</span>
-                    </a>
-                </li>
-                <li role="presentation">
-                    <a role="menuitem" href="#" target="_self" class="dropdown-item">
-                        <span class="align-middle ml-50">Delete</span>
-                    </a>
-                </li>
-            </ul>
         </div>
     </td>
 </tr>

@@ -208,8 +208,8 @@
                             </div>
                         </div>
                     </div>
-                    <table class="user-list-table table dataTable no-footer dtr-column" id="DataTables_Table_0"
-                           role="grid" aria-describedby="DataTables_Table_0_info">
+                    <table class="user-list-table table dataTable no-footer dtr-column"
+                           role="grid">
                         <thead class="table-light">
                         <tr role="row">
                             <th class="sorting_disabled dt-checkboxes-cell dt-checkboxes-select-all" rowspan="1"
@@ -247,15 +247,17 @@
                         </tr>
                         </thead>
                         <tbody>
+                        {% comment %} 
                         {% for student in object_list %}
-                            {% include 'manager/includes/user_table_item.html' %}
-                        {% endfor %}
+                        {% include 'manager/includes/user_table_item.html' %}
+                        {% endfor %} 
+                        {% endcomment %}
                         </tbody>
                     </table>
                     <div class="d-flex justify-content-between mx-2 row mb-1">
                         <div class="col-sm-12 col-md-6">
-                            <div class="dataTables_info" id="DataTables_Table_0_info" role="status" aria-live="polite">
-                                <div class="dataTables_length row" id="DataTables_Table_0_length">
+                            <div class="dataTables_info" role="status" aria-live="polite">
+                                <div class="dataTables_length row" >
                                     <div class="col-2" style="padding-top: 8px; width: max-content;">
                                         Show
                                     </div>
@@ -329,3 +331,7 @@
         <!-- list and filter end -->
     </section>
 {% endblock %}
+
+{% block js_extends %}
+    {% comment %} {% include 'manager/includes/js/users.js' %} {% endcomment %}
+{% endblock js_extends %}

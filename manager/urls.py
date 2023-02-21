@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from manager.apps import ManagerConfig
 
 from manager.views import (
@@ -16,7 +16,11 @@ from manager.views import (
     SubscriptionUpdateView,
     ScheduleCreateView,
     ScheduleUpdateView,
-    ScheduleGetTecherView
+    ScheduleGetTecherView,
+    ######## DRF ########
+    UserListApiView,
+    UserCreateAPIView,
+    ManagerTemplateView
     )
 
 app_name = ManagerConfig.name
@@ -46,4 +50,15 @@ urlpatterns = [
     path('users/schedule/update/<int:pk>/', ScheduleUpdateView.as_view(), name='schedule_update'),
 
     path('users/api/teacher/', ScheduleGetTecherView.as_view()),
+
+    ########## DRF TEST ##########
+
+    ## react path ##
+    path('', ManagerTemplateView.as_view(), name='index'),
+    path('user/list/', ManagerTemplateView.as_view(), name='index'),
+    path('user/add/', ManagerTemplateView.as_view(), name='index'),
+
+    ## API ##
+    re_path(r'users/students/', UserListApiView.as_view(), name='students'),
+    re_path(r'users/add/', UserCreateAPIView.as_view(), name='students_add'),
 ]

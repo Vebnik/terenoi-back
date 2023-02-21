@@ -1,11 +1,9 @@
-from django.db.models import Q, QuerySet
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DetailView, View
 from pytils import translit
 from django.forms import inlineformset_factory
-import json
-
 from authapp.models import AdditionalUserNumber
 from authapp.models import User, Group
 from manager.forms import (
@@ -17,12 +15,21 @@ from manager.forms import (
     ScheduleForm,
     )
 from manager.mixins import UserAccessMixin, PagePaginateByMixin
-from manager.service import Utils
+from manager.service import Utils, StandardResultsSetPagination, QueryParams, FilterManager
 from profileapp.models import ManagerToUser
 from finance.models import StudentSubscription, PaymentMethod
 from lessons.models import Schedule, ScheduleSettings, Lesson
 from settings.models import WeekDays
 from profileapp.models import Subject
+
+
+########## DRF ##########
+
+from rest_framework import generics, permissions, authentication
+
+from manager.serializers import UserSerializers, UserCreateSerializers
+
+########## DRF ##########
 
 
 # Dashboard page
@@ -470,3 +477,51 @@ class ScheduleGetTecherView(UserAccessMixin, View):
                 return JsonResponse({'data': teachers})
             except Exception as ex:
                 return JsonResponse({'data': [], 'error': ex})
+
+
+############################### DRF TEST ##############################
+
+class ManagerTemplateView(UserAccessMixin, TemplateView):
+    template_name = 'manager/index.html'
+
+
+class UserListApiView(generics.ListAPIView):
+    """
+    API Endpoint for get users of authapp.User
+    """
+    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = UserSerializers
+    queryset = User.objects.filter(is_student=True)
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        params = QueryParams(self.request.GET)
+        queryset = super().get_queryset()
+        filtered_queryset = FilterManager.students_filter(queryset, params)
+
+        return filtered_queryset
+    
+
+    def get(self, request, *args, **kwargs):
+        per_page = request.GET.get('perPage', 10)
+        self.pagination_class.page_size = per_page
+
+        return super().get(request, *args, **kwargs)
+
+
+class UserCreateAPIView(generics.CreateAPIView):
+    """
+    API Endpoint for create users of authapp.User
+    """
+    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = UserCreateSerializers
+
+    def post(self, request, *args, **kwargs):
+
+        print(request.data)
+
+        return super().post(request, *args, **kwargs)
+
+
