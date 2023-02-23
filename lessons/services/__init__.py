@@ -99,19 +99,19 @@ def withdrawing_cancel_lesson(lesson, user):
         timedel = datetime.timedelta(hours=4)
         if hours < timedel:
             student_lesson = finance.models.HistoryPaymentStudent.objects.filter(lesson=lesson)
-            student_payment = finance.models.HistoryPaymentStudent.objects.filter(student=lesson.student,
+            student_payment = finance.models.HistoryPaymentStudent.objects.filter(student=user,
                                                                                   subject=lesson.subject).aggregate(
                 total_amount=Sum('amount'))
-            student_count_lesson = finance.models.HistoryPaymentStudent.objects.filter(student=lesson.student,
+            student_count_lesson = finance.models.HistoryPaymentStudent.objects.filter(student=user,
                                                                                        subject=lesson.subject).aggregate(
                 total_count=Sum('lesson_count'))
             if not student_lesson:
                 if student_count_lesson['total_count']:
                     if student_count_lesson['total_count'] < 2:
-                        notifications.models.PaymentNotification.objects.create(to_user=lesson.student,
+                        notifications.models.PaymentNotification.objects.create(to_user=user,
                                                                                 type=notifications.models.PaymentNotification.AWAITING_PAYMENT)
                     one_lesson_amount = student_payment['total_amount'] / student_count_lesson['total_count']
-                    finance.models.HistoryPaymentStudent.objects.create(student=lesson.student,
+                    finance.models.HistoryPaymentStudent.objects.create(student=user,
                                                                         payment_date=datetime.datetime.now(),
                                                                         amount=-one_lesson_amount,
                                                                         subject=lesson.subject,
