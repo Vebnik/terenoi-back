@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'notifications',
     'profileapp',
     'settings',
+    'courses'
 ]
 
 MIDDLEWARE = [
@@ -296,3 +297,5 @@ if ENV_TYPE != 'local':
 
 PRUFFME_API_USER = os.getenv('PRUFFME_API_USER')
 PRUFFME_API_SECRET = os.getenv('PRUFFME_API_SECRET')
+
+PHONE_CHARACTERS = [' ', ')', '(', '-', '+']

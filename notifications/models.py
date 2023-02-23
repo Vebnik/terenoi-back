@@ -1,6 +1,7 @@
 from django.contrib.sessions.models import Session
 from django.db import models
 from authapp.models import User
+from courses.models import Courses
 
 NULLABLE = {'blank': True, 'null': True}
 
@@ -72,6 +73,7 @@ class ManagerNotification(models.Model):
     REQUEST_CHANGE_PASS = 'REQ_CHN_PSS'
     LESSON_RATE_HIGH = 'LESS_RT_HGH'
     LESSON_RATE_LOW = 'LESS_RT_HGH'
+    REQUEST_BUY_COURSE = 'REQ_BUY_CRS'
 
     CHOICES_NOTIFICATIONS = (
         (NEW_USER, 'Новый пользователь'),
@@ -80,7 +82,8 @@ class ManagerNotification(models.Model):
         (REQUEST_REJECT_STUDENT, 'Запрос на отказ от ученика'),
         (REQUEST_CHANGE_PASS, 'Запрос на смену пароля'),
         (LESSON_RATE_LOW, 'Оценка за урок не удовлетворительная'),
-        (LESSON_RATE_HIGH, 'Оценка за урок высокая')
+        (LESSON_RATE_HIGH, 'Оценка за урок высокая'),
+        (REQUEST_BUY_COURSE, 'Запрос на покупку курса')
     )
 
     manager = models.ForeignKey(User, verbose_name='Менежер', on_delete=models.CASCADE,
@@ -90,6 +93,7 @@ class ManagerNotification(models.Model):
                                 on_delete=models.CASCADE, related_name='user_notification', **NULLABLE)
     type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
     is_read = models.BooleanField(default=False, verbose_name='Просмотрено')
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE, verbose_name='Курс', **NULLABLE)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
 
     class Meta:
@@ -125,3 +129,17 @@ class LessonRateNotification(AbstractNotification):
     class Meta:
         verbose_name = 'Уведомление по оценке урока'
         verbose_name_plural = 'Уведомления по оценке урока'
+
+
+class CourseNotification(AbstractNotification):
+    COURSE_OPEN = 'CRS_OPEN'
+
+    CHOICES_NOTIFICATIONS = (
+        (COURSE_OPEN, 'Курс открыт'),
+    )
+    type = models.CharField(max_length=20, choices=CHOICES_NOTIFICATIONS, verbose_name='Тип уведомления', **NULLABLE)
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE, verbose_name='Курс', **NULLABLE)
+
+    class Meta:
+        verbose_name = 'Уведомление о доступе к курсу'
+        verbose_name_plural = 'Уведомления о доступах к курсам'

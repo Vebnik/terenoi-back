@@ -8,7 +8,8 @@ from django.dispatch import receiver
 from authapp.services import send_notifications
 from lessons.models import Lesson
 from lessons.services import current_date
-from notifications.models import Notification, PaymentNotification, HomeworkNotification, LessonRateNotification
+from notifications.models import Notification, PaymentNotification, HomeworkNotification, LessonRateNotification, \
+    CourseNotification
 
 
 @receiver(post_save, sender=Notification)
@@ -116,6 +117,24 @@ def homework_notifications_handler(sender, instance, **kwargs):
 def homework_notifications_handler(sender, instance, **kwargs):
     if not instance.is_read:
         lesson = Lesson.objects.filter(pk=instance.lesson_id).first()
+        if instance.to_user.is_online:
+            channel_layer = get_channel_layer()
+            created_at = current_date(instance.to_user, instance.created_at)
+            data = {"user": instance.to_user.username, "created_at": created_at,
+                    "type": instance.type, "is_read": instance.is_read}
+            async_to_sync(channel_layer.group_send)(
+                f'{instance.to_user.username}_group', {
+                    'type': 'send_notification',
+                    'value': json.dumps(data, cls=DjangoJSONEncoder)
+                }
+            )
+        else:
+            pass
+
+
+@receiver(post_save, sender=CourseNotification)
+def course_notifications_handler(sender, instance, **kwargs):
+    if not instance.is_read:
         if instance.to_user.is_online:
             channel_layer = get_channel_layer()
             created_at = current_date(instance.to_user, instance.created_at)

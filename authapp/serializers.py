@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from authapp.models import User, UserStudyLanguage, StudyLanguage, Group
+from authapp.services.auth import find_username_by_phone_or_email
 from finance.models import TeacherBankData
 from profileapp.models import ReferralPromo
 from profileapp.services import generateRefPromo
@@ -69,21 +70,9 @@ class UserLoginSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         credentials = {
-            'username': '',
+            'username': find_username_by_phone_or_email(attrs.get("username")),
             'password': attrs.get("password")
         }
-        username_for_email = attrs.get("username").lower()
-        username_for_phone = attrs.get("username").lower()
-        username_for_phone = username_for_phone.replace(' ', '').replace(')', '').replace('(', '').replace('-',
-                                                                                                           '').replace(
-            '+', '')
-        user_obj = User.objects.filter(email=username_for_email, is_verified=True).first()
-        if user_obj:
-            credentials['username'] = user_obj.username
-        else:
-            user_obj = User.objects.filter(phone=username_for_phone, is_verified=True).first()
-            if user_obj:
-                credentials['username'] = user_obj.username
         return super().validate(credentials)
 
 

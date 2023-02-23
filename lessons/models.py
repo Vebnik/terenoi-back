@@ -1,7 +1,7 @@
 import datetime
 
 from django.db import models
-
+from django.conf import settings
 from authapp.models import User, Webinar, Group
 from lessons import tasks
 from notifications.models import Notification
@@ -73,9 +73,12 @@ class Lesson(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='lesson_group',
                               **NULLABLE)
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, verbose_name='Расписание', **NULLABLE)
+
     topic = models.CharField(verbose_name='Тема урока', **NULLABLE, max_length=255)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     date = models.DateTimeField(verbose_name='Дата урока')
+    duration = models.IntegerField(verbose_name='Длительность урока, мин', default=60)
+
     transfer_date = models.DateTimeField(verbose_name='Дата переноса', **NULLABLE)
     transfer_comment = models.TextField(verbose_name='Комментарий к переносу или отмене урока', **NULLABLE)
     teacher_status = models.BooleanField(verbose_name='Статус учителя', default=False)
@@ -156,7 +159,8 @@ class Lesson(models.Model):
                 start_date=self.date,
                 lesson=self
             )
-            # tasks.create_webinar_and_users_celery.delay(webinar.pk)
+            if settings.ENV_TYPE != 'local':
+                tasks.create_webinar_and_users_celery.delay(webinar.pk)
 
 
 class Feedback(models.Model):
@@ -217,6 +221,8 @@ class LessonHomework(models.Model):
 
 class LessonRateHomework(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='студент', **NULLABLE)
+    # TODO: в проверку заполнять поле
     rate = models.IntegerField(verbose_name='Оценка домашнего задания', **NULLABLE)
     rate_comment = models.TextField(**NULLABLE, verbose_name='Комментарий к домашнему заданию')
 
