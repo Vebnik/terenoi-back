@@ -1134,152 +1134,19 @@ class StudentTeacherClassesSerializer(serializers.ModelSerializer):
 
 
 class HomeworksSerializer(serializers.ModelSerializer):
-    homeworks = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
-        fields = ('homeworks',)
-
-    def get_homeworks(self, instance):
-        data_lesson = []
-        lessons_list = None
-        serializer_homework = None
-        serializer_rate = None
-        try:
-            if self.context.get('params').get('filter') and self.context.get('params').get(
-                    'check') and self.context.get('params').get('subject'):
-                if self.context.get('params').get('filter') == 'new':
-                    lessons_lst = Lesson.objects.filter(teacher=instance,
-                                                        subject__name=self.context.get('params').get('subject'),
-                                                        lesson_status=Lesson.DONE).order_by('-date')
-                    if self.context.get('params').get('check') == 'true':
-                        for lsn in lessons_lst:
-                            rate = LessonRateHomework.objects.filter(lesson=lsn)
-                            if rate:
-                                lessons_list.append(lsn)
-                    else:
-                        for lsn in lessons_lst:
-                            rate = LessonRateHomework.objects.filter(lesson=lsn)
-                            if not rate:
-                                lessons_list.append(lsn)
-                else:
-                    lessons_lst = Lesson.objects.filter(teacher=instance,
-                                                        subject__name=self.context.get('params').get('subject'),
-                                                        lesson_status=Lesson.DONE).order_by('date')
-                    if self.context.get('params').get('check') == 'true':
-                        for lsn in lessons_lst:
-                            rate = LessonRateHomework.objects.filter(lesson=lsn)
-                            if rate:
-                                lessons_list.append(lsn)
-                    else:
-                        for lsn in lessons_lst:
-                            rate = LessonRateHomework.objects.filter(lesson=lsn)
-                            if not rate:
-                                lessons_list.append(lsn)
-            elif self.context.get('params').get('check') and self.context.get('params').get('subject'):
-                lessons_lst = Lesson.objects.filter(teacher=instance,
-                                                    subject__name=self.context.get('params').get('subject'),
-                                                    lesson_status=Lesson.DONE)
-                if self.context.get('params').get('check') == 'true':
-                    for lsn in lessons_lst:
-                        rate = LessonRateHomework.objects.filter(lesson=lsn)
-                        if rate:
-                            lessons_list.append(lsn)
-                else:
-                    for lsn in lessons_lst:
-                        rate = LessonRateHomework.objects.filter(lesson=lsn)
-                        if not rate:
-                            lessons_list.append(lsn)
-            elif self.context.get('params').get('check') and self.context.get('params').get('filter'):
-                if self.context.get('params').get('filter') == 'new':
-                    lessons_lst = Lesson.objects.filter(teacher=instance,
-                                                        lesson_status=Lesson.DONE).order_by('-date')
-                    if self.context.get('params').get('check') == 'true':
-                        for lsn in lessons_lst:
-                            rate = LessonRateHomework.objects.filter(lesson=lsn)
-                            if rate:
-                                lessons_list.append(lsn)
-                    else:
-                        for lsn in lessons_lst:
-                            rate = LessonRateHomework.objects.filter(lesson=lsn)
-                            if not rate:
-                                lessons_list.append(lsn)
-                else:
-                    lessons_lst = Lesson.objects.filter(teacher=instance,
-                                                        lesson_status=Lesson.DONE).order_by('date')
-                    if self.context.get('params').get('check') == 'true':
-                        for lsn in lessons_lst:
-                            rate = LessonRateHomework.objects.filter(lesson=lsn)
-                            if rate:
-                                lessons_list.append(lsn)
-                    else:
-                        for lsn in lessons_lst:
-                            rate = LessonRateHomework.objects.filter(lesson=lsn)
-                            if not rate:
-                                lessons_list.append(lsn)
-            elif self.context.get('params').get('filter') and self.context.get('params').get('subject'):
-                if self.context.get('params').get('filter') == 'new':
-                    lessons_list = Lesson.objects.filter(teacher=instance,
-                                                         subject__name=self.context.get('params').get('subject'),
-                                                         lesson_status=Lesson.DONE).order_by('-date')
-                else:
-                    lessons_list = Lesson.objects.filter(teacher=instance,
-                                                         subject__name=self.context.get('params').get('subject'),
-                                                         lesson_status=Lesson.DONE).order_by('date')
-
-            elif self.context.get('params').get('check'):
-                lessons_lst = Lesson.objects.filter(teacher=instance,
-                                                    lesson_status=Lesson.DONE)
-                if self.context.get('params').get('check') == 'true':
-                    for lsn in lessons_lst:
-                        rate = LessonRateHomework.objects.filter(lesson=lsn)
-                        if rate:
-                            lessons_list.append(lsn)
-                else:
-                    for lsn in lessons_lst:
-                        rate = LessonRateHomework.objects.filter(lesson=lsn)
-                        if not rate:
-                            lessons_list.append(lsn)
-            elif self.context.get('params').get('filter'):
-                if self.context.get('params').get('filter') == 'new':
-                    lessons_list = Lesson.objects.filter(teacher=instance,
-                                                         lesson_status=Lesson.DONE).order_by('-date')
-                else:
-                    lessons_list = Lesson.objects.filter(teacher=instance,
-                                                         lesson_status=Lesson.DONE).order_by('date')
-            elif self.context.get('params').get('subject'):
-                lessons_list = Lesson.objects.filter(teacher=instance,
-                                                     subject__name=self.context.get('params').get('subject'),
-                                                     lesson_status=Lesson.DONE)
-        except Exception:
-            lessons_list = Lesson.objects.filter(teacher=instance,
-                                                 lesson_status=Lesson.DONE)
-        if lessons_list:
-            for les in lessons_list:
-                student_data = []
-                check = False
-                for student_item in les.students.all():
-                    homeworks = LessonHomework.objects.filter(lesson=les, students=student_item)
-                    if homeworks:
-                        serializer_homework = LessonHomeworkSerializer(homeworks, many=True)
-                        serializer_student = UserNameSerializer(student_item)
-                        if serializer_homework.data:
-                            rate = LessonRateHomework.objects.filter(lesson=les)
-                            serializer_rate = LessonRateHomeworkSerializer(rate, many=True)
-                            if serializer_rate.data:
-                                check = True
-                            data_lesson.append({
-                                'student': serializer_student.data,
-                                'lesson_id': les.pk,
-                                'lesson_count': les.lesson_number,
-                                'topic': les.topic,
-                                'homework': serializer_homework.data,
-                                'rate': serializer_rate.data,
-                                'deadline': les.deadline,
-                                'check': check
-                            })
-
-        return data_lesson
+        model = LessonHomework
+        fields = (
+            'student',
+            'lesson_id',
+            'lesson_count',
+            'topic',
+            'homework',
+            'rate',
+            'deadline',
+            'check'
+        )
 
 
 class TopicSerializer(serializers.ModelSerializer):

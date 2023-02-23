@@ -60,7 +60,8 @@ class AllUserClassesListView(generics.ListAPIView):
             time_delta = datetime.timedelta(days=1)
             day_now = datetime.datetime.now()
             lesson_query = Lesson.objects.filter(group__students=self.request.user,
-                                                 date__lte=day_now.date() + time_delta).order_by('-date')
+                                                 date__lte=day_now.date() + time_delta,
+                                                 ).exclude(lesson_status__in=[Lesson.RESCHEDULED, Lesson.CANCEL]).order_by('-date')
             lesson_shedule = Lesson.objects.filter(
                 Q(group__students=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[
                              :1].select_related()
@@ -168,17 +169,19 @@ class HomeworksView(APIView):
     """ Домашние работы учеников"""
     permission_classes = [IsAuthenticated]
 
-    def get_object(self):
-        return User.objects.get(username=self.request.user)
-
     def get(self, request):
-        user = self.get_object()
-        if not self.request.query_params:
-            serializer = HomeworksSerializer(user)
-            return Response(serializer.data)
-        else:
-            serializer = HomeworksSerializer(user, context={'params': self.request.query_params})
-            return Response(serializer.data)
+        queryset = LessonHomework.objects.filter(
+            lesson__teacher=self.request.user
+        )
+
+        if self.request.query_params:
+            if 'subject' in self.request.query_params:
+                queryset = queryset.filter(lesson__subject__name=self.request.query_params.get('subject'))
+
+        response = {
+            'homeworks': HomeworksSerializer(queryset)
+        }
+        return Response(response)
 
 
 class StudentsDetailView(APIView):
