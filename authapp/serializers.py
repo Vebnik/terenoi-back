@@ -150,3 +150,14 @@ class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ('students',)
+
+
+class UserWhoiAmSerializer(serializers.ModelSerializer):
+    fullname = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('email', 'fullname', 'is_staff', )
+
+    def get_fullname(self, user: User):
+        return user.get_full_name()

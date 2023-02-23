@@ -145,6 +145,14 @@ class User(AbstractUser):
     def get_absolute_url(self):
         return '/manager/users/'
 
+    def get_role(self):
+        if (self.is_staff):
+            return 'Менеджер'
+        if (self.is_student):
+            return 'Студент'
+        if (self.is_teacher):
+            return 'Учитель'
+        return 'Нет роли'
 
 class Group(models.Model):
     STATUS_OPEN = 'open'

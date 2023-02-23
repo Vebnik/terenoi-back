@@ -1,11 +1,11 @@
 from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, views, authentication
 import jwt
 from rest_framework.response import Response
 from authapp.models import User
-from authapp.serializers import UserRegisterSerializer, VerifyEmailSerializer
+from authapp.serializers import UserRegisterSerializer, VerifyEmailSerializer, UserWhoiAmSerializer
 from authapp.services import send_verify_email
 from notifications.models import ManagerNotification
 from profileapp.models import ReferralPromo
@@ -59,4 +59,16 @@ class VerifyEmail(generics.GenericAPIView):
             return Response({"error": "Неверный токен"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class WhoiAmAPIView(views.APIView):
+    """Получения информации о пользователе текущей сессии"""
 
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [authentication.SessionAuthentication, authentication.BasicAuthentication]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            user = UserWhoiAmSerializer(request.user)
+            return Response(user.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            print(ex)
+            return Response({'error': str(ex)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
