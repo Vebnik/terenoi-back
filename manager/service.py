@@ -47,9 +47,10 @@ class Utils:
 
 class QueryParams:
 
-    __slots__ = ('sort','sortColumn','q','page','status','perPage','lessons','currentBalance')
+    __slots__ = ('sort','sortColumn','q','page','status','perPage','lessons','currentBalance', 'id')
 
     def __init__(self, params: str) -> None:
+        self.id = params.get('id', None)
         self.sort = params.get('sort', 'desc')
         self.sortColumn = params.get('sortColumn', 'id')
         self.q = params.get('q', '')
@@ -69,7 +70,7 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
-class FilterManager:
+class Filter:
     @staticmethod
     def students_filter(queryset: QuerySet, params: QueryParams):
 
@@ -104,3 +105,26 @@ class FilterManager:
             
         return queryset
 
+    @staticmethod
+    def user_filter(params):
+        
+        if params.q == 'teacher':
+            if params.id:
+                query = User.objects.filter(is_teacher=True, id=params.id)
+            else:
+                query = User.objects.filter(is_teacher=True)
+            return query
+        if params.q == 'student':
+            if params.id:
+                query = User.objects.filter(is_student=True, id=params.id)
+            else:
+                query = User.objects.filter(is_student=True)
+            return query
+        if params.q == 'manager':
+            if params.id:
+                query = User.objects.filter(is_staff=True, id=params.id)
+            else:
+                query = User.objects.filter(is_staff=True)
+            return query
+
+        return User.objects.all()

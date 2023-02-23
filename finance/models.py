@@ -245,7 +245,7 @@ class StudentSubscription(models.Model):
     payment_methods = models.ForeignKey(verbose_name='Метод оплаты', to='PaymentMethod', 
         on_delete=models.CASCADE, **NULLABLE
         )
-    student = models.ForeignKey(to=User, on_delete=models.CASCADE, **NULLABLE)
+    student = models.ManyToManyField(to=User, blank=True)
     title = models.CharField(verbose_name="Название", max_length=50)
     plan_type = models.CharField(
         verbose_name="Тип плана", choices=SELECT_PLAN_TYPE, default=IND,  max_length=50

@@ -58,4 +58,4 @@ class PaymentMethodAdmin(admin.ModelAdmin):
 
 @admin.register(StudentSubscription)
 class StudentSubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('payment_methods','student','title','plan_type','billing','lesson_count','lesson_duration','lesson_cost','subscription_cost', )
+    list_display = ('payment_methods','title','plan_type','billing','lesson_count','lesson_duration','lesson_cost','subscription_cost', )
