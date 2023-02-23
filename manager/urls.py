@@ -4,11 +4,12 @@ from manager.apps import ManagerConfig
 from manager.views import (
     ManagerTemplateView,
 
-    UserListApiView,
-    UserCreateAPIView,
-    UsersListApiView,
-    UserUpdateAPIView,
-    UserDetailApiView,
+    StudentPaginateListApiView,
+    StudentListApiView,
+    StudentDetailApiView,
+    StudentUpdateAPIView,
+    StudentCreateAPIView,
+    StudentsListApiView,
 
     SubscriptionListApiView,
     SubscriptionUpdateApiView,
@@ -25,11 +26,12 @@ urlpatterns = [
     path('user/add/', ManagerTemplateView.as_view(), name='index'),
 
     ## API ##
-    re_path(r'users/students/', UserListApiView.as_view(), name='students_list'),
-    re_path(r'users/list/', UsersListApiView.as_view(), name='users_list'),
-    re_path(r'users/add/', UserCreateAPIView.as_view(), name='users_add'),
-    path('users/update/<int:pk>', UserUpdateAPIView.as_view(), name='users_update'),
-    path('users/detail/<int:pk>', UserDetailApiView.as_view(), name='users_detail'),
+    re_path(r'students/list/paginate/', StudentPaginateListApiView.as_view(), name='stident_paginate_list'),
+    re_path(r'users/students/', StudentListApiView.as_view(), name='students_list'),
+    re_path(r'users/list/', StudentsListApiView.as_view(), name='users_list'),
+    re_path(r'users/add/', StudentCreateAPIView.as_view(), name='users_add'),
+    path('users/update/<int:pk>', StudentUpdateAPIView.as_view(), name='users_update'),
+    path('users/detail/<int:pk>', StudentDetailApiView.as_view(), name='users_detail'),
 
     path('subscriptions/list/', SubscriptionListApiView.as_view(), name='subscription_list'),
     re_path(r'subscriptions/list/paginate/', SubscriptionPaginateListApiView.as_view(), name='subscription_paginate_list'),

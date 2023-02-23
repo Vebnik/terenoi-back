@@ -102,6 +102,28 @@ class Filter:
             queryset = queryset.filter(
                 studentbalance__money_balance__lte=params.lessons,
             )
+
+        if params.sortColumn:
+            if params.sortColumn == 'id':
+                queryset = queryset.order_by('-id')
+            if params.sortColumn == 'fullname':
+                order_name = f'{"-" if params.sort == "desc" else ""}first_name'
+                queryset = queryset.order_by(order_name)
+            if params.sortColumn == 'group':
+                order_group = f'{"-" if params.sort == "desc" else ""}group_students'
+                queryset = queryset.order_by(order_group)
+            if params.sortColumn == 'subscription':
+                order_subscription = f'{"-" if params.sort == "desc" else ""}subscription_students'
+                queryset = queryset.order_by(order_subscription)
+            if params.sortColumn == 'balance':
+                queryset = sorted(
+                    queryset, 
+                    key=lambda el: el.balance_students.first().money_balance, 
+                    reverse=(params.sort == "desc")
+                )
+            if params.sortColumn == 'status':
+                order_status = f'{"-" if params.sort == "desc" else ""}status'
+                queryset = queryset.order_by(order_status)
             
         return queryset
 

@@ -53,7 +53,6 @@ class UserSerializers(serializers.ModelSerializer):
             return StudentBalanceSerializer(balance).data
         return None
 
-
     def get_status_color(self, user: User):
         return user.get_status_color()
 

@@ -14,7 +14,7 @@ class ManagerTemplateView(UserAccessMixin, TemplateView):
     template_name = 'manager/index.html'
 
 
-class UserListApiView(generics.ListAPIView):
+class StudentPaginateListApiView(generics.ListAPIView):
     """
     API Endpoint for get users of authapp.User
     """
@@ -37,7 +37,30 @@ class UserListApiView(generics.ListAPIView):
         return super().get(request, *args, **kwargs)
 
 
-class UserCreateAPIView(generics.CreateAPIView):
+class StudentListApiView(generics.ListAPIView):
+    """
+    API Endpoint for get users of authapp.User
+    """
+    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = UserSerializers
+    queryset = User.objects.filter(is_student=True)
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        params = QueryParams(self.request.GET)
+        queryset = super().get_queryset()
+
+        return Filter.students_filter(queryset, params)
+
+    def get(self, request, *args, **kwargs):
+        params = QueryParams(request.GET)
+        self.pagination_class.page_size = params.perPage
+
+        return super().get(request, *args, **kwargs)
+
+
+class StudentCreateAPIView(generics.CreateAPIView):
     """
     API Endpoint for create users of authapp.User
     """
@@ -53,7 +76,7 @@ class UserCreateAPIView(generics.CreateAPIView):
             return response.Response({'error': str(ex)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class UserUpdateAPIView(generics.RetrieveUpdateAPIView):
+class StudentUpdateAPIView(generics.RetrieveUpdateAPIView):
     """
     API Endpoint for update users of authapp.User
     """
@@ -66,7 +89,7 @@ class UserUpdateAPIView(generics.RetrieveUpdateAPIView):
         return super().patch(request, *args, **kwargs)
 
 
-class UsersListApiView(generics.ListAPIView):
+class StudentsListApiView(generics.ListAPIView):
     authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = UserSerializers
@@ -76,7 +99,7 @@ class UsersListApiView(generics.ListAPIView):
         return Filter.user_filter(params)
 
 
-class UserDetailApiView(generics.RetrieveAPIView):
+class StudentDetailApiView(generics.RetrieveAPIView):
     authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = UserDetailSerializers
