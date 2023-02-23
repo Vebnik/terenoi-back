@@ -759,3 +759,13 @@ class FastLessonCreateView(generics.CreateAPIView):
 
         return Response({"link": f"{os.getenv('FRONT_URL')}/call-for-lesson/{lesson_data.data.get('pk')}"},
                         status=status.HTTP_201_CREATED)
+
+
+class LessonMaterialsDelete(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Lesson.objects.all()
+
+    def destroy(self, request, *args, **kwargs):
+        if self.request.user.is_teacher:
+            LessonMaterials.objects.filter(lesson=self.get_object()).delete()
+        return Response({'message': 'Done'}, status.HTTP_200_OK)
