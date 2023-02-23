@@ -59,7 +59,7 @@ class VerifyEmail(generics.GenericAPIView):
             return Response({"error": "Неверный токен"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class WhoiAm(views.APIView):
+class WhoiAmAPIView(views.APIView):
     """Получения информации о пользователе текущей сессии"""
 
     permission_classes = [permissions.IsAuthenticated]

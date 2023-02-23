@@ -3,7 +3,6 @@ from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q, QuerySet
 
 from authapp.models import User
-from finance.models import StudentBalance
 
 
 class Utils:
