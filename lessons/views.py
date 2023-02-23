@@ -763,9 +763,4 @@ class FastLessonCreateView(generics.CreateAPIView):
 
 class LessonMaterialsDelete(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = Lesson.objects.all()
-
-    def destroy(self, request, *args, **kwargs):
-        if self.request.user.is_teacher:
-            LessonMaterials.objects.filter(lesson=self.get_object()).delete()
-        return Response({'message': 'Done'}, status.HTTP_200_OK)
+    queryset = LessonMaterials.objects.all()

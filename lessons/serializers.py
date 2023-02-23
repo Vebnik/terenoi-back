@@ -663,7 +663,7 @@ class TeacherScheduleNoneDetailSerializer(serializers.ModelSerializer):
 class LessonMaterialsSerializer(serializers.ModelSerializer):
     class Meta:
         model = LessonMaterials
-        fields = ('material', 'text_material')
+        fields = ('id', 'material', 'text_material')
 
 
 class LessonHomeworkSerializer(serializers.ModelSerializer):
