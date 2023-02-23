@@ -12,12 +12,14 @@ from manager.views import (
 
     SubscriptionListApiView,
     SubscriptionUpdateApiView,
+    SubscriptionPaginateListApiView,
+    SubscriptionCreateApiView,
 )
 
 app_name = ManagerConfig.name
 
 urlpatterns = [
-    ## react path ##
+    ## for dev test ##
     path('', ManagerTemplateView.as_view(), name='index'),
     path('user/list/', ManagerTemplateView.as_view(), name='index'),
     path('user/add/', ManagerTemplateView.as_view(), name='index'),
@@ -30,5 +32,7 @@ urlpatterns = [
     path('users/detail/<int:pk>', UserDetailApiView.as_view(), name='users_detail'),
 
     path('subscriptions/list/', SubscriptionListApiView.as_view(), name='subscription_list'),
+    re_path(r'subscriptions/list/paginate/', SubscriptionPaginateListApiView.as_view(), name='subscription_paginate_list'),
+    path('subscriptions/add/', SubscriptionCreateApiView.as_view(), name='subscription_add'),
     path('subscription/update/<int:pk>/', SubscriptionUpdateApiView.as_view(), name='subscription_update'),
 ]

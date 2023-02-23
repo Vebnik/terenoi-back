@@ -83,6 +83,24 @@ class UserDetailApiView(generics.RetrieveAPIView):
     queryset = User.objects.all()
 
 
+class SubscriptionPaginateListApiView(generics.ListAPIView):
+    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = SubscriptionListSerializers
+    pagination_class = StandardResultsSetPagination
+    queryset = StudentSubscription.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        params = QueryParams(request.GET)
+
+        if not params.all:
+            self.pagination_class.page_size = params.perPage
+        else:
+            self.pagination_class.page_size = StudentSubscription.objects.count()
+
+        return super().get(request, *args, **kwargs)
+
+
 class SubscriptionListApiView(generics.ListAPIView):
     authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
@@ -95,3 +113,9 @@ class SubscriptionUpdateApiView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = SubscriptionListSerializers
     queryset = StudentSubscription.objects.all()
+
+
+class SubscriptionCreateApiView(generics.CreateAPIView):
+    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = SubscriptionListSerializers

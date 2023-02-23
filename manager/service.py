@@ -46,7 +46,7 @@ class Utils:
 
 class QueryParams:
 
-    __slots__ = ('sort','sortColumn','q','page','status','perPage','lessons','currentBalance', 'id')
+    __slots__ = ('sort','sortColumn','q','page','status','perPage','lessons','currentBalance', 'id', 'all')
 
     def __init__(self, params: str) -> None:
         self.id = params.get('id', None)
@@ -58,6 +58,7 @@ class QueryParams:
         self.perPage = params.get('perPage', 10)
         self.lessons = params.get('lessons', '')
         self.currentBalance = params.get('currentBalance', '')
+        self.all = params.get('all', 0)
 
     def __str__(self) -> str:
         return f'{self.sort=} {self.sortColumn=} {self.q=} {self.page=} {self.status=} {self.perPage=} {self.lessons=} {self.currentBalance=}'
