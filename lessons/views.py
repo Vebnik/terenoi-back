@@ -179,7 +179,7 @@ class HomeworksView(APIView):
                 queryset = queryset.filter(lesson__subject__name=self.request.query_params.get('subject'))
 
         response = {
-            'homeworks': HomeworksSerializer(queryset).data
+            'homeworks': HomeworksSerializer(queryset, many=True).data
         }
         return Response(response)
 
@@ -347,6 +347,7 @@ class HomepageListView(APIView):
 
 class LessonRateHomeworksAdd(generics.UpdateAPIView):
     """Оценка урока"""
+    # TODO: fix homework rate for send homework id
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()

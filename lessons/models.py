@@ -221,6 +221,8 @@ class LessonHomework(models.Model):
 
 class LessonRateHomework(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='студент', **NULLABLE)
+    # TODO: в проверку заполнять поле
     rate = models.IntegerField(verbose_name='Оценка домашнего задания', **NULLABLE)
     rate_comment = models.TextField(**NULLABLE, verbose_name='Комментарий к домашнему заданию')
 
