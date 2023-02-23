@@ -179,7 +179,7 @@ class HomeworksView(APIView):
                 queryset = queryset.filter(lesson__subject__name=self.request.query_params.get('subject'))
 
         response = {
-            'homeworks': HomeworksSerializer(queryset)
+            'homeworks': HomeworksSerializer(queryset).data
         }
         return Response(response)
 
