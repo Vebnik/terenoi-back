@@ -72,7 +72,7 @@ class AdditionalNumberSerializers(serializers.ModelSerializer):
 
 class UserCreateUpdateSerializers(serializers.ModelSerializer):
 
-    middle_name = serializers.CharField(required=False)
+    middle_name = serializers.CharField()
     last_name = serializers.CharField()
     first_name = serializers.CharField()
     email = serializers.EmailField()
@@ -81,7 +81,7 @@ class UserCreateUpdateSerializers(serializers.ModelSerializer):
     gender = serializers.CharField()
     is_pass_generation = serializers.BooleanField()
     birth_date = serializers.CharField()
-    avatar = Base64ImageField(required=False, read_only=True)
+    avatar = Base64ImageField(required=False)
     additional_user_number = AdditionalNumberSerializers(many=True)
     manager_related = serializers.SerializerMethodField()
     
@@ -89,7 +89,7 @@ class UserCreateUpdateSerializers(serializers.ModelSerializer):
         model = User
         fields = ('id', 'middle_name', 'last_name', 'first_name', 'avatar', 'email', 'phone', 'password', 
                     'birth_date', 'gender', 'is_pass_generation', 'additional_user_number', 
-                    'manager_related', )
+                    'manager_related', 'status')
 
     def update(self, instance: User, validated_data):
         user = instance
@@ -198,3 +198,9 @@ class UserDetailSerializers(serializers.ModelSerializer):
 
     def get_role(self, instance):
         return instance.get_role()
+
+
+class StudentStatusSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('status', )

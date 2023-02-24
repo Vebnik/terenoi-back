@@ -10,6 +10,7 @@ from manager.views import (
     StudentUpdateAPIView,
     StudentCreateAPIView,
     StudentsListApiView,
+    StudentStatusUpdateApiView,
 
     SubscriptionListApiView,
     SubscriptionUpdateApiView,
@@ -20,19 +21,22 @@ from manager.views import (
 app_name = ManagerConfig.name
 
 urlpatterns = [
-    ## for dev test ##
+    # for dev test not endpoint
     path('', ManagerTemplateView.as_view(), name='index'),
     path('user/list/', ManagerTemplateView.as_view(), name='index'),
     path('user/add/', ManagerTemplateView.as_view(), name='index'),
 
-    ## API ##
-    re_path(r'students/list/paginate/', StudentPaginateListApiView.as_view(), name='stident_paginate_list'),
-    re_path(r'users/students/', StudentListApiView.as_view(), name='students_list'),
+    # student
+    re_path(r'students/list/paginate/', StudentPaginateListApiView.as_view(), name='student_paginate_list'),
+    re_path(r'student/add/', StudentCreateAPIView.as_view(), name='student_add'),
+    path('students/update/<int:pk>', StudentUpdateAPIView.as_view(), name='students_update'),
+    path('student/detail/<int:pk>', StudentDetailApiView.as_view(), name='users_detail'),
+    path('students/update/status/<int:pk>/', StudentStatusUpdateApiView.as_view(), name='students_update_status'),
+    
+    # general
     re_path(r'users/list/', StudentsListApiView.as_view(), name='users_list'),
-    re_path(r'users/add/', StudentCreateAPIView.as_view(), name='users_add'),
-    path('users/update/<int:pk>', StudentUpdateAPIView.as_view(), name='users_update'),
-    path('users/detail/<int:pk>', StudentDetailApiView.as_view(), name='users_detail'),
 
+    # subs
     path('subscriptions/list/', SubscriptionListApiView.as_view(), name='subscription_list'),
     re_path(r'subscriptions/list/paginate/', SubscriptionPaginateListApiView.as_view(), name='subscription_paginate_list'),
     path('subscriptions/add/', SubscriptionCreateApiView.as_view(), name='subscription_add'),

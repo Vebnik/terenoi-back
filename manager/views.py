@@ -7,13 +7,15 @@ from rest_framework import generics, permissions, authentication, status, respon
 
 from manager.serializers import (
     UserSerializers, UserCreateUpdateSerializers, 
-    UserDetailSerializers, SubscriptionListSerializers
+    UserDetailSerializers, SubscriptionListSerializers,
+    StudentStatusSerializers
 )
 
 class ManagerTemplateView(UserAccessMixin, TemplateView):
     template_name = 'manager/index.html'
 
 
+# students
 class StudentPaginateListApiView(generics.ListAPIView):
     """
     API Endpoint for get users of authapp.User
@@ -99,6 +101,18 @@ class StudentsListApiView(generics.ListAPIView):
         return Filter.user_filter(params)
 
 
+class StudentStatusUpdateApiView(generics.UpdateAPIView):
+    """
+    API Endpoint for update only student status
+    """
+
+    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = StudentStatusSerializers
+    queryset = User.objects.all()
+
+
+# subscription
 class StudentDetailApiView(generics.RetrieveAPIView):
     authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]

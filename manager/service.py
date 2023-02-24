@@ -91,8 +91,8 @@ class Filter:
             high_balance = params.currentBalance.split('-')[1]
             
             queryset = queryset.filter(
-                studentbalance__money_balance__lte=high_balance,
-                studentbalance__money_balance__gte=low_balance,
+                balance_students__money_balance__lte=high_balance,
+                balance_students__money_balance__gte=low_balance,
             )
 
         if params.status:
@@ -100,7 +100,7 @@ class Filter:
 
         if params.lessons:
             queryset = queryset.filter(
-                studentbalance__money_balance__lte=params.lessons,
+                balance_students__money_balance__lte=params.lessons,
             )
 
         if params.sortColumn:

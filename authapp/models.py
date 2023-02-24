@@ -130,7 +130,7 @@ class User(AbstractUser):
         return {
             'Активный': 'success',
             'На паузе': 'warning',
-            'Архивный': 'secondary',
+            'Архивный': 'archive',
             'Отказ': 'danger'
         }.get(self.status)
 
@@ -248,8 +248,13 @@ class AdditionalUserNumber(models.Model):
     phone = models.CharField(max_length=25, verbose_name='Дополнительный телефон', **NULLABLE)
     comment = models.CharField(verbose_name='Комментраий', max_length=100, **NULLABLE)
 
+    class Meta:
+        verbose_name = 'Дполнительные номера'
+
     def __str__(self) -> str:
         return f'{self.phone} {self.comment}'
 
-    class Meta:
-        verbose_name = 'Дполнительные номера'
+    def save(self, *args, **kwargs) -> None:
+        if self.phone:
+            self.phone = re.sub(r'[^\d]', '', self.phone)
+        return super().save(*args, **kwargs)
