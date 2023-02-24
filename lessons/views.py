@@ -189,7 +189,7 @@ class HomeworksView(APIView):
                 students_list.append({
                     'first_name': student_item.first_name,
                     'last_name': student_item.last_name,
-                    'avatar': f'{settings.BASE_URL}/media/{student_item.avatar}',
+                    'avatar': f'{settings.BACK_URL}/media/{student_item.avatar}',
                     'id': student_item.pk,
                     'homeworks': HomeworksSerializer(student_homeworks, many=True).data
                 })
