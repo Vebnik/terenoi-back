@@ -167,6 +167,7 @@ class PurposeUpdateView(generics.UpdateAPIView):
 
 class HomeworksView(APIView):
     """ Домашние работы учеников"""
+    # TODO: need to be refactored
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -178,10 +179,32 @@ class HomeworksView(APIView):
             if 'subject' in self.request.query_params:
                 queryset = queryset.filter(lesson__subject__name=self.request.query_params.get('subject'))
 
-        response = {
-            'homeworks': HomeworksSerializer(queryset, many=True).data
-        }
-        return Response(response)
+        response_data = []
+
+        for lesson in queryset.values_list('lesson', flat=True).distinct():
+            students_list = []
+            for student in queryset.filter(lesson=lesson).values_list('students', flat=True).distinct():
+                student_item = User.objects.get(pk=student)
+                student_homeworks = queryset.filter(lesson=lesson, students=student)
+                students_list.append({
+                    'first_name': student_item.first_name,
+                    'last_name': student_item.last_name,
+                    'avatar': f'{settings.BASE_URL}/media/{student_item.avatar}',
+                    'id': student_item.pk,
+                    'homeworks': HomeworksSerializer(student_homeworks, many=True).data
+                })
+            lesson_item = Lesson.objects.get(pk=lesson)
+            response_data.append({
+                'students': students_list,
+                'lesson_id': lesson_item.pk,
+                'lesson_number': lesson_item.lesson_number,
+                'topic': lesson_item.topic
+            })
+
+        # response = {
+        #     'homeworks': HomeworksSerializer(queryset, many=True).data
+        # }
+        return Response(response_data)
 
 
 class StudentsDetailView(APIView):

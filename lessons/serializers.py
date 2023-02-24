@@ -1134,9 +1134,6 @@ class StudentTeacherClassesSerializer(serializers.ModelSerializer):
 
 
 class HomeworksSerializer(serializers.ModelSerializer):
-    student = UpdateStudentSerializer(source='students', many=False)
-    lesson_count = serializers.CharField(source='lesson.lesson_number')
-    topic = serializers.CharField(source='lesson.topic')
     homework = serializers.SerializerMethodField()
     rate = serializers.SerializerMethodField()
     deadline = serializers.CharField(source='lesson.deadline')
@@ -1146,10 +1143,6 @@ class HomeworksSerializer(serializers.ModelSerializer):
     class Meta:
         model = LessonHomework
         fields = (
-            'student',
-            'lesson_id',
-            'lesson_count',
-            'topic',
             'homework',
             'rate',
             'comment',
