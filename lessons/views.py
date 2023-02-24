@@ -757,7 +757,7 @@ class FastLessonCreateView(generics.CreateAPIView):
 
         lesson_data = super(FastLessonCreateView, self).post(request, *args, **kwargs)
 
-        return Response({"link": f"{os.getenv('FRONT_URL')}/call-for-lesson/{lesson_data.data.get('pk')}"},
+        return Response({"link": f"{os.getenv('FRONT_URL')}/lesson/{lesson_data.data.get('pk')}"},
                         status=status.HTTP_201_CREATED)
 
 
