@@ -356,12 +356,20 @@ class LessonRateHomeworksAdd(generics.UpdateAPIView):
         lesson = self.get_object()
         rate = None
         rate_comment = None
+        student_id = None
         if self.request.data.get('rate'):
             rate = self.request.data.get('rate')
         if self.request.data.get('rate_comment'):
             rate_comment = self.request.data.get('rate_comment')
-        LessonRateHomework.objects.create(lesson=self.get_object(), rate=rate, rate_comment=rate_comment)
-        HomeworkNotification.objects.create(to_user=lesson.student, lesson_id=self.kwargs.get('pk'),
+        if self.request.data.get('student'):
+            student_id = self.request.data.get('student')
+        LessonRateHomework.objects.create(
+            lesson=self.get_object(),
+            rate=rate,
+            rate_comment=rate_comment,
+            student_id=student_id
+        )
+        HomeworkNotification.objects.create(to_user_id=student_id, lesson_id=self.kwargs.get('pk'),
                                             type=HomeworkNotification.HOMEWORK_CHECK)
         return super(LessonRateHomeworksAdd, self).update(request, *args, **kwargs)
 
