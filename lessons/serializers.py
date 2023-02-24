@@ -1141,6 +1141,7 @@ class HomeworksSerializer(serializers.ModelSerializer):
     rate = serializers.SerializerMethodField()
     deadline = serializers.CharField(source='lesson.deadline')
     check = serializers.SerializerMethodField()
+    comment = serializers.SerializerMethodField()
 
     class Meta:
         model = LessonHomework
@@ -1151,6 +1152,7 @@ class HomeworksSerializer(serializers.ModelSerializer):
             'topic',
             'homework',
             'rate',
+            'comment',
             'deadline',
             'check'
         )
@@ -1163,6 +1165,12 @@ class HomeworksSerializer(serializers.ModelSerializer):
         if last_rate:
             return last_rate.rate
         return 0
+
+    def get_comment(self, instance):
+        last_rate = LessonRateHomework.objects.filter(student=instance.students).last()
+        if last_rate:
+            return last_rate.rate_comment
+        return ''
 
     def get_check(self, instance):
         return bool(self.get_rate(instance))
