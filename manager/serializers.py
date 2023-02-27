@@ -72,7 +72,7 @@ class AdditionalNumberSerializers(serializers.ModelSerializer):
 
 class UserCreateUpdateSerializers(serializers.ModelSerializer):
 
-    middle_name = serializers.CharField()
+    middle_name = serializers.CharField(required=False)
     last_name = serializers.CharField()
     first_name = serializers.CharField()
     email = serializers.EmailField()
@@ -162,6 +162,7 @@ class SubscriptionListSerializers(serializers.ModelSerializer):
 
 
 class UserDetailSerializers(serializers.ModelSerializer):
+    
     middle_name = serializers.CharField(required=False)
     last_name = serializers.CharField()
     first_name = serializers.CharField()
@@ -204,3 +205,18 @@ class StudentStatusSerializers(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('status', )
+
+
+class ManagerListSerializers(serializers.ModelSerializer):
+
+    fullname = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'fullname')
+
+    def get_fullname(self, instance: User):
+        try:
+            return instance.get_full_name()
+        except Exception as ex:
+            return 'Empty'

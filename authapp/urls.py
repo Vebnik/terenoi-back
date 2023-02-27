@@ -12,5 +12,4 @@ urlpatterns = [
 
     path('refresh/', TokenRefreshView.as_view(), name='refresh'),
     path('whoiam/', WhoiAmAPIView.as_view(), name='whoiam')
-
 ]

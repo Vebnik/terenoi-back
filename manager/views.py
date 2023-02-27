@@ -1,27 +1,23 @@
 from django.views.generic import TemplateView
 from authapp.models import User
 from manager.mixins import UserAccessMixin
-from manager.service import Utils, StandardResultsSetPagination, QueryParams, Filter
+from manager.service import StandardResultsSetPagination, QueryParams, Filter
 from finance.models import StudentSubscription
 from rest_framework import generics, permissions, authentication, status, response
 
 from manager.serializers import (
     UserSerializers, UserCreateUpdateSerializers, 
     UserDetailSerializers, SubscriptionListSerializers,
-    StudentStatusSerializers
+    StudentStatusSerializers, ManagerListSerializers
 )
 
-class ManagerTemplateView(UserAccessMixin, TemplateView):
-    template_name = 'manager/index.html'
 
-
-# students
+# student
 class StudentPaginateListApiView(generics.ListAPIView):
     """
     API Endpoint for get users of authapp.User
     """
-    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
-    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
     serializer_class = UserSerializers
     queryset = User.objects.filter(is_student=True)
     pagination_class = StandardResultsSetPagination
@@ -43,7 +39,7 @@ class StudentListApiView(generics.ListAPIView):
     """
     API Endpoint for get users of authapp.User
     """
-    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = UserSerializers
     queryset = User.objects.filter(is_student=True)
@@ -66,7 +62,7 @@ class StudentCreateAPIView(generics.CreateAPIView):
     """
     API Endpoint for create users of authapp.User
     """
-    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = UserCreateUpdateSerializers
 
@@ -82,7 +78,6 @@ class StudentUpdateAPIView(generics.RetrieveUpdateAPIView):
     """
     API Endpoint for update users of authapp.User
     """
-    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = UserCreateUpdateSerializers
     queryset = User.objects.all()
@@ -92,7 +87,7 @@ class StudentUpdateAPIView(generics.RetrieveUpdateAPIView):
 
 
 class StudentsListApiView(generics.ListAPIView):
-    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = UserSerializers
 
@@ -106,7 +101,7 @@ class StudentStatusUpdateApiView(generics.UpdateAPIView):
     API Endpoint for update only student status
     """
 
-    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = StudentStatusSerializers
     queryset = User.objects.all()
@@ -114,14 +109,13 @@ class StudentStatusUpdateApiView(generics.UpdateAPIView):
 
 # subscription
 class StudentDetailApiView(generics.RetrieveAPIView):
-    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = UserDetailSerializers
     queryset = User.objects.all()
 
 
 class SubscriptionPaginateListApiView(generics.ListAPIView):
-    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = SubscriptionListSerializers
     pagination_class = StandardResultsSetPagination
@@ -139,20 +133,26 @@ class SubscriptionPaginateListApiView(generics.ListAPIView):
 
 
 class SubscriptionListApiView(generics.ListAPIView):
-    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = SubscriptionListSerializers
     queryset = StudentSubscription.objects.all()
 
 
 class SubscriptionUpdateApiView(generics.UpdateAPIView):
-    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
+    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = SubscriptionListSerializers
     queryset = StudentSubscription.objects.all()
 
 
 class SubscriptionCreateApiView(generics.CreateAPIView):
-    authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = SubscriptionListSerializers
+
+
+# manger
+class ManagerListApiView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = ManagerListSerializers
+    queryset = User.objects.filter(is_staff=True)
