@@ -157,7 +157,7 @@ class UserWhoiAmSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'fullname', 'is_staff', )
+        fields = ('email', 'fullname', 'is_staff', 'avatar')
 
     def get_fullname(self, user: User):
         return user.get_full_name()

@@ -61,9 +61,7 @@ class VerifyEmail(generics.GenericAPIView):
 
 class WhoiAmAPIView(views.APIView):
     """Получения информации о пользователе текущей сессии"""
-
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [authentication.SessionAuthentication, authentication.BasicAuthentication]
+    permission_classes = [permissions.IsAdminUser]
 
     def get(self, request, *args, **kwargs):
         try:

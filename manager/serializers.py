@@ -53,7 +53,6 @@ class UserSerializers(serializers.ModelSerializer):
             return StudentBalanceSerializer(balance).data
         return None
 
-
     def get_status_color(self, user: User):
         return user.get_status_color()
 
@@ -82,7 +81,7 @@ class UserCreateUpdateSerializers(serializers.ModelSerializer):
     gender = serializers.CharField()
     is_pass_generation = serializers.BooleanField()
     birth_date = serializers.CharField()
-    avatar = Base64ImageField(required=False, read_only=True)
+    avatar = Base64ImageField(required=False)
     additional_user_number = AdditionalNumberSerializers(many=True)
     manager_related = serializers.SerializerMethodField()
     
@@ -90,7 +89,7 @@ class UserCreateUpdateSerializers(serializers.ModelSerializer):
         model = User
         fields = ('id', 'middle_name', 'last_name', 'first_name', 'avatar', 'email', 'phone', 'password', 
                     'birth_date', 'gender', 'is_pass_generation', 'additional_user_number', 
-                    'manager_related', )
+                    'manager_related', 'status')
 
     def update(self, instance: User, validated_data):
         user = instance
@@ -163,6 +162,7 @@ class SubscriptionListSerializers(serializers.ModelSerializer):
 
 
 class UserDetailSerializers(serializers.ModelSerializer):
+    
     middle_name = serializers.CharField(required=False)
     last_name = serializers.CharField()
     first_name = serializers.CharField()
@@ -199,3 +199,24 @@ class UserDetailSerializers(serializers.ModelSerializer):
 
     def get_role(self, instance):
         return instance.get_role()
+
+
+class StudentStatusSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('status', )
+
+
+class ManagerListSerializers(serializers.ModelSerializer):
+
+    fullname = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'fullname')
+
+    def get_fullname(self, instance: User):
+        try:
+            return instance.get_full_name()
+        except Exception as ex:
+            return 'Empty'

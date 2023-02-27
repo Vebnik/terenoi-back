@@ -2,33 +2,37 @@ from django.urls import path, re_path
 from manager.apps import ManagerConfig
 
 from manager.views import (
-    ManagerTemplateView,
-
-    UserListApiView,
-    UserCreateAPIView,
-    UsersListApiView,
-    UserUpdateAPIView,
-    UserDetailApiView,
+    StudentPaginateListApiView,
+    StudentDetailApiView,
+    StudentUpdateAPIView,
+    StudentCreateAPIView,
+    StudentStatusUpdateApiView,
 
     SubscriptionListApiView,
     SubscriptionUpdateApiView,
+    SubscriptionPaginateListApiView,
+    SubscriptionCreateApiView,
+
+    ManagerListApiView,
 )
 
 app_name = ManagerConfig.name
 
 urlpatterns = [
-    ## react path ##
-    path('', ManagerTemplateView.as_view(), name='index'),
-    path('user/list/', ManagerTemplateView.as_view(), name='index'),
-    path('user/add/', ManagerTemplateView.as_view(), name='index'),
 
-    ## API ##
-    re_path(r'users/students/', UserListApiView.as_view(), name='students_list'),
-    re_path(r'users/list/', UsersListApiView.as_view(), name='users_list'),
-    re_path(r'users/add/', UserCreateAPIView.as_view(), name='users_add'),
-    path('users/update/<int:pk>', UserUpdateAPIView.as_view(), name='users_update'),
-    path('users/detail/<int:pk>', UserDetailApiView.as_view(), name='users_detail'),
-
+    # student
+    re_path(r'students/list/paginate/', StudentPaginateListApiView.as_view(), name='student_paginate_list'),
+    re_path(r'student/add/', StudentCreateAPIView.as_view(), name='student_add'),
+    path('student/update/<int:pk>/', StudentUpdateAPIView.as_view(), name='students_update'),
+    path('student/detail/<int:pk>/', StudentDetailApiView.as_view(), name='users_detail'),
+    path('students/update/status/<int:pk>/', StudentStatusUpdateApiView.as_view(), name='students_update_status'),
+    
+    # subscription
     path('subscriptions/list/', SubscriptionListApiView.as_view(), name='subscription_list'),
+    re_path(r'subscriptions/list/paginate/', SubscriptionPaginateListApiView.as_view(), name='subscription_paginate_list'),
+    path('subscriptions/add/', SubscriptionCreateApiView.as_view(), name='subscription_add'),
     path('subscription/update/<int:pk>/', SubscriptionUpdateApiView.as_view(), name='subscription_update'),
+
+    # manager
+    path('manager/list/', ManagerListApiView.as_view(), name='manager_list')
 ]

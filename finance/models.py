@@ -18,8 +18,8 @@ CURRENCY_CHOICES = (
 
 class StudentBalance(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик',
-                             limit_choices_to={'is_student': True})
-    money_balance = models.IntegerField(verbose_name='Баланс', **NULLABLE)
+                             limit_choices_to={'is_student': True}, related_name='balance_students')
+    money_balance = models.IntegerField(verbose_name='Баланс', default=0)
     currency = models.CharField(verbose_name='Валюта', choices=CURRENCY_CHOICES, default=TENGE, max_length=5)
     lessons_balance = models.IntegerField(verbose_name='Баланс уроков', **NULLABLE)
     bonus_lessons_balance = models.IntegerField(verbose_name='Бонусный баланс уроков', **NULLABLE)
@@ -27,7 +27,6 @@ class StudentBalance(models.Model):
     class Meta:
         verbose_name = 'Баланс ученика'
         verbose_name_plural = 'Баланс ученика'
-
 
 class TeacherBalance(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель',
@@ -245,7 +244,7 @@ class StudentSubscription(models.Model):
     payment_methods = models.ForeignKey(verbose_name='Метод оплаты', to='PaymentMethod', 
         on_delete=models.CASCADE, **NULLABLE
         )
-    student = models.ManyToManyField(to=User, blank=True)
+    student = models.ManyToManyField(to=User, blank=True, related_name='subscription_students')
     title = models.CharField(verbose_name="Название", max_length=50)
     plan_type = models.CharField(
         verbose_name="Тип плана", choices=SELECT_PLAN_TYPE, default=IND,  max_length=50
