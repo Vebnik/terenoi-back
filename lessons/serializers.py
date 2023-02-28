@@ -1154,13 +1154,13 @@ class HomeworksSerializer(serializers.ModelSerializer):
         return LessonHomeworkSerializer(instance).data
 
     def get_rate(self, instance):
-        last_rate = LessonRateHomework.objects.filter(student=instance.students).last()
+        last_rate = LessonRateHomework.objects.filter(lesson=instance, student=instance.students).last()
         if last_rate:
             return last_rate.rate
         return 0
 
     def get_comment(self, instance):
-        last_rate = LessonRateHomework.objects.filter(student=instance.students).last()
+        last_rate = LessonRateHomework.objects.filter(lesson=instance, student=instance.students).last()
         if last_rate:
             return last_rate.rate_comment
         return ''
