@@ -21,11 +21,11 @@ app_name = ManagerConfig.name
 urlpatterns = [
 
     # student
-    re_path(r'students/list/paginate/', StudentPaginateListApiView.as_view(), name='student_paginate_list'),
+    re_path(r'student/list/paginate/', StudentPaginateListApiView.as_view(), name='student_paginate_list'),
     re_path(r'student/add/', StudentCreateAPIView.as_view(), name='student_add'),
     path('student/update/<int:pk>/', StudentUpdateAPIView.as_view(), name='students_update'),
     path('student/detail/<int:pk>/', StudentDetailApiView.as_view(), name='users_detail'),
-    path('students/update/status/<int:pk>/', StudentStatusUpdateApiView.as_view(), name='students_update_status'),
+    path('student/update/status/<int:pk>/', StudentStatusUpdateApiView.as_view(), name='students_update_status'),
     
     # subscription
     path('subscriptions/list/', SubscriptionListApiView.as_view(), name='subscription_list'),
