@@ -169,3 +169,36 @@ class CourseLikeListSerializer(serializers.ModelSerializer):
         if like:
             return True
         return False
+
+class CourseWishListSerializer(serializers.ModelSerializer):
+    img = serializers.SerializerMethodField()
+    time_duration = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Courses
+        fields = (
+            'pk', 'img', 'title', 'time_duration',)
+
+    def get_img(self, instance):
+        return instance.get_course_img()
+
+    def get_time_duration(self, instance):
+        return instance.get_minutes()
+
+
+class WishListSerializer(serializers.ModelSerializer):
+    course = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CourseWishList
+        fields = ('course',)
+
+    def _user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return None
+
+    def get_course(self, instance):
+        serializer = CourseWishListSerializer(instance.course)
+        return serializer.data

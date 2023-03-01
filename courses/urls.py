@@ -2,7 +2,7 @@ from django.urls import path
 
 from courses.views import AllCoursesListView, CoursesRetrieveView, LessonsCourseAllView, LessonCourseRetrieveView, \
     AddCourseWishListView, DeleteCourseWishListView, PurchasedCourseRetrieveView, AddCourseLikeView, \
-    DeleteCourseLikeView, LikeView
+    DeleteCourseLikeView, LikeView, WishListView
 
 app_name = 'courses'
 
@@ -14,6 +14,7 @@ urlpatterns = [
 
     path('<int:pk>/like/', LikeView.as_view(), name='all_likes_in_course'),
 
+    path('wishlist/', WishListView.as_view(), name='wishlist'),
     path('wishlist/add/', AddCourseWishListView.as_view(), name='add_wishlist'),
     path('wishlist/delete/', DeleteCourseWishListView.as_view(), name='delete_wishlist'),
 
@@ -21,5 +22,4 @@ urlpatterns = [
     path('like/delete/', DeleteCourseLikeView.as_view(), name='delete_like'),
 
     path('<int:pk>/buy/', PurchasedCourseRetrieveView.as_view(), name='course_buy'),
-
 ]
