@@ -6,7 +6,7 @@ from authapp.models import User
 from courses.models import Courses, LessonCourse, CourseWishList, PurchasedCourses, PurchasedCoursesRequest, \
     CourseLikeList
 from courses.serializers import CourseSerializer, CourseRetrieveSerializer, LessonsCourseAllSerializer, \
-    LessonsCourseRetrieveSerializer, CourseLikeListSerializer
+    LessonsCourseRetrieveSerializer, CourseLikeListSerializer, WishListSerializer
 from notifications.models import ManagerNotification
 
 
@@ -152,3 +152,12 @@ class PurchasedCourseRetrieveView(generics.RetrieveAPIView):
             PurchasedCoursesRequest.objects.create(manager=manager, user=user, course=course)
             data = {'message': True}
             return Response(data=data, status=status.HTTP_201_CREATED)
+
+
+class WishListView(generics.ListAPIView):
+    """Вишлист курсов пользователя"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = WishListSerializer
+
+    def get_queryset(self):
+        return CourseWishList.objects.filter(user=self.request.user)
