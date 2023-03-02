@@ -1,14 +1,23 @@
-from django.views.generic import TemplateView
-from authapp.models import User
-from manager.mixins import UserAccessMixin
-from manager.service import StandardResultsSetPagination, QueryParams, Filter
+from rest_framework import generics, permissions, authentication, status, response, views
+from django.db.models import Q
+from django.http import HttpRequest
+from rest_framework.response import Response
+from rest_framework import status
+from json import loads
+
+from authapp.models import User, Group
+from manager.service import StandardResultsSetPagination, QueryParams, Filter, TeacherQueryParams
 from finance.models import StudentSubscription
-from rest_framework import generics, permissions, authentication, status, response
+from profileapp.models import Subject
+from lessons.models import Schedule
 
 from manager.serializers import (
     UserSerializers, UserCreateUpdateSerializers, 
     UserDetailSerializers, SubscriptionListSerializers,
-    StudentStatusSerializers, ManagerListSerializers
+    StudentStatusSerializers, ManagerListSerializers,
+    TeacherListSerializers, SubjectListSerializers,
+    ScheduleCreateSerializers, GroupSerializer,
+    ScheduleGroupCreateSerializers,
 )
 
 
@@ -156,3 +165,93 @@ class ManagerListApiView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = ManagerListSerializers
     queryset = User.objects.filter(is_staff=True)
+
+
+# teacher
+class TeacherListApiView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = TeacherListSerializers
+    queryset = User.objects.filter(is_teacher=True)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if any([*self.request.GET.values()]):
+            params = TeacherQueryParams(self.request.GET)
+            return Filter.free_teacher_filter(queryset=queryset, params=params)
+
+        return queryset
+
+
+#schedule
+class ScheduleCreateApiView(generics.CreateAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = ScheduleCreateSerializers
+
+
+class ScheduleExistGroupCreateApiView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    
+    def post(self, requset: HttpRequest, **kwargs):
+        try:
+            data = loads(requset.body.decode('utf-8')) # {"group":27,"user":75}
+            group = Group.objects.get(pk=data.get('group'))
+            group.students.add(User.objects.get(pk=data.get('user')))
+            group.save()
+
+            return Response({'ok': True, 'message': 'ok'}, status=status.HTTP_201_CREATED)
+        except Exception as ex:
+            return Response({'ok': False, 'message': str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ScheduleDestroyApiView(generics.DestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = ScheduleCreateSerializers
+    queryset = Schedule
+
+
+class ScheduleGroupCreateApiView(generics.CreateAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = ScheduleGroupCreateSerializers
+
+
+
+# group
+class GroupListApiView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = GroupSerializer
+    queryset = Group.objects.filter(
+        Q(status__in=[Group.STATUS_LEARN, Group.STATUS_OPEN]) &
+        ~Q(title__contains='IND') & ~Q(title__contains='user')
+        )
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if any([*self.request.GET.values()]):
+            params = TeacherQueryParams(self.request.GET)
+            return Filter.group_filter(queryset=queryset, params=params)
+
+        return queryset
+
+
+class GroupDeleteUserDelteApiView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    
+    def post(self, requset: HttpRequest, **kwargs):
+        try:
+            data = loads(requset.body.decode('utf-8'))
+            group = Group.objects.get(pk=data.get('group'))
+            group.students.remove(User.objects.get(pk=data.get('user')))
+            group.save()
+
+            return Response({'ok': True, 'message': 'ok'}, status=status.HTTP_201_CREATED)
+        except Exception as ex:
+            return Response({'ok': False, 'message': str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# utils
+class SubjectListApiView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    serializer_class = SubjectListSerializers
+    queryset = Subject.objects.all()

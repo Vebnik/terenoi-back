@@ -13,7 +13,19 @@ from manager.views import (
     SubscriptionPaginateListApiView,
     SubscriptionCreateApiView,
 
+    ScheduleCreateApiView,
+    ScheduleDestroyApiView,
+    ScheduleExistGroupCreateApiView,
+    ScheduleGroupCreateApiView,
+
     ManagerListApiView,
+
+    TeacherListApiView,
+
+    SubjectListApiView,
+
+    GroupListApiView,
+    GroupDeleteUserDelteApiView,
 )
 
 app_name = ManagerConfig.name
@@ -34,5 +46,24 @@ urlpatterns = [
     path('subscription/update/<int:pk>/', SubscriptionUpdateApiView.as_view(), name='subscription_update'),
 
     # manager
-    path('manager/list/', ManagerListApiView.as_view(), name='manager_list')
+    path('manager/list/', ManagerListApiView.as_view(), name='manager_list'),
+
+    #schedule
+    path('schedule/add/ind/', ScheduleCreateApiView.as_view(), name='schedule_add_individual'),
+    path('schedule/add/group/', ScheduleGroupCreateApiView.as_view(), name='schedule_add_group'),
+    path('schedule/add/groupex/', ScheduleExistGroupCreateApiView.as_view(), name='schedule_add_exist_group'),
+    path('schedule/delete/<int:pk>/', ScheduleDestroyApiView.as_view(), name='schedule_delete'),
+
+    #teacher
+    path('teacher/list/', TeacherListApiView.as_view(), name='teacher_list'),
+    re_path(r'teacher/list/', TeacherListApiView.as_view(), name='teacher_list_filter'),
+
+    # group
+    path('group/delete/user/', GroupDeleteUserDelteApiView.as_view(), name='group_delete_user'),
+    path('group/list/', GroupListApiView.as_view(), name='group'),
+    re_path(r'group/list/', GroupListApiView.as_view(), name='group_list_filter'),
+
+    # utils
+    path('subject/list/', SubjectListApiView.as_view(), name='subject_list')
+
 ]

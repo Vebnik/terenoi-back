@@ -1,8 +1,26 @@
 import re, datetime as dt
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q, QuerySet
+from dateutil import parser, tz
+from datetime import time as parse_time
 
 from authapp.models import User
+from lessons.models import Schedule, Subject, WeekDays
+
+
+class TeacherQueryParams:
+
+    __slots__ = ('weekday', 'time', 'range', 'subject', 'teacher')
+
+    def __init__(self, params) -> None:
+        self.weekday = params.get('weekday', '')
+        self.time = params.get('time', '')
+        self.range = params.get('range', '')
+        self.subject = params.get('subject', '')
+        self.teacher = params.get('teacher', '')
+
+    def __str__(self) -> str:
+        return f'{self.weekday=} {self.range=} {self.time=} {self.subject=} {self.teacher=}'
 
 
 class Utils:
@@ -128,7 +146,7 @@ class Filter:
         return queryset
 
     @staticmethod
-    def user_filter(params):
+    def user_filter(params: QueryParams):
         
         if params.q == 'teacher':
             if params.id:
@@ -150,3 +168,59 @@ class Filter:
             return query
 
         return User.objects.all()
+
+    @staticmethod
+    def free_teacher_filter(queryset: QuerySet, params: TeacherQueryParams):
+
+        schedule = Schedule.objects.filter(is_completed=False)
+
+        if params.range:
+            try:
+                range: list = params.range.split(',')
+                schedule = schedule.filter(
+                    Q(schedulesettings__near_lesson__date=range[0])|
+                    Q(schedulesettings__last_lesson__date=range[1])
+                )
+            except IndexError: ...
+        if params.weekday:
+            weekadys = [WeekDays.objects.get(pk=num).pk for num in params.weekday.split(',')]
+            schedule = schedule.filter(weekday__in=weekadys)
+        if params.subject:
+            subject = Subject.objects.get(pk=params.subject)
+            schedule = schedule.filter(subject=subject)
+        if params.time:
+            time = parser.parse(params.time).time()
+            time = parse_time(hour=(time.hour - 6), minute=time.minute).strftime('%H:%M')
+            schedule = schedule.filter(
+                schedulesettings__near_lesson__time__contains=time
+            )
+
+        # print(schedule)
+        # print(set([item.pk for item in queryset]))
+        # print(set([item.teacher.pk for item in schedule]))
+
+        free_teachers_pk = set([item.pk for item in queryset]) - set([item.teacher.pk for item in schedule])
+
+        # print([*free_teachers_pk])
+
+        return queryset.filter(pk__in=[*free_teachers_pk])
+
+    @staticmethod
+    def group_filter(queryset: QuerySet, params: TeacherQueryParams):
+        if params.teacher:
+            queryset = queryset.filter(schedule_group__teacher=params.teacher)
+        if params.weekday:
+            weekadys = [WeekDays.objects.get(pk=num).pk for num in params.weekday.split(',')]
+            queryset = queryset.filter(schedule_group__weekday__in=weekadys )
+        if params.subject:
+            subject = Subject.objects.get(pk=params.subject)
+            queryset = queryset.filter(schedule_group__subject=subject )
+        if params.time:
+            time = parser.parse(params.time).time()
+            time = parse_time(hour=(time.hour - 6), minute=time.minute).strftime('%H:%M')
+            queryset = queryset.filter(
+                schedule_group__schedulesettings__near_lesson__time__contains=time
+            )
+
+
+        return queryset

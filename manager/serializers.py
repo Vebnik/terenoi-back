@@ -1,9 +1,13 @@
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
+from dateutil.rrule import rrule, WEEKLY
+from dateutil.parser import parse
+import calendar
 
 from authapp.models import User, Group, AdditionalUserNumber
 from finance.models import StudentBalance, StudentSubscription, PaymentMethod
-from profileapp.models import ManagerToUser
+from profileapp.models import ManagerToUser, Subject
+from lessons.models import Schedule, ScheduleSettings
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -21,7 +25,7 @@ class StudentBalanceSerializer(serializers.ModelSerializer):
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = ('title', 'status', 'teacher',)
+        fields = ('id', 'title', 'status', 'teacher')
 
 
 class UserSerializers(serializers.ModelSerializer):
@@ -161,8 +165,31 @@ class SubscriptionListSerializers(serializers.ModelSerializer):
             return { 'title': None }
 
 
+class ScheduleSettingsSerializers(serializers.ModelSerializer):
+
+    shedule = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ScheduleSettings
+        fields = ('id','shedule','lesson_duration','count','near_lesson','last_lesson')
+
+    def get_shedule(self, instance):
+        shedule: Schedule = instance.shedule
+
+        return {
+            'id': shedule.pk,
+            'title': shedule.title,
+            'teacher': shedule.teacher.pk,
+            'subject': shedule.subject.pk,
+            'weekday': [item.pk for item in shedule.weekday.all()],
+            'group': {
+                'id': shedule.group.pk,
+                'title': shedule.group.title,
+            },
+        }
+
+
 class UserDetailSerializers(serializers.ModelSerializer):
-    
     middle_name = serializers.CharField(required=False)
     last_name = serializers.CharField()
     first_name = serializers.CharField()
@@ -172,12 +199,14 @@ class UserDetailSerializers(serializers.ModelSerializer):
     birth_date = serializers.CharField()
     manager_related = serializers.SerializerMethodField()
     subscription = serializers.SerializerMethodField()
+    schedule_settings = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     
     class Meta:
         model = User
         fields = ('id', 'middle_name', 'last_name', 'first_name', 'avatar', 'email', 'phone', 
-                'birth_date', 'gender', 'manager_related', 'status', 'subscription', 'role')
+                'birth_date', 'gender', 'manager_related', 'status', 'subscription', 'role',
+                'schedule_settings', )
 
     def get_manager_related(self, user):
         try:
@@ -187,12 +216,19 @@ class UserDetailSerializers(serializers.ModelSerializer):
             return None
 
     def get_subscription(self, instance):
-        # TODO У подписок может быть несколько Учеников ????
-        # TODO Уточнить момент
-
         try:
-            sub_serializes = SubscriptionListSerializers(StudentSubscription.objects.filter(student=instance).first())
+            sub_serializes = SubscriptionListSerializers(
+                StudentSubscription.objects.filter(student=instance).first()
+            )
             return sub_serializes.data
+        except Exception as ex:
+            print(ex)
+            return None
+
+    def get_schedule_settings(self, instance: User):
+        try:
+            schedule = ScheduleSettings.objects.get(shedule__group__students__in=[instance.pk])
+            return ScheduleSettingsSerializers(schedule).data
         except Exception as ex:
             print(ex)
             return None
@@ -220,3 +256,96 @@ class ManagerListSerializers(serializers.ModelSerializer):
             return instance.get_full_name()
         except Exception as ex:
             return 'Empty'
+
+
+class TeacherListSerializers(serializers.ModelSerializer):
+
+    fullname = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'fullname')
+
+    def get_fullname(self, instance: User):
+        return instance.get_full_name()
+
+
+class SubjectListSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = ('id', 'name')
+
+
+class ScheduleCreateSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Schedule
+        fields = ('title', 'teacher', 'subject', 'weekday')
+
+    def save(self):
+        full_data: dict = self.initial_data
+
+        date_range = rrule(
+            freq=WEEKLY, 
+            dtstart=parse(f"{full_data.get('lessons_range')[0]} {full_data.get('time')}"),
+            until=parse(f"{full_data.get('lessons_range')[1]} {full_data.get('time')}"),
+            wkst=calendar.firstweekday(),
+            byweekday=[*map(int, full_data.get('weekday'))]
+        )
+        
+        if not Group.objects.filter(title=full_data.get('title')):
+            group = Group(
+                title=full_data.get('title'),
+                description=f'Индивидуальная группа для ученика {full_data.get("user")}',
+                teacher=User.objects.get(pk=full_data.get('teacher')),
+            ); group.save(); group.students.set([User.objects.get(pk=full_data.get('user'))])
+        else:
+            group = Group.objects.get(title=full_data.get('title'))
+
+        schedule = super().save()
+        schedule.group = group
+
+        scheduleSettings = ScheduleSettings(
+            count=len([*date_range]),
+            shedule=schedule,
+            lesson_duration=full_data.get('lesson_duration'),
+            near_lesson=parse(f"{full_data.get('lessons_range')[0]} {full_data.get('time')}"),
+            last_lesson=parse(f"{full_data.get('lessons_range')[1]} {full_data.get('time')}")
+        ); scheduleSettings.save(); schedule.save()
+
+        return schedule
+
+
+class ScheduleGroupCreateSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Schedule
+        fields = ('title', 'teacher', 'subject', 'weekday')
+
+    def save(self, **kwargs):
+        full_data: dict = self.initial_data
+
+        date_range = rrule(
+            freq=WEEKLY, 
+            dtstart=parse(f"{full_data.get('lessons_range')[0]} {full_data.get('time')}"),
+            until=parse(f"{full_data.get('lessons_range')[1]} {full_data.get('time')}"),
+            wkst=calendar.firstweekday(),
+            byweekday=[*map(int, full_data.get('weekday'))]
+        )
+
+        group = Group(
+            title=full_data.get('title'),
+            description=f'Индивидуальная группа для ученика {full_data.get("user")}',
+            teacher=User.objects.get(pk=full_data.get('teacher')),
+        ); group.save(); group.students.set([User.objects.get(pk=full_data.get('user'))])
+        
+        schedule = super().save()
+        schedule.group = group
+
+        scheduleSettings = ScheduleSettings(
+            count=len([*date_range]),
+            shedule=schedule,
+            lesson_duration=full_data.get('lesson_duration'),
+            near_lesson=parse(f"{full_data.get('lessons_range')[0]} {full_data.get('time')}"),
+            last_lesson=parse(f"{full_data.get('lessons_range')[1]} {full_data.get('time')}")
+        ); scheduleSettings.save(); schedule.save()
+
+        return schedule
