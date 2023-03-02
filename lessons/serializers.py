@@ -1200,8 +1200,8 @@ class TeacherStudentsListSerializer(serializers.ModelSerializer):
     def get_students(self, instance):
         groups = Group.objects.filter(teacher=instance).all()
         if groups:
-            students_group = groups.values('students').distinct('students')
-            students_list = [User.objects.get(pk=student.get('students')) for student in students_group]
+            students_group = list(groups.values_list('students', flat=True))
+            students_list = User.objects.filter(pk__in=students_group)
             serializer = UserFullNameSerializer(students_list, many=True)
             return serializer.data
         raise serializers.ValidationError('Students not found')
