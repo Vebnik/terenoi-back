@@ -6,14 +6,13 @@ import pytz
 from django.conf import settings
 from django.db.models import Q
 from django.http import JsonResponse
+from django.views.generic import TemplateView
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from django.views.generic import TemplateView
-
-from authapp.models import User, Webinar, PruffmeAccount, Group
+from authapp.models import User, Webinar, PruffmeAccount
 from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson, \
     send_cancel_lesson
 from lessons.models import Lesson, LessonMaterials, LessonHomework, LessonRateHomework, \
@@ -26,11 +25,10 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer, TeacherScheduleCreateSerializer, \
     TeacherScheduleDetailSerializer, StudentsActiveSerializer, TeacherScheduleNoneDetailSerializer, \
     TeacherRecruitingSerializer, TeacherSubjectSerializer, TeacherStudentsListSerializer, FastLessonCreateSerializer
-from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
-    withdrawing_cancel_lesson
+from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, withdrawing_cancel_lesson
 from lessons.services.services import is_free_date
 from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification, Notification
-from profileapp.models import Subject, ManagerToUser, GlobalUserPurpose, GlobalPurpose, TeacherSubject
+from profileapp.models import Subject, ManagerToUser, GlobalUserPurpose, GlobalPurpose
 from profileapp.serializers import PurposeSerializer, GlobalPurposeSerializer
 from settings.models import WeekDays
 
@@ -43,9 +41,11 @@ class AllUserLessonsListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.is_student:
-            queryset = Lesson.objects.filter(group__students=self.request.user).exclude(lesson_status=Lesson.RESCHEDULED).order_by('date').select_related()
+            queryset = Lesson.objects.filter(group__students=self.request.user).exclude(
+                lesson_status=Lesson.RESCHEDULED).order_by('date').select_related()
         else:
-            queryset = Lesson.objects.filter(teacher=self.request.user).order_by('date').exclude(lesson_status=Lesson.RESCHEDULED).select_related()
+            queryset = Lesson.objects.filter(teacher=self.request.user).order_by('date').exclude(
+                lesson_status=Lesson.RESCHEDULED).select_related()
         return queryset
 
 
@@ -61,7 +61,8 @@ class AllUserClassesListView(generics.ListAPIView):
             day_now = datetime.datetime.now()
             lesson_query = Lesson.objects.filter(group__students=self.request.user,
                                                  date__lte=day_now.date() + time_delta,
-                                                 ).exclude(lesson_status__in=[Lesson.RESCHEDULED, Lesson.CANCEL]).order_by('-date')
+                                                 ).exclude(
+                lesson_status__in=[Lesson.RESCHEDULED, Lesson.CANCEL]).order_by('-date')
             lesson_shedule = Lesson.objects.filter(
                 Q(group__students=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[
                              :1].select_related()
@@ -774,7 +775,8 @@ class FastLessonCreateView(generics.CreateAPIView):
                 return Response({"message": "Такого предмета не существует."}, status=status.HTTP_404_NOT_FOUND)
 
         if self.request.data.get('group'):
-            date = datetime.datetime.strptime(self.request.data.get('date'), settings.REST_FRAMEWORK.get('DATETIME_FORMAT'))
+            date = datetime.datetime.strptime(self.request.data.get('date'),
+                                              settings.REST_FRAMEWORK.get('DATETIME_FORMAT'))
             server_time = datetime.datetime.now()
             if date.date() < server_time.date():
                 return Response({"message": "Прошедшие дата и время не могут быть выбраны"},
