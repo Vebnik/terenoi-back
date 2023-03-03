@@ -279,7 +279,12 @@ class LessonTransferUpdateView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         lesson_id = self.kwargs.get('pk')
         lesson = Lesson.objects.get(pk=lesson_id)
-        manager = ManagerToUser.objects.get(user=self.request.user).manager
+        manager = ManagerToUser.objects.filter(user=self.request.user).first()
+        if manager:
+            manager = manager.manager
+        else:
+            manager = User.objects.filter(is_superuser=True).first()
+            # TODO: надо подумать над логикой или найти баги
         if self.request.data.get('lesson_status') == Lesson.REQUEST_RESCHEDULED:
             request_transfer(self.request.user, lesson, manager, self.request.data.get('transfer_comment'),
                              send_transfer_lesson, self.request.data.get('transfer_date'))
