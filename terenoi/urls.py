@@ -27,12 +27,15 @@ urlpatterns = [
     path('api/auth/', include('authapp.urls', namespace='authapp')),
     path('api/user/', include('profileapp.urls', namespace='profile')),
     path('api/lessons/', include('lessons.urls', namespace='lessons')),
+    path('api/courses/', include('courses.urls', namespace='courses')),
     path('api/finance/', include('finance.urls', namespace='finance')),
     path('api/settings/', include('settings.urls', namespace='settings')),
     path('api/notifications/', include('notifications.urls', namespace='notifications')),
     path('api/amocrm/', include('AmoCRM.urls', namespace='amo')),
     path('', RedirectView.as_view(url='admin/', permanent=False), name='index'),
 
+    ########## DRF MANGER TEST ##########
+    path('api/manager/', include('manager.urls', namespace='manager')),
 ]
 
 urlpatterns += doc_urls

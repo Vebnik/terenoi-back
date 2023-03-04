@@ -1,5 +1,6 @@
 import pytz
 from django.utils import timezone
+from django.conf import settings
 
 
 class TimezoneMiddleware(object):
@@ -7,8 +8,8 @@ class TimezoneMiddleware(object):
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.user.is_authenticated:
-            tz_str = request.user.time_zone
+        if request.user.is_authenticated and request.user.is_staff:
+            tz_str = settings.TIME_ZONE_MANAGER
             timezone.activate(pytz.timezone(tz_str))
         else:
             timezone.deactivate()

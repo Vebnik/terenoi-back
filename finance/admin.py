@@ -1,8 +1,12 @@
 from django.contrib import admin
 
 # Register your models here.
-from finance.models import StudentBalance, TeacherBalance, HistoryPaymentStudent, HistoryPaymentTeacher, TeacherRate, \
-    TeacherBankData
+from finance.models import ( 
+    StudentBalance, TeacherBalance, 
+    HistoryPaymentStudent, HistoryPaymentTeacher, 
+    TeacherRate, TeacherBankData, 
+    PaymentMethod, StudentSubscription,
+)
 
 
 @admin.register(StudentBalance)
@@ -46,3 +50,12 @@ class HistoryPaymentTeacherAdmin(admin.ModelAdmin):
 class TeacherBankDataAdmin(admin.ModelAdmin):
     list_display = ('user', 'bank_name', 'bik', 'full_teacher_name')
     search_fields = ['user__username', 'user__first_name', 'user__last_name']
+
+
+@admin.register(PaymentMethod)
+class PaymentMethodAdmin(admin.ModelAdmin):
+    list_display = ('title', )
+
+@admin.register(StudentSubscription)
+class StudentSubscriptionAdmin(admin.ModelAdmin):
+    list_display = ('payment_methods','title','plan_type','billing','lesson_count','lesson_duration','lesson_cost','subscription_cost', )

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_yasg',
     'channels',
+    'django_filters',
 
     'AmoCRM',
     'authapp',
@@ -59,6 +60,7 @@ INSTALLED_APPS = [
     'notifications',
     'profileapp',
     'settings',
+    'courses'
 ]
 
 MIDDLEWARE = [
@@ -70,6 +72,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
     'authapp.middleware.TimezoneMiddleware'
 ]
 
@@ -112,8 +115,14 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
         'rest_framework.permissions.AllowAny',
     ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ],
     "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.openapi.AutoSchema",
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
+    'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
+    'DATE_FORMAT': '%Y-%m-%d',
+
 }
 
 # Password validation
@@ -142,7 +151,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = 'Asia/Almaty'
+TIME_ZONE = 'UTC'
+
+TIME_ZONE_MANAGER = 'Asia/Almaty'
 
 USE_I18N = True
 
@@ -290,3 +301,5 @@ if ENV_TYPE != 'local':
 
 PRUFFME_API_USER = os.getenv('PRUFFME_API_USER')
 PRUFFME_API_SECRET = os.getenv('PRUFFME_API_SECRET')
+
+PHONE_CHARACTERS = [' ', ')', '(', '-', '+']

@@ -8,7 +8,8 @@ from lessons.views import AllUserLessonsListView, UserLessonRetrieveView, VoxiTe
     StudentsListView, StudentsRejectView, StudentsDetailView, HomeworksView, TopicUpdateView, PurposeUpdateView, \
     PurposeView, TeacherScheduleCreateView, TeacherScheduleListView, TeacherScheduleUpdateView, \
     TeacherScheduleDetailListView, StudentsActiveListView, TeacherRecruitingListView, TeacherRecruitingUpdateView, \
-    LessonTemplateView, LessonDoneTemplateView, LessonLinkGetter
+    LessonTemplateView, LessonDoneTemplateView, LessonLinkGetter, TeacherLanguageListView, TeacherStudentsListView, \
+    FastLessonCreateView, LessonMaterialsDelete
 
 app_name = 'lessons'
 
@@ -33,6 +34,7 @@ urlpatterns = [
     path('homepage/', HomepageListView.as_view(), name='homepage'),
 
     path('materials/add/<int:pk>/', LessonMaterialsAdd.as_view(), name='materials_add'),
+    path('materials/delete/<int:pk>/', LessonMaterialsDelete.as_view(), name='materials_delete'),
     path('homeworks/add/<int:pk>/', LessonHomeworksAdd.as_view(), name='homeworks_add'),
     path('materials/<int:pk>/', LessonMaterialsRetrieveView.as_view(), name='lesson_materials'),
     path('homeworks/<int:pk>/', LessonHomeworksRetrieveView.as_view(), name='lesson_homeworks'),
@@ -60,4 +62,10 @@ urlpatterns = [
     path('pruffme/page/', LessonTemplateView.as_view(), name='pruffme_page'),
     path('pruffme/done/', LessonDoneTemplateView.as_view(), name='pruffme_done_page'),
     path('pruffme/link/<lesson_id>/', LessonLinkGetter.as_view(), name='pruffme_get_link'),
+
+    path('teacher/language-list/', TeacherLanguageListView.as_view(), name='language_list'),
+    path('teacher/students-list/', TeacherStudentsListView.as_view(), name='language_list'),
+
+    path('add/fast-lesson/', FastLessonCreateView.as_view(), name='fast_lesson'),
+
 ]

@@ -1,7 +1,7 @@
 import datetime
 
 from django.db import models
-
+from django.conf import settings
 from authapp.models import User, Webinar, Group
 from lessons import tasks
 from notifications.models import Notification
@@ -13,10 +13,11 @@ NULLABLE = {'blank': True, 'null': True}
 
 
 class Schedule(models.Model):
-    title = models.CharField(max_length=50, verbose_name='Название')
+    title = models.CharField(max_length=50, verbose_name='Название', **NULLABLE)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='schedule_teacher',
                                 limit_choices_to={'is_teacher': True})
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='schedule_group', **NULLABLE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='schedule_group',
+                              **NULLABLE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     weekday = models.ManyToManyField(WeekDays, verbose_name='Дни недели')
     is_completed = models.BooleanField(verbose_name='Завершенно', default=False)
@@ -35,9 +36,16 @@ class Schedule(models.Model):
 
 class ScheduleSettings(models.Model):
     shedule = models.ForeignKey(Schedule, **NULLABLE, on_delete=models.CASCADE, verbose_name='Расписание')
+    lesson_duration = models.PositiveSmallIntegerField(verbose_name='Длительность урока, мин', default=0)
     count = models.IntegerField(verbose_name='Кол-во уроков', **NULLABLE)
     near_lesson = models.DateTimeField(**NULLABLE, verbose_name='Ближайший урок')
     last_lesson = models.DateTimeField(**NULLABLE, verbose_name='Последний урок')
+
+    def __str__(self) -> str:
+        return f'{self.shedule}'
+
+    def get_str_time(self):
+        return f'{self.near_lesson} to {self.last_lesson}'
 
 
 class Lesson(models.Model):
@@ -62,11 +70,15 @@ class Lesson(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель', related_name='lesson_teacher',
                                 limit_choices_to={'is_teacher': True})
     # students = models.ManyToManyField(User, related_name='lesson_student', limit_choices_to={'is_student': True})
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='lesson_group', **NULLABLE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='Группа', related_name='lesson_group',
+                              **NULLABLE)
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, verbose_name='Расписание', **NULLABLE)
+
     topic = models.CharField(verbose_name='Тема урока', **NULLABLE, max_length=255)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name='Предмет', **NULLABLE)
     date = models.DateTimeField(verbose_name='Дата урока')
+    duration = models.IntegerField(verbose_name='Длительность урока, мин', default=60)
+
     transfer_date = models.DateTimeField(verbose_name='Дата переноса', **NULLABLE)
     transfer_comment = models.TextField(verbose_name='Комментарий к переносу или отмене урока', **NULLABLE)
     teacher_status = models.BooleanField(verbose_name='Статус учителя', default=False)
@@ -83,7 +95,9 @@ class Lesson(models.Model):
 
     @property
     def students(self):
-        return self.group.students
+        if self.group:
+            return self.group.students
+        return []
 
     class Meta:
         verbose_name = 'Урок'
@@ -100,34 +114,17 @@ class Lesson(models.Model):
         super(Lesson, self).save(*args, **kwargs)
 
         lesson_count = Lesson.objects.filter(teacher=self.teacher, subject=self.subject)
-        # TODO: for refactoring
         if self.lesson_status == Lesson.SCHEDULED:
             if not lesson_count:
                 lesson_count = 0
                 self.lesson_number = lesson_count + 1
             else:
                 self.lesson_number = lesson_count.count() + 1
-            create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-            questions = Subject.objects.filter(name=self.subject.name).first()
-            if not self.teacher_rate_comment:
-                self.teacher_rate_comment = questions.questions
-        if self.lesson_status == Lesson.REQUEST_CANCEL:
-            create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-        if self.lesson_status == Lesson.CANCEL:
-            create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-        if self.student_status and self.teacher_status and self.lesson_status == Lesson.SCHEDULED:
-            self.lesson_status = Lesson.PROGRESS
-            create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-        if self.lesson_status == Lesson.REQUEST_RESCHEDULED:
-            create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
-        if self.lesson_status == Lesson.RESCHEDULED:
-            create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students, teacher=self.teacher,
-                                        teacher_status=self.teacher_status, date=self.transfer_date, lesson_id=self.pk)
+            if self.subject:
+                questions = Subject.objects.filter(name=self.subject.name).first()
+                if not self.teacher_rate_comment:
+                    self.teacher_rate_comment = questions.questions
+
         if self.lesson_status == Lesson.DONE:
             # payment_for_lesson(self)  #TODO
             count = DeadlineSettings.objects.filter(subject=self.subject).first()
@@ -144,13 +141,26 @@ class Lesson(models.Model):
                 deadline = self.date + days
                 self.deadline = deadline
 
+        # TODO: for refactoring
+        if self.group:
+            if self.lesson_status == Lesson.RESCHEDULED:
+                create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students,
+                                            teacher=self.teacher,
+                                            teacher_status=self.teacher_status, date=self.transfer_date,
+                                            lesson_id=self.pk)
+            else:
+                create_lesson_notifications(lesson_status=self.lesson_status, students=self.group.students,
+                                            teacher=self.teacher,
+                                            teacher_status=self.teacher_status, date=self.date, lesson_id=self.pk)
+
         if need_to_create_webinar:
             webinar = Webinar.objects.create(
                 name=f'webinar#{self.pk}',
                 start_date=self.date,
                 lesson=self
             )
-            tasks.create_webinar_and_users_celery.delay(webinar.pk)
+            if settings.ENV_TYPE != 'local':
+                tasks.create_webinar_and_users_celery.delay(webinar.pk)
 
 
 class Feedback(models.Model):
@@ -199,6 +209,7 @@ class LessonHomework(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
     homework = models.FileField(upload_to='homework-for-lesson/', verbose_name='Домашнее задание к уроку',
                                 **NULLABLE)
+    students = models.ForeignKey(User, on_delete=models.CASCADE, related_name='homework_student', verbose_name='Ученик',**NULLABLE)
     text_homework = models.TextField(**NULLABLE, verbose_name='Текстовое домашнее задание')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
@@ -210,6 +221,8 @@ class LessonHomework(models.Model):
 
 class LessonRateHomework(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='студент', **NULLABLE)
+    # TODO: в проверку заполнять поле
     rate = models.IntegerField(verbose_name='Оценка домашнего задания', **NULLABLE)
     rate_comment = models.TextField(**NULLABLE, verbose_name='Комментарий к домашнему заданию')
 

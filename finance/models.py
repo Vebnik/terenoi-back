@@ -18,8 +18,8 @@ CURRENCY_CHOICES = (
 
 class StudentBalance(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Ученик',
-                             limit_choices_to={'is_student': True})
-    money_balance = models.IntegerField(verbose_name='Баланс', **NULLABLE)
+                             limit_choices_to={'is_student': True}, related_name='balance_students')
+    money_balance = models.IntegerField(verbose_name='Баланс', default=0)
     currency = models.CharField(verbose_name='Валюта', choices=CURRENCY_CHOICES, default=TENGE, max_length=5)
     lessons_balance = models.IntegerField(verbose_name='Баланс уроков', **NULLABLE)
     bonus_lessons_balance = models.IntegerField(verbose_name='Бонусный баланс уроков', **NULLABLE)
@@ -27,7 +27,6 @@ class StudentBalance(models.Model):
     class Meta:
         verbose_name = 'Баланс ученика'
         verbose_name_plural = 'Баланс ученика'
-
 
 class TeacherBalance(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Учитель',
@@ -217,3 +216,67 @@ class TeacherBankData(models.Model):
     class Meta:
         verbose_name = 'Реквизиты учителя'
         verbose_name_plural = 'Реквизиты учителей'
+
+
+class StudentSubscription(models.Model):
+
+    IND = 'Индивидуальный'
+    OTO = 'Парный'
+    GRP = 'Групповой'
+
+    SELECT_PLAN_TYPE = (
+        (IND, 'Индивидуальный'),
+        (OTO, 'Парный'),
+        (GRP, 'Групповой'),
+    )
+
+    LES = 'Поурочная'
+    MNT = 'Помесячная'
+    WEK = 'Недельная'
+
+    SELECT_BILLING = (
+        (LES, 'Поурочная'),
+        (MNT, 'Помесячная'),
+        (WEK, 'Недельная'),
+    )
+    
+    is_active = models.BooleanField(verbose_name='Активная подписка', default=True, **NULLABLE)
+    payment_methods = models.ForeignKey(verbose_name='Метод оплаты', to='PaymentMethod', 
+        on_delete=models.CASCADE, **NULLABLE
+        )
+    student = models.ManyToManyField(to=User, blank=True, related_name='subscription_students')
+    title = models.CharField(verbose_name="Название", max_length=50)
+    plan_type = models.CharField(
+        verbose_name="Тип плана", choices=SELECT_PLAN_TYPE, default=IND,  max_length=50
+        )
+    billing = models.CharField(
+        verbose_name='Тарификация', choices=SELECT_BILLING, default=LES, max_length=50
+        )
+    lesson_count = models.IntegerField(verbose_name='Кол-во уроков')
+    lesson_duration = models.IntegerField(verbose_name='Длительность урока, мин')
+    lesson_cost = models.IntegerField(verbose_name='Цена за 1 урок')
+    subscription_cost = models.IntegerField(verbose_name='Стоимость абонемента')
+
+    def __str__(self) -> str:
+        return self.title
+    
+
+class PaymentMethod(models.Model):
+
+    title = models.CharField(verbose_name='Метод оплаты', max_length=50)
+
+    class Meta:
+        verbose_name = 'Способ оплаты'
+
+    def __str__(self) -> str:
+        return self.title
+
+    @classmethod
+    def valid_methods(cls, method):
+        return method in cls.get_methods()
+
+    @classmethod
+    def get_methods(cls):
+        return [
+            item.title for item in cls.objects.all()
+        ]

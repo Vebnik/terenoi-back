@@ -1,16 +1,16 @@
 import datetime
 import http
+import os
 
 import pytz
 from django.conf import settings
 from django.db.models import Q
 from django.http import JsonResponse
+from django.views.generic import TemplateView
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from django.views.generic import TemplateView
 
 from authapp.models import User, Webinar, PruffmeAccount
 from authapp.services import send_transfer_lesson, send_accept_transfer_lesson, send_reject_transfer_lesson, \
@@ -24,9 +24,9 @@ from lessons.serializers import UserLessonsSerializer, VoxiTeacherInfoSerializer
     LessonRateHomeworkDetail, UserClassesSerializer, HomepageStudentSerializer, HomepageTeacherSerializer, \
     StudentsSerializer, StudentDetailSerializer, HomeworksSerializer, TopicSerializer, TeacherScheduleCreateSerializer, \
     TeacherScheduleDetailSerializer, StudentsActiveSerializer, TeacherScheduleNoneDetailSerializer, \
-    TeacherRecruitingSerializer
-from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, current_date, \
-    withdrawing_cancel_lesson
+    TeacherRecruitingSerializer, TeacherSubjectSerializer, TeacherStudentsListSerializer, FastLessonCreateSerializer
+from lessons.services import request_transfer, send_transfer, request_cancel, send_cancel, withdrawing_cancel_lesson
+from lessons.services.services import is_free_date
 from notifications.models import ManagerNotification, HomeworkNotification, LessonRateNotification, Notification
 from profileapp.models import Subject, ManagerToUser, GlobalUserPurpose, GlobalPurpose
 from profileapp.serializers import PurposeSerializer, GlobalPurposeSerializer
@@ -41,9 +41,11 @@ class AllUserLessonsListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.is_student:
-            queryset = Lesson.objects.filter(group__students=self.request.user).order_by('date').select_related()
+            queryset = Lesson.objects.filter(group__students=self.request.user).exclude(
+                lesson_status=Lesson.RESCHEDULED).order_by('date').select_related()
         else:
-            queryset = Lesson.objects.filter(teacher=self.request.user).order_by('date').select_related()
+            queryset = Lesson.objects.filter(teacher=self.request.user).order_by('date').exclude(
+                lesson_status=Lesson.RESCHEDULED).select_related()
         return queryset
 
 
@@ -58,20 +60,23 @@ class AllUserClassesListView(generics.ListAPIView):
             time_delta = datetime.timedelta(days=1)
             day_now = datetime.datetime.now()
             lesson_query = Lesson.objects.filter(group__students=self.request.user,
-                                                 date__lte=day_now.date() + time_delta).order_by('-date')
+                                                 date__lte=day_now.date() + time_delta,
+                                                 ).exclude(
+                lesson_status__in=[Lesson.RESCHEDULED, Lesson.CANCEL]).order_by('-date')
             lesson_shedule = Lesson.objects.filter(
-                Q(group__students=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[:1].select_related()
+                Q(group__students=self.request.user) & Q(lesson_status=Lesson.SCHEDULED)).order_by('date')[
+                             :1].select_related()
             if lesson_shedule in lesson_query:
                 lesson_list = lesson_query.dates('date', 'day').order_by('-date')
             else:
                 lesson_list = lesson_shedule.values('date').union(lesson_query.values('date')).order_by('-date')
             date_list = []
             for item in lesson_list:
-                date = current_date(user=self.request.user, date=item.get('date')).date()
+                date = item.get('date').date()
                 if date in date_list:
                     pass
                 else:
-                    date_list.append(current_date(user=self.request.user, date=item.get('date')).date())
+                    date_list.append(date)
 
             queryset = date_list
             return queryset
@@ -163,19 +168,44 @@ class PurposeUpdateView(generics.UpdateAPIView):
 
 class HomeworksView(APIView):
     """ Домашние работы учеников"""
+    # TODO: need to be refactored
     permission_classes = [IsAuthenticated]
 
-    def get_object(self):
-        return User.objects.get(username=self.request.user)
-
     def get(self, request):
-        user = self.get_object()
-        if not self.request.query_params:
-            serializer = HomeworksSerializer(user)
-            return Response(serializer.data)
-        else:
-            serializer = HomeworksSerializer(user, context={'params': self.request.query_params})
-            return Response(serializer.data)
+        queryset = LessonHomework.objects.filter(
+            lesson__teacher=self.request.user
+        )
+
+        if self.request.query_params:
+            if 'subject' in self.request.query_params:
+                queryset = queryset.filter(lesson__subject__name=self.request.query_params.get('subject'))
+
+        response_data = []
+
+        for lesson in queryset.values_list('lesson', flat=True).distinct():
+            students_list = []
+            for student in queryset.filter(lesson=lesson).values_list('students', flat=True).distinct():
+                student_item = User.objects.get(pk=student)
+                student_homeworks = queryset.filter(lesson=lesson, students=student)
+                students_list.append({
+                    'first_name': student_item.first_name,
+                    'last_name': student_item.last_name,
+                    'avatar': f'{settings.BACK_URL}/media/{student_item.avatar}',
+                    'id': student_item.pk,
+                    'homeworks': HomeworksSerializer(student_homeworks, many=True).data
+                })
+            lesson_item = Lesson.objects.get(pk=lesson)
+            response_data.append({
+                'students': students_list,
+                'lesson_id': lesson_item.pk,
+                'lesson_number': lesson_item.lesson_number,
+                'topic': lesson_item.topic
+            })
+
+        # response = {
+        #     'homeworks': HomeworksSerializer(queryset, many=True).data
+        # }
+        return Response(response_data)
 
 
 class StudentsDetailView(APIView):
@@ -209,7 +239,8 @@ class StudentsRejectView(APIView):
                 subject = self.request.data.get('subject')
                 comment = self.request.data.get('comment')
                 subject_name = Subject.objects.filter(name=subject).first()
-                ManagerRequestsRejectTeacher.objects.create(manager=manager, student=student, old_teacher=self.request.user,
+                ManagerRequestsRejectTeacher.objects.create(manager=manager, student=student,
+                                                            old_teacher=self.request.user,
                                                             subject=subject_name, comment=comment)
                 ManagerNotification.objects.create(manager=manager, type=ManagerNotification.REQUEST_REJECT_STUDENT)
                 return Response({'message': 'Запрос на отказ ученика отправлен'}, status=status.HTTP_200_OK)
@@ -249,7 +280,12 @@ class LessonTransferUpdateView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         lesson_id = self.kwargs.get('pk')
         lesson = Lesson.objects.get(pk=lesson_id)
-        manager = ManagerToUser.objects.get(user=self.request.user).manager
+        manager = ManagerToUser.objects.filter(user=self.request.user).first()
+        if manager:
+            manager = manager.manager
+        else:
+            manager = User.objects.filter(is_superuser=True).first()
+            # TODO: надо подумать над логикой или найти баги
         if self.request.data.get('lesson_status') == Lesson.REQUEST_RESCHEDULED:
             request_transfer(self.request.user, lesson, manager, self.request.data.get('transfer_comment'),
                              send_transfer_lesson, self.request.data.get('transfer_date'))
@@ -308,13 +344,14 @@ class LessonHomeworksAdd(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         self.kwargs.get('pk')
+        student = self.request.user
         lesson = self.get_object()
         if self.request.FILES.getlist('homework'):
             for material in self.request.FILES.getlist('homework'):
-                LessonHomework.objects.create(lesson=self.get_object(), homework=material)
+                LessonHomework.objects.create(lesson=self.get_object(), homework=material, students=student)
         if self.request.data.get('text_homework'):
             text = self.request.data.get('text_homework')
-            LessonHomework.objects.create(lesson=self.get_object(), text_homework=text)
+            LessonHomework.objects.create(lesson=self.get_object(), text_homework=text, students=student)
         HomeworkNotification.objects.create(to_user=lesson.teacher, lesson_id=self.kwargs.get('pk'),
                                             type=HomeworkNotification.HOMEWORK_ADD)
         return super(LessonHomeworksAdd, self).update(request, *args, **kwargs)
@@ -339,6 +376,7 @@ class HomepageListView(APIView):
 
 class LessonRateHomeworksAdd(generics.UpdateAPIView):
     """Оценка урока"""
+    # TODO: fix homework rate for send homework id
     permission_classes = [IsAuthenticated]
     serializer_class = UserLessonsSerializer
     queryset = Lesson.objects.all()
@@ -347,12 +385,20 @@ class LessonRateHomeworksAdd(generics.UpdateAPIView):
         lesson = self.get_object()
         rate = None
         rate_comment = None
+        student_id = None
         if self.request.data.get('rate'):
             rate = self.request.data.get('rate')
         if self.request.data.get('rate_comment'):
             rate_comment = self.request.data.get('rate_comment')
-        LessonRateHomework.objects.create(lesson=self.get_object(), rate=rate, rate_comment=rate_comment)
-        HomeworkNotification.objects.create(to_user=lesson.student, lesson_id=self.kwargs.get('pk'),
+        if self.request.data.get('student'):
+            student_id = self.request.data.get('student')
+        LessonRateHomework.objects.create(
+            lesson=self.get_object(),
+            rate=rate,
+            rate_comment=rate_comment,
+            student_id=student_id
+        )
+        HomeworkNotification.objects.create(to_user_id=student_id, lesson_id=self.kwargs.get('pk'),
                                             type=HomeworkNotification.HOMEWORK_CHECK)
         return super(LessonRateHomeworksAdd, self).update(request, *args, **kwargs)
 
@@ -600,13 +646,12 @@ class LessonUserStatusUpdateView(generics.UpdateAPIView):
             return StudentStatusUpdate
 
     def update(self, request, *args, **kwargs):
+        lesson = Lesson.objects.filter(pk=int(self.kwargs.get('pk'))).first()
         if self.request.user.is_teacher:
-            lesson = Lesson.objects.filter(pk=int(self.kwargs.get('pk'))).first()
-            lesson.teacher_entry_date = current_date(user=self.request.user, date=datetime.datetime.now())
+            lesson.teacher_entry_date = datetime.datetime.now()
             lesson.save()
         else:
-            lesson = Lesson.objects.filter(pk=int(self.kwargs.get('pk'))).first()
-            lesson.student_entry_date = current_date(user=self.request.user, date=datetime.datetime.now())
+            lesson.student_entry_date = datetime.datetime.now()
             lesson.save()
         return super(LessonUserStatusUpdateView, self).update(request, *args, **kwargs)
 
@@ -691,3 +736,69 @@ class LessonDoneTemplateView(TemplateView):
             lesson_item.lesson_status = Lesson.DONE
             lesson_item.save()
         return super().get(*args, **kwargs)
+
+
+class TeacherLanguageListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request):
+        user = self.get_object()
+        serializer = TeacherSubjectSerializer(user)
+        return Response(serializer.data)
+
+
+class TeacherStudentsListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(username=self.request.user)
+
+    def get(self, request):
+        user = self.get_object()
+        serializer = TeacherStudentsListSerializer(user)
+        return Response(serializer.data)
+
+
+class FastLessonCreateView(generics.CreateAPIView):
+    """Создание быстрого урока"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = FastLessonCreateSerializer
+    queryset = Lesson.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        if self.request.data.get('subject'):
+            subject = Subject.objects.filter(name=self.request.data.get('subject')).first()
+            if subject is None:
+                return Response({"message": "Такого предмета не существует."}, status=status.HTTP_404_NOT_FOUND)
+
+        if self.request.data.get('group'):
+            date = datetime.datetime.strptime(self.request.data.get('date'),
+                                              settings.REST_FRAMEWORK.get('DATETIME_FORMAT'))
+            server_time = datetime.datetime.now()
+            if date.date() < server_time.date():
+                return Response({"message": "Прошедшие дата и время не могут быть выбраны"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            elif date.date() == server_time.date() and date.time() < server_time.time():
+                return Response({"message": "Прошедшие дата и время не могут быть выбраны"},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            if not is_free_date(date=date, groups=self.request.data.get('group'),
+                                teacher=self.request.user):
+                return Response({"message": "Дата и время не могут быть выбраны,"
+                                            "так как уже есть назначенный урок на это время"},
+                                status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"message": "Ученики не выбраны"}, status=status.HTTP_404_NOT_FOUND)
+
+        lesson_data = super(FastLessonCreateView, self).post(request, *args, **kwargs)
+
+        return Response({"link": f"{os.getenv('FRONT_URL')}/lesson/{lesson_data.data.get('pk')}"},
+                        status=status.HTTP_201_CREATED)
+
+
+class LessonMaterialsDelete(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = LessonMaterials.objects.all()

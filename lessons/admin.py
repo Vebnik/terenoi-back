@@ -49,12 +49,12 @@ class ManagerRequestsAdmin(admin.ModelAdmin):
             path(
                 '<int:pk>/accept/',
                 self.admin_site.admin_view(self.process_accept),
-                name='account-accept',
+                name='account-transfer-lesson-accept',
             ),
             path(
                 '<int:pk>/reject/',
                 self.admin_site.admin_view(self.process_reject),
-                name='account-reject',
+                name='account-transfer-lesson-reject',
             ),
         ]
         return custom_urls + urls
@@ -64,8 +64,8 @@ class ManagerRequestsAdmin(admin.ModelAdmin):
             return format_html(
                 '<a class="button" href="{}">Подтвердить</a> '
                 '<a class="button" href="{}">Отклонить</a> ',
-                reverse('admin:account-accept', args=[obj.pk]),
-                reverse('admin:account-reject', args=[obj.pk]),
+                reverse('admin:account-transfer-lesson-accept', args=[obj.pk]),
+                reverse('admin:account-transfer-lesson-reject', args=[obj.pk]),
             )
 
     def process_accept(self, request, pk, *args, **kwargs):
@@ -74,7 +74,7 @@ class ManagerRequestsAdmin(admin.ModelAdmin):
         if req.type == ManagerRequests.REQUEST_RESCHEDULED:
             req.lesson.lesson_status = Lesson.RESCHEDULED
             req.type = ManagerRequests.RESCHEDULED
-            Lesson.objects.create(teacher=req.lesson.teacher, student=req.lesson.student, topic=req.lesson.topic,
+            Lesson.objects.create(teacher=req.lesson.teacher, group=req.lesson.group, topic=req.lesson.topic,
                                   subject=req.lesson.subject,
                                   date=req.date)
         else:

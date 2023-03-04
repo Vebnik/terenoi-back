@@ -1,7 +1,10 @@
 import http
 import json
+import random
 from typing import Any
 
+import pytz
+from django.conf import settings
 from django.urls import reverse
 from rest_framework.test import APIClient, APITestCase
 
@@ -13,49 +16,66 @@ class BaseTestCase(APITestCase):
         Базовый класс для тестирования всего проекта
     """
     access_token: str
-    student_username = 'student'
-    teacher_username = 'teacher'
-    password = '123qwe456rty'
     student = None
     teacher = None
+    password = '123qwe456rty'
 
     def setUp(self) -> None:
+        self.maxDiff = None
         self.student = User.objects.create_user(
-            username=self.student_username,
+            username='student@student.com',
+            email='student@student.com',
             password=self.password,
             first_name='Student',
             last_name='Student',
+            phone='111111111',
+            is_verified=True,
             is_student=True,
-            is_teacher=False
+            is_teacher=False,
         )
-        self.teacher = User.objects.create_user(
-            username=self.teacher_username,
+        self.user_worker = User.objects.create_user(
+            username='teacher@teacher.com',
+            email='teacher@teacher.com',
             password=self.password,
             first_name='Teacher',
             last_name='Teacher',
+            phone='222222222',
+            is_verified = True,
+            is_teacher=True,
             is_student=False,
-            is_teacher=True
         )
-        self.student_client = APIClient()
-        response = self.student_client.post(
-            reverse('authapp:login'),
-            {'username': self.student_username, 'password': self.password}
-        )
-        self.student_access_token = response.json().get('access')
 
-        self.teacher_client = APIClient()
-        response = self.teacher_client.post(
-            reverse('authapp:login'),
-            {'username': self.teacher_username, 'password': self.password}
-        )
-        self.teacher_access_token = response.json().get('access')
+    @staticmethod
+    def _get_serialized_data(user, serializer_class):
+        """ Метод для возврата сериализованных данных """
+        return serializer_class(user).data
 
-    def _make_request(self, method: str, url: str, client: str = 'student', data: dict = None, status_code: int = http.HTTPStatus.OK,
+    @staticmethod
+    def _get_datetime_with_tz_as_string(datetime_item):
+        return datetime_item. \
+            astimezone(pytz.timezone(settings.TIME_ZONE)). \
+            strftime(settings.DATETIME_FORMAT)
+
+    @staticmethod
+    def make_dirt_phone(phone_number):
+        phone_with_mask = ''
+        for i in phone_number:
+            phone_with_mask += i + random.sample(settings.PHONE_CHARACTERS, 1)[0]
+        return phone_with_mask
+
+    def _login(self, username):
+        self.client = APIClient()
+        response = self.client.post(
+            reverse('users:login'),
+            {'username': username, 'password': self.password}
+        )
+        self.access_token = response.json().get('access')
+
+    def _make_request(self, method: str, url: str, username: str, data: dict = None, status_code: int = http.HTTPStatus.OK,
                       headers: dict = None) -> dict:
-        if client == 'student':
-            headers_to_send = {"HTTP_AUTHORIZATION": f'Bearer {self.student_access_token}'}
-        else:
-            headers_to_send = {"HTTP_AUTHORIZATION": f'Bearer {self.teacher_access_token}'}
+        """ Метод для формирования запроса с авторизацией и TODO: тестированием закрытого доступа """
+        self._login(username)
+        headers_to_send = {"HTTP_AUTHORIZATION": f'Bearer {self.access_token}'}
         if headers is not None:
             headers_to_send.update(headers)
         request_data = {
@@ -102,7 +122,7 @@ class BaseTestCase(APITestCase):
             return response.json()
 
     def _make_post(self, url: str, data: Any, status_code: int, headers: dict = None):
-        return self._make_request('POST', url, data, status_code=status_code, headers=headers)
+        return self._make_request('POST', url, data, status_code, headers)
 
     def _make_get(self, url: str, params: dict = None, status_code: int = http.HTTPStatus.OK, headers: dict = None):
         return self._make_request('GET', url, params, status_code, headers)

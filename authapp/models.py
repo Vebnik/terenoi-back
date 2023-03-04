@@ -1,11 +1,11 @@
 from pathlib import Path
 
-import pytz
+import pytz, re
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from django.utils.translation import gettext_lazy as _
 
 NULLABLE = {'blank': True, 'null': True}
 
@@ -48,6 +48,22 @@ class User(AbstractUser):
         (ADVANCED, 'Advanced'),
     )
 
+    ACTIVE = 'Активный'
+    PAUSE = 'На паузе'
+    ARCHIVE = 'Архивный'
+    CANCELED = 'Отказ'
+
+    STATUS_CHOICES = (
+        (ACTIVE, 'Активный'),
+        (PAUSE, 'На паузе'),
+        (ARCHIVE, 'Архивный'),
+        (CANCELED, 'Отказ'),
+    )
+
+    password = models.CharField(_('password'), max_length=128, **NULLABLE)
+    additional_user_number = models.ManyToManyField(to='AdditionalUserNumber', verbose_name='Дополнительный номер', blank=True)
+    middle_name = models.CharField(max_length=32, verbose_name='Отчество', **NULLABLE)
+    status = models.CharField(max_length=8, verbose_name='Статус', choices=STATUS_CHOICES, default=ACTIVE)
     avatar = models.ImageField(upload_to='user_avatar/', verbose_name='Avatar', **NULLABLE)
     birth_date = models.DateField(verbose_name='Дата Рождения', **NULLABLE)
     phone = models.CharField(max_length=25, verbose_name='Телефон', **NULLABLE)
@@ -56,8 +72,8 @@ class User(AbstractUser):
     bio = models.TextField(verbose_name='О себе', **NULLABLE)
     gender = models.TextField(max_length=10, choices=GENDER_CHOICES, **NULLABLE, verbose_name='Пол')
     time_zone = models.CharField(max_length=32, choices=TIMEZONES, default='Asia/Almaty', verbose_name='Часовой пояс')
-    is_student = models.BooleanField(default=True, verbose_name='Ученик')
-    is_teacher = models.BooleanField(default=False, verbose_name='Учитель')
+    is_student = models.BooleanField(default=True, verbose_name='Ученик', db_index=True)
+    is_teacher = models.BooleanField(default=False, verbose_name='Учитель', db_index=True)
     education = models.CharField(max_length=255, verbose_name='Образование', **NULLABLE)
     experience = models.TextField(verbose_name='Опыт работы', **NULLABLE)
     english_level = models.CharField(max_length=50, choices=LEVEL_CHOICES, default=BEGINNER,
@@ -82,10 +98,20 @@ class User(AbstractUser):
         return ''
 
     def save(self, *args, **kwargs):
-        super(User, self).save(*args, **kwargs)
+
+        if self.phone:
+            self.phone = re.sub(r'[^\d]', '', self.phone)
+
+        if self.password is None and self.is_pass_generation:
+            self.password = User.objects.make_random_password()
+            
         if 'pbkdf2_sha256' not in self.password:
             password = make_password(self.password)
             self.password = password
+
+        if not self.username:
+            self.username = self.email
+
         super(User, self).save(*args, **kwargs)
 
     def create_participant(self, webinar, participant_data, role):
@@ -99,7 +125,34 @@ class User(AbstractUser):
             session=participant_data.get('session'),
             role=role
         )
+    
+    def get_status_color(self):
+        return {
+            'Активный': 'success',
+            'На паузе': 'warning',
+            'Архивный': 'archive',
+            'Отказ': 'danger'
+        }.get(self.status)
 
+    def get_exclude_status(self):
+        stauses = [self.ACTIVE, self.PAUSE, self.ARCHIVE, self.CANCELED]
+        stauses.remove(self.status)
+        return stauses
+
+    def valid_status(self, status):
+        return status in [self.ACTIVE, self.PAUSE, self.ARCHIVE, self.CANCELED]
+
+    def get_absolute_url(self):
+        return '/manager/users/'
+
+    def get_role(self):
+        if (self.is_staff):
+            return 'Менеджер'
+        if (self.is_student):
+            return 'Студент'
+        if (self.is_teacher):
+            return 'Учитель'
+        return 'Нет роли'
 
 class Group(models.Model):
     STATUS_OPEN = 'open'
@@ -111,11 +164,21 @@ class Group(models.Model):
         (STATUS_LEARN, 'Обучается'),
         (STATUS_DONE, 'Завершена'),
     )
+
+    CREATE_NORMAL = 'normal'
+    CREATE_FAST = 'fast'
+
+    CREATE_TYPE = (
+        (CREATE_NORMAL, 'Обычное создание группы'),
+        (CREATE_FAST, 'Быстрое создание группы'),
+    )
+
     title = models.CharField(max_length=50, verbose_name='Название группы')
     description = models.TextField(verbose_name='Описание')
     english_level = models.CharField(max_length=50, choices=User.LEVEL_CHOICES, default=User.BEGINNER,
                                      verbose_name='Уровень английского')
     status = models.CharField(choices=STATUSES, default=STATUS_OPEN, max_length=15, verbose_name='Статус')
+    create_status = models.CharField(choices=CREATE_TYPE, default=CREATE_NORMAL, max_length=25, verbose_name='Тип создания')
 
     alfa_id = models.BigIntegerField(verbose_name='Номер из alfa crm', **NULLABLE)
 
@@ -178,3 +241,20 @@ class PruffmeAccount(models.Model):
     session = models.CharField(**NULLABLE, max_length=255)
     webinar = models.ForeignKey(Webinar, on_delete=models.CASCADE, **NULLABLE)
     role = models.CharField(**NULLABLE, max_length=255)
+
+
+class AdditionalUserNumber(models.Model):
+    user_ref = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='User')
+    phone = models.CharField(max_length=25, verbose_name='Дополнительный телефон', **NULLABLE)
+    comment = models.CharField(verbose_name='Комментраий', max_length=100, **NULLABLE)
+
+    class Meta:
+        verbose_name = 'Дполнительные номера'
+
+    def __str__(self) -> str:
+        return f'{self.phone} {self.comment}'
+
+    def save(self, *args, **kwargs) -> None:
+        if self.phone:
+            self.phone = re.sub(r'[^\d]', '', self.phone)
+        return super().save(*args, **kwargs)
