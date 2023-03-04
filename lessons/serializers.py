@@ -96,7 +96,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         return None
 
     def get_homeworks(self, instance):
-        homework = LessonHomework.objects.filter(lesson=instance, student=self._user()).select_related()
+        homework = LessonHomework.objects.filter(lesson=instance, students=self._user()).select_related()
         serializer = LessonHomeworkSerializer(homework, many=True)
         return serializer.data
 
@@ -226,18 +226,23 @@ class HomepageTeacherSerializer(serializers.ModelSerializer):
             return 0
 
     def get_next_lesson(self, instance):
-        lesson_pr = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.PROGRESS).order_by('date').first()
-        if not lesson_pr:
-            lesson = Lesson.objects.filter(teacher=instance,
-                                           lesson_status__in=[Lesson.SCHEDULED, Lesson.REQUEST_RESCHEDULED]).order_by('date').first()
+        lesson = Lesson.objects.filter(
+            teacher=instance,
+            lesson_status=Lesson.PROGRESS
+        ).order_by('date').first()
+
+        if not lesson:
+            lesson = Lesson.objects.filter(
+                teacher=instance,
+                lesson_status__in=[Lesson.SCHEDULED, Lesson.REQUEST_RESCHEDULED]
+            ).order_by('date').first()
             if not lesson:
-                lesson_done = Lesson.objects.filter(teacher=instance, lesson_status=Lesson.DONE).order_by(
-                    '-date').first()
-                serializer = UserLessonsSerializer(lesson_done, context={'user': instance})
-                return serializer.data
-            serializer = UserLessonsSerializer(lesson, context={'user': instance})
-            return serializer.data
-        serializer = UserLessonsSerializer(lesson_pr, context={'user': instance})
+                lesson = Lesson.objects.filter(
+                    teacher=instance,
+                    lesson_status=Lesson.DONE
+                ).order_by('-date').first()
+
+        serializer = UserLessonsSerializer(lesson, context={'user': instance})
         return serializer.data
 
 
