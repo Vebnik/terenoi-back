@@ -2,7 +2,6 @@ import datetime
 import pytz
 from django.conf import settings
 from django.db.models import Sum
-from voximplant.apiclient import VoximplantAPI, VoximplantException
 
 import finance
 import lessons
