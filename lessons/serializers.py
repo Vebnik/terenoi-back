@@ -96,7 +96,7 @@ class UserLessonsSerializer(serializers.ModelSerializer):
         return None
 
     def get_homeworks(self, instance):
-        homework = LessonHomework.objects.filter(lesson=instance).select_related()
+        homework = LessonHomework.objects.filter(lesson=instance, student=self._user()).select_related()
         serializer = LessonHomeworkSerializer(homework, many=True)
         return serializer.data
 
