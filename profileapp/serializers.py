@@ -13,7 +13,7 @@ from lessons.models import Lesson
 from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParents, GlobalUserPurpose, LanguageInterface, \
     Interests, UserInterest, AgeLearning, MathSpecializations, TeacherAgeLearning, TeacherMathSpecializations, \
     EnglishSpecializations, TeacherEnglishSpecializations, EnglishLevel, TeacherEnglishLevel, ManagerToUser, \
-    GlobalPurpose
+    GlobalPurpose, Specialization, SpecializationItems, UserSpecializationItems
 from settings.models import UserCity, GeneralContacts
 from settings.serializers import CityUserSerializer, GeneralContactsSerializer
 
@@ -154,6 +154,37 @@ class UpdateUserAvatarSerializer(serializers.ModelSerializer):
         return super(UpdateUserAvatarSerializer, self).to_internal_value(data)
 
 
+class SpecItemSerializer(serializers.ModelSerializer):
+    is_use = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SpecializationItems
+        fields = ('pk', 'name', 'is_use')
+
+    def get_is_use(self, instance):
+        user = self.context.get('user', None)
+        item = UserSpecializationItems.objects.filter(spec_item=instance, user=user)
+        if item:
+            return True
+        return False
+
+
+class SpecSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Specialization
+        fields = ('pk', 'title', 'items')
+
+    def get_items(self, instance):
+        user = self.context.get('user', None)
+        items = SpecializationItems.objects.filter(spec=instance)
+        if items:
+            serializer = SpecItemSerializer(items, many=True, context={'user': user})
+            return serializer.data
+        return None
+
+
 class UpdateTeacherSerializer(serializers.ModelSerializer):
     subjects = serializers.SerializerMethodField()
     city = serializers.SerializerMethodField()
@@ -164,6 +195,7 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
     language = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
     language_interface = serializers.SerializerMethodField()
+    spec = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -186,6 +218,7 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
             'language_interface',
             'is_teacher',
             'subjects',
+            'spec',
         )
 
     def get_subjects(self, instance):
@@ -229,6 +262,11 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
     def get_language_interface(self, instance):
         language_interface = LanguageInterface.objects.filter(user=instance).first()
         serializer = LanguageInterfaceSerializer(language_interface)
+        return serializer.data
+
+    def get_spec(self, instance):
+        spec = Specialization.objects.all()
+        serializer = SpecSerializer(spec, many=True, context={'user': instance})
         return serializer.data
 
 
