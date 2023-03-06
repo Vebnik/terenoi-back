@@ -159,7 +159,7 @@ class SpecItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SpecializationItems
-        fields = ('pk', 'name', 'is_use')
+        fields = ('id', 'name', 'is_use')
 
     def get_is_use(self, instance):
         user = self.context.get('user', None)
@@ -174,7 +174,7 @@ class SpecSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Specialization
-        fields = ('pk', 'title', 'items')
+        fields = ('id', 'title', 'items')
 
     def get_items(self, instance):
         user = self.context.get('user', None)

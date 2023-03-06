@@ -181,7 +181,7 @@ class ProfileUpdateView(generics.UpdateAPIView):
             if request.data.get('spec'):
                 for spec in request.data.get('spec'):
                     for item in spec.get('items'):
-                        spec_item = SpecializationItems.objects.filter(pk=item.get('pk')).first()
+                        spec_item = SpecializationItems.objects.filter(pk=item.get('id')).first()
                         if item.get('is_use'):
                             UserSpecializationItems.objects.create(user=self.request.user, spec_item=spec_item)
                         else:
