@@ -1,5 +1,6 @@
 django
 celery
+redis
 python-dotenv
 sentry-sdk
 djangorestframework
