@@ -8,7 +8,7 @@ from authapp.serializers import ProfileStudentDetailSerializer, ProfileTeacherDe
 from profileapp.models import TeacherSubject, Subject, ReferralPromo, UserParents, UserInterest, Interests, \
     LanguageInterface, ManagerToUser, ManagerRequestsPassword, TeacherAgeLearning, AgeLearning, \
     TeacherMathSpecializations, MathSpecializations, EnglishSpecializations, TeacherEnglishSpecializations, \
-    EnglishLevel, TeacherEnglishLevel
+    EnglishLevel, TeacherEnglishLevel, UserSpecializationItems, SpecializationItems
 from profileapp.permissions import IsStudent, IsTeacher
 from profileapp.serializers import UpdateUserSerializer, UpdateStudentSerializer, UpdateTeacherSerializer, \
     ReferralSerializer, UserParentsSerializer, ChangePasswordSerializer, UpdateUserAvatarSerializer, HelpSerializer
@@ -178,8 +178,16 @@ class ProfileUpdateView(generics.UpdateAPIView):
                         if user_lang:
                             user_lang.language.remove(l_lang)
                             user_lang.save()
-
-
+            if request.data.get('spec'):
+                for spec in request.data.get('spec'):
+                    for item in spec.get('items'):
+                        spec_item = SpecializationItems.objects.filter(pk=item.get('id')).first()
+                        if item.get('is_use'):
+                            UserSpecializationItems.objects.create(user=self.request.user, spec_item=spec_item)
+                        else:
+                            user_spec = UserSpecializationItems.objects.filter(user=self.request.user,spec_item=spec_item)
+                            if user_spec:
+                                user_spec.delete()
         except AttributeError as e:
             return super(ProfileUpdateView, self).update(request, *args, **kwargs)
         return super(ProfileUpdateView, self).update(request, *args, **kwargs)

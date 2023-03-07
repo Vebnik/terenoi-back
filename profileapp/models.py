@@ -268,6 +268,45 @@ class TeacherEnglishLevel(models.Model):
         verbose_name_plural = 'Уровни английского учителей'
 
 
+class Specialization(models.Model):
+    title = models.CharField(max_length=255, verbose_name='Название')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Специализация учителя'
+        verbose_name_plural = 'Специализации учителя'
+
+    def __str__(self):
+        return self.title
+
+
+class SpecializationItems(models.Model):
+    spec = models.ForeignKey(Specialization, on_delete=models.CASCADE, verbose_name='Специализация')
+    name = models.CharField(max_length=255, verbose_name='Пункт')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Пункт специализации учителя'
+        verbose_name_plural = 'Пункты специализации учителя'
+
+    def __str__(self):
+        return self.name
+
+
+class UserSpecializationItems(models.Model):
+    spec_item = models.ForeignKey(SpecializationItems, on_delete=models.CASCADE, verbose_name='Пункт специализации')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+
+    class Meta:
+        verbose_name = 'Пользователь-специлизация'
+        verbose_name_plural = 'Пользователи-специализации'
+
+    def save(self, *args, **kwargs):
+        spec = UserSpecializationItems.objects.filter(spec_item=self.spec_item, user=self.user)
+        if not spec:
+            super(UserSpecializationItems, self).save(*args, **kwargs)
+
+
 class ManagerRequestsPassword(models.Model):
     manager = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='Менеджер',
                                 related_name='password_manager',
