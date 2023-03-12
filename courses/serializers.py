@@ -125,12 +125,41 @@ class LessonsCourseRetrieveSerializer(serializers.ModelSerializer):
     time_duration = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
+    materials = serializers.SerializerMethodField()
 
     class Meta:
         model = LessonCourse
         fields = '__all__'
 
+    def _user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return None
+
+    def _is_buy(self, instance):
+        course = PurchasedCourses.objects.filter(user=self._user(), course=instance.course)
+        if course:
+            return True
+        return False
+
     def get_img(self, instance):
+        if not self._is_buy(instance):
+            from PIL import ImageFilter, Image
+            from io import BytesIO
+            with open(instance.img.path, 'rb') as img_file:
+                img = Image.open(img_file)
+                for _ in range(10):
+                    blurred_image = img.filter(ImageFilter.GaussianBlur(radius=100))
+                img_byte_arr = BytesIO()
+                blurred_image.save(img_byte_arr, format=img.format)
+                img_byte_arr = img_byte_arr.getvalue()
+                path_list, path_list_return = instance.img.path, instance.img.url
+                path_list, path_list_return = path_list.split('.'), path_list_return.split('.')
+                path_blur_img, path_blur_img_return = f'{path_list[0]}-blur.{path_list[1]}', f'{path_list_return[0]}-blur.{path_list_return[1]}'
+                with open(path_blur_img, 'wb') as img:
+                    img.write(img_byte_arr)
+                    return f'{settings.BACK_URL}{path_blur_img_return}'
         return instance.get_lesson_img()
 
     def get_avatar(self, instance):
@@ -138,6 +167,8 @@ class LessonsCourseRetrieveSerializer(serializers.ModelSerializer):
         return user.get_avatar()
 
     def get_video(self, instance):
+        if not self._is_buy(instance):
+            return ""
         return instance.get_video()
 
     def get_time_duration(self, instance):
@@ -148,6 +179,8 @@ class LessonsCourseRetrieveSerializer(serializers.ModelSerializer):
         return name
 
     def get_materials(self, instance):
+        if not self._is_buy(instance):
+            return ""
         return instance.get_materials()
 
 
