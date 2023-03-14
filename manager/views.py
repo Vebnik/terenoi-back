@@ -1,8 +1,8 @@
-from rest_framework import generics, permissions, authentication, status, response, views
+from rest_framework import generics, permissions, status, response, views
 from django.db.models import Q
 from django.http import HttpRequest
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, authentication
 from json import loads
 
 from authapp.models import User, Group
@@ -28,7 +28,7 @@ class StudentPaginateListApiView(generics.ListAPIView):
     """
     permission_classes = [permissions.IsAdminUser]
     serializer_class = UserSerializers
-    queryset = User.objects.filter(is_student=True)
+    queryset = User.objects.filter(is_student=True, is_staff=False, is_teacher=False)
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
@@ -48,7 +48,6 @@ class StudentListApiView(generics.ListAPIView):
     """
     API Endpoint for get users of authapp.User
     """
-    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = UserSerializers
     queryset = User.objects.filter(is_student=True)
@@ -71,7 +70,6 @@ class StudentCreateAPIView(generics.CreateAPIView):
     """
     API Endpoint for create users of authapp.User
     """
-    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = UserCreateUpdateSerializers
 
@@ -96,7 +94,6 @@ class StudentUpdateAPIView(generics.RetrieveUpdateAPIView):
 
 
 class StudentsListApiView(generics.ListAPIView):
-    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = UserSerializers
 
@@ -109,8 +106,6 @@ class StudentStatusUpdateApiView(generics.UpdateAPIView):
     """
     API Endpoint for update only student status
     """
-
-    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = StudentStatusSerializers
     queryset = User.objects.all()
@@ -124,7 +119,6 @@ class StudentDetailApiView(generics.RetrieveAPIView):
 
 
 class SubscriptionPaginateListApiView(generics.ListAPIView):
-    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = SubscriptionListSerializers
     pagination_class = StandardResultsSetPagination
@@ -142,20 +136,19 @@ class SubscriptionPaginateListApiView(generics.ListAPIView):
 
 
 class SubscriptionListApiView(generics.ListAPIView):
-    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = SubscriptionListSerializers
     queryset = StudentSubscription.objects.all()
 
 
 class SubscriptionUpdateApiView(generics.UpdateAPIView):
-    # authentication_classes = [authentication.BasicAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = SubscriptionListSerializers
     queryset = StudentSubscription.objects.all()
 
 
 class SubscriptionCreateApiView(generics.CreateAPIView):
+
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     serializer_class = SubscriptionListSerializers
 
