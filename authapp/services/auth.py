@@ -1,18 +1,15 @@
 import re
-from django.conf import settings
 from authapp.models import User
 
 
 def find_username_by_phone_or_email(username):
-    user_obj = User.objects.filter(email=username.lower(), is_verified=True).first()
-    if user_obj:
-        return user_obj.username
-    else:
-        username_for_phone = username.lower()
-        for char in settings.PHONE_CHARACTERS:
-            username_for_phone = username_for_phone.replace(char, '')
 
-        user_obj = User.objects.filter(phone=username_for_phone, is_verified=True).first()
-        if user_obj:
-            return user_obj.username
-    return None
+    reg_exp_pattern = re.compile(r"\+|\(|\)| |-")
+    user_by_email = User.objects.filter(email=username.lower()).first()
+    user_by_phone = User.objects.filter(phone=re.sub(reg_exp_pattern, '', username.lower())).first()
+
+    if user_by_email and (user_by_email.is_staff or user_by_email.is_superuser or user_by_email.is_verified):
+        return user_by_email.username
+
+    if user_by_phone and (user_by_phone.is_staff or user_by_phone.is_superuser or user_by_phone.is_verified):
+        return user_by_phone.username
