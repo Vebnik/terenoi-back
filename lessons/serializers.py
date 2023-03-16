@@ -1232,7 +1232,7 @@ class FastLessonCreateSerializer(serializers.ModelSerializer):
         import pytz
         user = self._user()
         student_list = [User.objects.get(pk=item) for item in self.context.get('request').data.get('group')]
-        title = f'Fast Lesson with teacher {user.username}, lesson №{instance.pk}'
+        title = f'Fast Lesson №{instance.pk}'
         descr = f'Fast Lesson with teacher {user.username}'
         fast_group = Group.objects.create(title=title, description=descr, teacher=user, create_status=Group.CREATE_FAST)
         for student in student_list:
