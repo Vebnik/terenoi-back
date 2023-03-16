@@ -853,7 +853,7 @@ class StudentsSerializer(serializers.ModelSerializer):
                 serializer_inactive = StudentsTeacherSerializer(inactive_list, many=True,
                                                                 context={'subject': subject.subject, 'teacher': instance})
                 data.append({
-                    'subject': subject.subject.name if subject.subject else None,
+                    'subject': subject.subject.name,
                     'active_students': serializer_active.data,
                     'inactive_students': serializer_inactive.data
                 })
