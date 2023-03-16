@@ -837,9 +837,8 @@ class StudentsSerializer(serializers.ModelSerializer):
                 active_list = []
                 all_lessons = Lesson.objects.filter(teacher=instance, subject=subject.subject)
                 for lesson in all_lessons:
-                    group = lesson.group
-                    if group:
-                        for student in group.students.all():
+                    if lesson.students:
+                        for student in lesson.students.all():
                             inactive = Lesson.objects.filter(teacher=instance, subject=subject.subject, group__students=student,
                                                              lesson_status=Lesson.SCHEDULED).exists()
                             if not inactive and student not in inactive_list:
