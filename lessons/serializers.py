@@ -832,30 +832,29 @@ class StudentsSerializer(serializers.ModelSerializer):
         data = []
         subjects = Lesson.objects.filter(teacher=instance).distinct('subject')
         for subject in subjects:
-            if subject.subject:
-                inactive_list = []
-                active_list = []
-                all_lessons = Lesson.objects.filter(teacher=instance, subject=subject.subject)
-                for lesson in all_lessons:
-                    if lesson.students:
-                        for student in lesson.students.all():
-                            inactive = Lesson.objects.filter(teacher=instance, subject=subject.subject, group__students=student,
-                                                             lesson_status=Lesson.SCHEDULED).exists()
-                            if not inactive and student not in inactive_list:
-                                inactive_list.append(student)
-                            else:
-                                if student not in active_list:
-                                    active_list.append(student)
+            inactive_list = []
+            active_list = []
+            all_lessons = Lesson.objects.filter(teacher=instance, subject=subject.subject)
+            for lesson in all_lessons:
+                for student in lesson.students.all():
+                    inactive = Lesson.objects.filter(teacher=instance, subject=subject.subject,
+                                                     group__students=student,
+                                                     lesson_status=Lesson.SCHEDULED).exists()
+                    if not inactive and student not in inactive_list:
+                        inactive_list.append(student)
+                    else:
+                        if student not in active_list:
+                            active_list.append(student)
 
-                serializer_active = StudentsTeacherSerializer(active_list, many=True,
-                                                              context={'subject': subject.subject, 'teacher': instance})
-                serializer_inactive = StudentsTeacherSerializer(inactive_list, many=True,
-                                                                context={'subject': subject.subject, 'teacher': instance})
-                data.append({
-                    'subject': subject.subject.name,
-                    'active_students': serializer_active.data,
-                    'inactive_students': serializer_inactive.data
-                })
+            serializer_active = StudentsTeacherSerializer(active_list, many=True,
+                                                          context={'subject': subject.subject, 'teacher': instance})
+            serializer_inactive = StudentsTeacherSerializer(inactive_list, many=True,
+                                                            context={'subject': subject.subject, 'teacher': instance})
+            data.append({
+                'subject': subject.subject.name,
+                'active_students': serializer_active.data,
+                'inactive_students': serializer_inactive.data
+            })
         return data
 
 
