@@ -837,7 +837,8 @@ class StudentsSerializer(serializers.ModelSerializer):
             all_lessons = Lesson.objects.filter(teacher=instance, subject=subject.subject)
             for lesson in all_lessons:
                 for student in lesson.students.all():
-                    inactive = Lesson.objects.filter(teacher=instance, subject=subject.subject, group__students=student,
+                    inactive = Lesson.objects.filter(teacher=instance, subject=subject.subject,
+                                                     group__students=student,
                                                      lesson_status=Lesson.SCHEDULED).exists()
                     if not inactive and student not in inactive_list:
                         inactive_list.append(student)
@@ -1230,7 +1231,7 @@ class FastLessonCreateSerializer(serializers.ModelSerializer):
         import pytz
         user = self._user()
         student_list = [User.objects.get(pk=item) for item in self.context.get('request').data.get('group')]
-        title = f'Fast Lesson with teacher {user.username}, lesson №{instance.pk}'
+        title = f'Fast Lesson №{instance.pk}'
         descr = f'Fast Lesson with teacher {user.username}'
         fast_group = Group.objects.create(title=title, description=descr, teacher=user, create_status=Group.CREATE_FAST)
         for student in student_list:

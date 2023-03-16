@@ -773,6 +773,8 @@ class FastLessonCreateView(generics.CreateAPIView):
             subject = Subject.objects.filter(name=self.request.data.get('subject')).first()
             if subject is None:
                 return Response({"message": "Такого предмета не существует."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"message": "Предмет не выбран"}, status=status.HTTP_404_NOT_FOUND)
 
         if self.request.data.get('group'):
             date = datetime.datetime.strptime(self.request.data.get('date'),
